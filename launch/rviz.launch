@@ -1,0 +1,5 @@
+<launch>
+ <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_rv" type="autonomous_mobile_robot_2022_rv" output="screen">
+  <!--<param name="ROBOT_NAME" value="turtlebot3"/>-->
+ </node>
+</launch>
