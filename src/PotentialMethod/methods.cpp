@@ -348,11 +348,11 @@ void PotentialMethodClass::odometry()
 		odometry_firsttime = false;
         odom.twist.twist.linear.x = odom.twist.twist.linear.y = odom.twist.twist.linear.z = 0.0;
         odom.twist.twist.angular.x = odom.twist.twist.angular.y = odom.twist.twist.angular.z = 0.0;
-        odom.pose.pose.position.x = -7.5;
+        odom.pose.pose.position.x = 0.0;
         odom.pose.pose.position.y = 0.0;
         odom.pose.pose.position.z = 0.0;
         odom.pose.pose.orientation.x = odom.pose.pose.orientation.y = 0.0;
-        odom.pose.pose.orientation.z = -M_PI_2;
+        odom.pose.pose.orientation.z = 0.0;
         odom.pose.pose.orientation.w = 1.0;
 	}
     else
@@ -651,6 +651,11 @@ void PotentialMethodClass::path_planning()
     {
         double x = center/PV.cols * PV.x_increment + PV.x_min;
         double y = center%PV.cols * PV.y_increment + PV.y_min;
+        if (sqrt(pow(odom.pose.pose.position.x - x,2) + pow(odom.pose.pose.position.y - y,2)) < 0.2)
+        {
+            center++;
+            continue;
+        }
 
         if (x <= PV.x_min || x >= PV.x_max || y <= PV.y_min || y >= PV.y_max || cnt > cnt_max) break;
 
