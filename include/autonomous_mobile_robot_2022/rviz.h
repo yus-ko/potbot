@@ -27,6 +27,8 @@ class rvizClass{
         nav_msgs::Path robot_path;
         ros::Time CreatePath_time_pre;
 
+        double POTENTIAL_VALUE_PLOT_LIMIT, POTENTIAL_VALUE_PLOT_SHRINK_SCALE;
+
     public:
         //in constracter.cpp
         //コンストラクタ：クラス定義に呼び出されるメソッド

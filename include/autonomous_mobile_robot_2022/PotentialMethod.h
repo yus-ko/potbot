@@ -9,6 +9,7 @@
 #include <autonomous_mobile_robot_2022/PathPlan.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
+#include <std_msgs/Float32.h>
 
 //クラスの定義
 class PotentialMethodClass{
@@ -23,7 +24,7 @@ class PotentialMethodClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub;
-		ros::Subscriber sub_encoder, sub_scan;
+		ros::Subscriber sub_encoder, sub_scan, sub_coefficient;
         //送信データ
 		ros::NodeHandle nhPub;
         ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP;
@@ -72,11 +73,17 @@ class PotentialMethodClass{
         
         ros::Time path_update_timestamp;
 
+        std::vector<double> scan_range_maximum_angle;
+        int scan_range_maximum_angle_size = 10, scan_range_maximum_angle_index = 0;
+        bool moving_average = false;
+        double coe_x, coe_y, coe_0;
+
         std::string ROBOT_NAME, PATH_PLANNING_METHOD, PATH_PLANNING_FILE;
         bool IS_SIMULATOR, PUBLISH_COMMAND, ANGLE_CORRECTION, PID_CONTROL, USE_AMCL;
         double MAX_VELOCITY, MAX_ANGULAR, TARGET_POSITION_X, TARGET_POSITION_Y;
         double GAIN_PROPORTIONAL, GAIN_INTEGRAL, GAIN_DIFFERENTIAL;
-        double PATH_TRACKING_MARGIN, POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
+        double PATH_TRACKING_MARGIN, PATH_CREATE_PERIOD, POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
+        double POTENTIAL_BIAS_COEFFICIENT_0, POTENTIAL_BIAS_COEFFICIENT_1;
 
     public:
         //in constracter.cpp
@@ -94,6 +101,7 @@ class PotentialMethodClass{
         void encoder_callback_sim(const nav_msgs::Odometry& msg);
         void pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg);
         void scan_callback(const sensor_msgs::LaserScan& msg);
+        void coefficient_callback(const std_msgs::Float32& msg);
         void get_topic();
 
         void manage();

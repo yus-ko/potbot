@@ -5,7 +5,7 @@ PotentialMethodClass::PotentialMethodClass()
 {
 
 	//ros::Duration(5).sleep();
-
+	
 	setLaunchParam();	// lanchファイルの読み込み
 
 	U_pre.x = std::numeric_limits<double>::quiet_NaN();
@@ -27,6 +27,8 @@ PotentialMethodClass::PotentialMethodClass()
 	// 	obstacle[0][i] = 99999999999;
 	// 	obstacle[1][i] = 99999999999;
 	// }
+
+	scan_range_maximum_angle.resize(scan_range_maximum_angle_size);
 
 	if (PATH_PLANNING_METHOD == "csv")
 	{
@@ -105,7 +107,7 @@ PotentialMethodClass::PotentialMethodClass()
 		if(PUBLISH_COMMAND) pub_cmd = nhPub.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 	}
 
-	
+	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PotentialMethodClass::coefficient_callback, this);
 	
 	pub_odom= nhPub.advertise<nav_msgs::Odometry>("/autonomous_mobile_robot_2022/odom", 1);
 	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("/autonomous_mobile_robot_2022/ShortestDistance", 1);

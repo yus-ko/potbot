@@ -18,9 +18,9 @@ void PotentialMethodClass::pwcs_callback(const geometry_msgs::PoseWithCovariance
 
     Eigen::Matrix3f m2=quat.toRotationMatrix();
 	Eigen::Vector3f ea = m2.eulerAngles(1, 2, 0); 
-	std::cout<<ea(0)*180.0/M_PI<<",";//roll
-	std::cout<<ea(1)*180.0/M_PI<<",";//pitch
-	std::cout<<ea(2)*180.0/M_PI<<std::endl;//yaw
+	// std::cout<<ea(0)*180.0/M_PI<<",";//roll
+	// std::cout<<ea(1)*180.0/M_PI<<",";//pitch
+	// std::cout<<ea(2)*180.0/M_PI<<std::endl;//yaw
 
     odom.pose.pose.orientation.z = ea(2);
 
@@ -43,6 +43,11 @@ void PotentialMethodClass::scan_callback(const sensor_msgs::LaserScan& msg)
     scan = msg;
     scan_first = true;
     manage();
+}
+
+void PotentialMethodClass::coefficient_callback(const std_msgs::Float32& msg)
+{
+    coe_0 = msg.data;
 }
 
 void PotentialMethodClass::get_topic()
@@ -223,11 +228,11 @@ void PotentialMethodClass::line_following()
 {
     geometry_msgs::Vector3 sub_goal = robot_path[robot_path_index];
     int robot_path_size = robot_path.size();
-    std::cout<< "robot_path_size = " << robot_path_size <<std::endl;
-    std::cout<< "robot_path_index = " << robot_path_index <<std::endl;
+    //std::cout<< "robot_path_size = " << robot_path_size <<std::endl;
+    //std::cout<< "robot_path_index = " << robot_path_index <<std::endl;
 
     double margin = PATH_TRACKING_MARGIN;
-    if (robot_path_index >= robot_path_size - 1) margin = 0.1;
+    //if (robot_path_index >= robot_path_size - 1) margin = 0.1;
 
     double l_d = sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2) + pow(odom.pose.pose.position.y - sub_goal.y,2));
     if (l_d <= margin)
@@ -368,7 +373,7 @@ void PotentialMethodClass::odometry()
         odom.pose.pose.orientation.z += (bottom_omega + encoder_value.angular.z) * encoder_deltatime / 2;
         double vel = (bottom_v + encoder_value.linear.x) * encoder_deltatime / 2;
         odom.pose.pose.position.x += vel * cos(odom.pose.pose.orientation.z);
-        odom.pose.pose.position.y += vel * -sin(odom.pose.pose.orientation.z);
+        odom.pose.pose.position.y += vel * sin(odom.pose.pose.orientation.z);
 
         bottom_v = encoder_value.linear.x;
         bottom_omega = encoder_value.angular.z;
@@ -399,6 +404,8 @@ geometry_msgs::Vector3 PotentialMethodClass::F_xd()
 void PotentialMethodClass::transform_obstacle_pos()
 {
     int size = scan.ranges.size();
+    double maximum = 0;
+    double maximum_angle;
 
     for (int i = 0; i < size; i++)
     {
@@ -411,7 +418,37 @@ void PotentialMethodClass::transform_obstacle_pos()
             obstacle[1][obstacle_index] = sin(theta) * scan.ranges[i] + odom.pose.pose.position.y;
             obstacle_index++;
             if (obstacle_index >= obstacle_size) obstacle_index = 0;
+
+            //何もない場所(角度)を取得
+            if (scan.ranges[i] > maximum)
+            {
+                maximum = scan.ranges[i];
+                maximum_angle = i * scan.angle_increment + scan.angle_min;
+            }
         }
+
+        
+    }
+
+    //移動平均
+    scan_range_maximum_angle[scan_range_maximum_angle_index++] = maximum_angle;
+    if (scan_range_maximum_angle_index >= scan_range_maximum_angle_size)
+    {
+        moving_average = true;
+        scan_range_maximum_angle_index = 0;
+    }
+    if (moving_average)
+    {
+        double sum = 0;
+        for (int i=0;i<scan_range_maximum_angle_size;i++)
+        {
+            sum += scan_range_maximum_angle[i];
+        }
+        //coe_0 = sum/double(scan_range_maximum_angle_size);
+    }
+    else
+    {
+        //coe_0 = maximum_angle;
     }
 
 }
@@ -550,7 +587,18 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
         double y = cellnum%cols * y_increment + y_min;
         geometry_msgs::Vector3 U_val = U(x, y);
         double potential_val = sqrt(pow(U_val.x,2) + pow(U_val.y,2));
-        PV.potential_value[cellnum] = potential_val;
+
+        // coe_x = POTENTIAL_BIAS_COEFFICIENT_0;
+        // coe_y = POTENTIAL_BIAS_COEFFICIENT_1;
+        
+        coe_x = cos(coe_0 + M_PI_2);
+        coe_y = sin(coe_0 + M_PI_2);
+
+        //std::cout<< "coe_x =" << coe_x << "coe_y =" << coe_y <<std::endl;
+
+        double bias = (coe_x * (x - odom.pose.pose.position.x)) + (coe_y * (y - odom.pose.pose.position.y)) + 1.1;
+
+        PV.potential_value[cellnum] = potential_val;// * bias;
 
         if (x >= odom.pose.pose.position.x - (x_increment*0.9) && x <= odom.pose.pose.position.x + (x_increment*0.9) &&
             y >= odom.pose.pose.position.y - (y_increment*0.9) && y <= odom.pose.pose.position.y + (y_increment*0.9))
@@ -558,10 +606,10 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
             PV.robot_position = cellnum;
         }
 
-        if (potential_val < potential_min)
+        if (PV.potential_value[cellnum] < potential_min)
         {
             PV.min_potential_position = cellnum;
-            potential_min = potential_val;
+            potential_min = PV.potential_value[cellnum];
             F_x = x;
             F_y = y;
         }
@@ -572,8 +620,8 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
     // std::cout<< "x = " << F_x <<std::endl;
     // std::cout<< "y = " << F_y <<std::endl;
 
-    ans.x = F_x;
-    ans.y = F_y;
+    ans.x = 0.5*F_x;
+    ans.y = 0.5*F_y;
 
     return ans;
 }
@@ -637,6 +685,8 @@ bool in(int num,std::vector<int> vec)
 void PotentialMethodClass::path_planning()
 {
 
+    std::vector<geometry_msgs::Vector3> robot_path_tmp = robot_path;
+
     int pathindex = 0;
     // std::vector<int> exploration_arr = {-PV.cols-1, -PV.cols, -PV.cols+1, 1, PV.cols+1, PV.cols, PV.cols-1, -1,-PV.cols-1,
     //                                     -PV.cols*2-2, -PV.cols*2-1, -PV.cols*2+1,-PV.cols*2+2, 2, PV.cols*2+2, PV.cols*2+1, PV.cols*2, PV.cols*2-2, PV.cols*2-1, -2};
@@ -651,11 +701,11 @@ void PotentialMethodClass::path_planning()
     {
         double x = center/PV.cols * PV.x_increment + PV.x_min;
         double y = center%PV.cols * PV.y_increment + PV.y_min;
-        if (sqrt(pow(odom.pose.pose.position.x - x,2) + pow(odom.pose.pose.position.y - y,2)) < 0.2)
-        {
-            center++;
-            continue;
-        }
+        // if (sqrt(pow(odom.pose.pose.position.x - x,2) + pow(odom.pose.pose.position.y - y,2)) < 0.2)
+        // {
+        //     center++;
+        //     continue;
+        // }
 
         if (x <= PV.x_min || x >= PV.x_max || y <= PV.y_min || y >= PV.y_max || cnt > cnt_max) break;
 
@@ -691,10 +741,42 @@ void PotentialMethodClass::path_planning()
         }
         else
         {
-            break;
+            //break;
         }
     }
     std::cout<<std::endl;
+
+    int pathsize = robot_path_tmp.size();
+    if (pathsize > 0)
+    {
+        double path_score = 0;
+        int num = 3;
+        for(int i=0; i<num; i++)
+        {
+            path_score += sqrt(pow(robot_path_tmp[i].x - robot_path[i].x,2)+pow(robot_path_tmp[i].y - robot_path[i].y,2));
+        }
+        path_score=path_score/double(num);
+        std::cout<< "path score = " << path_score <<std::endl;
+
+        if (false && path_score > 15)
+        {
+            robot_path.resize(robot_path_tmp.size());
+            robot_path = robot_path_tmp;
+        }
+    }
+    
+    if (pathsize < 3 && pathsize > 1)
+    {
+        double startx = robot_path[pathsize-1].x;
+        double starty = robot_path[pathsize-1].y;
+        double angle = atan2(robot_path[pathsize-1].y - robot_path[pathsize-2].y, robot_path[pathsize-1].x - robot_path[pathsize-2].x);
+        robot_path.resize(pathsize + 5);
+        for (int i=0;i<5;i++)
+        {
+            robot_path[pathsize+i].x = 0.2*(i+1)*cos(angle) + startx;
+            robot_path[pathsize+i].y = 0.2*(i+1)*sin(angle) + starty;
+        }
+    }
 
     PP.data.resize(robot_path.size());
     PP.data = robot_path;
@@ -719,14 +801,14 @@ void PotentialMethodClass::potential()
         //cont_vel(potential_min_point.x, potential_min_point.y);
         //cont_pos(potential_min_point.x, potential_min_point.y);
 
-        double period = 2.0;
+        double period = PATH_CREATE_PERIOD;
         geometry_msgs::Vector3 ans = U_o(odom.pose.pose.position.x, odom.pose.pose.position.y);
         //std::cout<< "Uo = " << sqrt(pow(ans.x,2) + pow(ans.y,2)) <<std::endl;
 
-        if(sqrt(pow(ans.x,2) + pow(ans.y,2)) != 0.0) period = 1;
+        //if(sqrt(pow(ans.x,2) + pow(ans.y,2)) != 0.0) period = 0.2;
 
         ros::Time nt = ros::Time::now();
-        if (path_update && nt.toSec() > path_update_timestamp.toSec() + period || robot_path_index >= robot_path.size())
+        if (path_update && (nt.toSec() > path_update_timestamp.toSec() + period || robot_path_index >= robot_path.size()))
         {
             // robot_path.resize(1);
             robot_path_index = 0;

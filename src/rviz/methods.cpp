@@ -59,8 +59,8 @@ void rvizClass::addMarker()
 
             marker_array.markers[i].pose.position.x = i/PV.cols * PV.x_increment + PV.x_min;
             marker_array.markers[i].pose.position.y = i%PV.cols * PV.y_increment + PV.y_min;
-            marker_array.markers[i].pose.position.z = PV.potential_value[i]/100;
-            if (marker_array.markers[i].pose.position.z > 2) marker_array.markers[i].pose.position.z = 2;
+            marker_array.markers[i].pose.position.z = PV.potential_value[i]/POTENTIAL_VALUE_PLOT_SHRINK_SCALE;
+            if (marker_array.markers[i].pose.position.z > POTENTIAL_VALUE_PLOT_LIMIT) marker_array.markers[i].pose.position.z = POTENTIAL_VALUE_PLOT_LIMIT;
 
             marker_array.markers[i].pose.orientation.x = 0.0;
             marker_array.markers[i].pose.orientation.y = 0.0;
@@ -100,7 +100,7 @@ void rvizClass::addMarker()
                 marker_array.markers[i].color.g = 0;
                 marker_array.markers[i].color.b = 1;
             }
-            else if (false && is_path)
+            else if (is_path)
             {
                 marker_array.markers[i].scale.x = 0.1;
                 marker_array.markers[i].scale.y = 0.1;
@@ -144,7 +144,7 @@ void rvizClass::addMarker_pathplan()
     for (int i = 0; i < PP_size; i++)
     //for (int i = marker_size; i < marker_resize; i++)
     {
-        marker_array_pp_tmp.markers[i].header.frame_id = "/map";
+        marker_array_pp_tmp.markers[i].header.frame_id = "/odom";
         marker_array_pp_tmp.markers[i].header.stamp = ros::Time::now();
         marker_array_pp_tmp.markers[i].ns = "PathPlan_display";
         marker_array_pp_tmp.markers[i].id = i;
@@ -167,8 +167,8 @@ void rvizClass::addMarker_pathplan()
         marker_array_pp_tmp.markers[i].pose.orientation.w = 1.0;
 
         marker_array_pp_tmp.markers[i].color.a = 1;
-        marker_array_pp_tmp.markers[i].color.r = 0;
-        marker_array_pp_tmp.markers[i].color.g = 0;
+        marker_array_pp_tmp.markers[i].color.r = 1;
+        marker_array_pp_tmp.markers[i].color.g = 1;
         marker_array_pp_tmp.markers[i].color.b = 0;
 
         PP_index++;
