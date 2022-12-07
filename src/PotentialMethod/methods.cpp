@@ -412,10 +412,11 @@ void PotentialMethodClass::transform_obstacle_pos()
 
         if (!isinf(scan.ranges[i]))
         {
-            double theta = i * scan.angle_increment + scan.angle_min + odom.pose.pose.orientation.z;
-            
-            obstacle[0][obstacle_index] = cos(theta) * scan.ranges[i] + odom.pose.pose.position.x;
-            obstacle[1][obstacle_index] = sin(theta) * scan.ranges[i] + odom.pose.pose.position.y;
+            double angle = i * scan.angle_increment + scan.angle_min + odom.pose.pose.orientation.z;
+            double distance = scan.ranges[i] + scan.range_min;
+
+            obstacle[0][obstacle_index] = cos(angle) * distance + odom.pose.pose.position.x;
+            obstacle[1][obstacle_index] = sin(angle) * distance + odom.pose.pose.position.y;
             obstacle_index++;
             if (obstacle_index >= obstacle_size) obstacle_index = 0;
 
