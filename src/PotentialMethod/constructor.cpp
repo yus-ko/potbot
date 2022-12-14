@@ -107,6 +107,7 @@ PotentialMethodClass::PotentialMethodClass()
 		if(PUBLISH_COMMAND) pub_cmd = nhPub.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 	}
 
+	sub_cluster = nhSub.subscribe("classificationDataEstimateVelocity", 1, &PotentialMethodClass::cluster_callback, this);
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PotentialMethodClass::coefficient_callback, this);
 	
 	pub_odom= nhPub.advertise<nav_msgs::Odometry>("/autonomous_mobile_robot_2022/odom", 1);

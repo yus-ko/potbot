@@ -6,7 +6,7 @@
 起動コマンド：roslaunch megarover_samples vmegarover_with_empty_world.launch
 -->
 <launch>
-
+	<env name="GAZEBO_MODEL_PATH" value="$(find autonomous_mobile_robot_2022)/models:$(optenv GAZEBO_MODEL_PATH)"/>
   <!-- these are the arguments you can pass this launch file, for example paused:=true -->
   <arg name="model" default="$(find megarover_samples)/robots/vmegarover.urdf.xacro"/>
   <arg name="paused" default="false"/>

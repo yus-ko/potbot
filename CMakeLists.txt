@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   #dynamixel_sdk_examples
   #obstacle_detection_2019
   visualization_msgs
+  autonomous_mobile_robot
 )
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
@@ -188,6 +189,7 @@ add_executable(${PROJECT_NAME}_pm # manage
 
 add_executable(${PROJECT_NAME}_te # manage
   src/test/test.cpp
+  #src/test/spline.cpp
   #src/test/motor_response.cpp
   #src/test/localization_accuracy.cpp
 )

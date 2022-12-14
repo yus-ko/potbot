@@ -50,6 +50,13 @@ void PotentialMethodClass::coefficient_callback(const std_msgs::Float32& msg)
     coe_0 = msg.data;
 }
 
+void PotentialMethodClass::cluster_callback(const autonomous_mobile_robot::ClassificationVelocityData& msg)
+{
+
+    pcl_cluster = msg;
+    
+}
+
 void PotentialMethodClass::get_topic()
 {
     //時間
@@ -382,9 +389,9 @@ void PotentialMethodClass::odometry()
         //std::cout<< encoder_value <<std::endl;
 		//std::cout<< odom.pose.pose<<std::endl;
 
-        std::cout<< "odom_x     = " << odom.pose.pose.position.x <<std::endl;
-        std::cout<< "odom_y     = " << odom.pose.pose.position.y <<std::endl;
-        std::cout<< "odom_theta = " << odom.pose.pose.orientation.z /M_PI*180 <<std::endl;
+        // std::cout<< "odom_x     = " << odom.pose.pose.position.x <<std::endl;
+        // std::cout<< "odom_y     = " << odom.pose.pose.position.y <<std::endl;
+        // std::cout<< "odom_theta = " << odom.pose.pose.orientation.z /M_PI*180 <<std::endl;
 
 		encoder_time_pre = now;
     }
@@ -403,17 +410,22 @@ geometry_msgs::Vector3 PotentialMethodClass::F_xd()
 
 void PotentialMethodClass::transform_obstacle_pos()
 {
+
     int size = scan.ranges.size();
     double maximum = 0;
     double maximum_angle;
+    double diff_angle_min = 99999999;
+    double angle_to_goal = atan2(TARGET_POSITION_Y - odom.pose.pose.position.y,TARGET_POSITION_X - odom.pose.pose.position.x);
 
     for (int i = 0; i < size; i++)
     {
 
+        double angle = i * scan.angle_increment + scan.angle_min + odom.pose.pose.orientation.z;
+        double distance = scan.ranges[i] + scan.range_min;
+
         if (!isinf(scan.ranges[i]))
         {
-            double angle = i * scan.angle_increment + scan.angle_min + odom.pose.pose.orientation.z;
-            double distance = scan.ranges[i] + scan.range_min;
+            
 
             obstacle[0][obstacle_index] = cos(angle) * distance + odom.pose.pose.position.x;
             obstacle[1][obstacle_index] = sin(angle) * distance + odom.pose.pose.position.y;
@@ -426,6 +438,11 @@ void PotentialMethodClass::transform_obstacle_pos()
                 maximum = scan.ranges[i];
                 maximum_angle = i * scan.angle_increment + scan.angle_min;
             }
+        }
+
+        if (scan.ranges[i] >= 2.5 && abs(angle - angle_to_goal) < diff_angle_min)
+        {
+            coe_0 = angle - odom.pose.pose.orientation.z;
         }
 
         
@@ -450,6 +467,22 @@ void PotentialMethodClass::transform_obstacle_pos()
     else
     {
         //coe_0 = maximum_angle;
+    }
+
+    //ステレオカメラ点群
+    int cluster_num = pcl_cluster.data.size();
+    //std::cout<< "cluster data size = " << cluster_num <<std::endl;
+    for(int i = 0; i < cluster_num; i++)
+    {
+        double gcx = pcl_cluster.data[i].gc.x;
+        double gcy = pcl_cluster.data[i].gc.y;
+        //std::cout<< i << " (x,y) = (" << gcx << ", " << gcy<< ")" <<std::endl;
+
+        obstacle[0][obstacle_index] = gcy + odom.pose.pose.position.x;
+        obstacle[1][obstacle_index] = gcx + odom.pose.pose.position.y;
+        obstacle_index++;
+        if (obstacle_index >= obstacle_size) obstacle_index = 0;
+
     }
 
 }
@@ -582,6 +615,43 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
 
     PV.potential_value.resize(mapsize);
     
+    // geometry_msgs::Vector3 U_val_coe = U(odom.pose.pose.position.x, odom.pose.pose.position.y);
+    // coe_0 = atan2(U_val_coe.y,U_val_coe.x);
+
+    // std::vector<std::vector<double>> wall;
+    // wall.resize(10);
+
+    // double div = 4.0 / 10.0;
+    // for (int i = 0; i < obstacle_size; i++)
+    // {
+    //     if (obstacle[0][i] < odom.pose.pose.position.x + 1.0 && obstacle[0][i] > odom.pose.pose.position.x - 1.0)
+    //     {
+    //         for (int j = 0; j < 10; j++)
+    //         {
+    //             if (obstacle[1][i] < odom.pose.pose.position.y + (div * double(j) + 0.2) && 
+    //                 obstacle[1][i] > odom.pose.pose.position.y + (div * double(j) - 0.2))
+    //             {
+    //                 wall[j].push_back(obstacle[1][i]);
+    //             }
+    //         }
+    //     }
+        
+    // }
+
+    // coe_0 = 0;
+    // wall_exists = false;
+    // for (int j = 0; j < 10; j++)
+    // {
+    //     if(wall[j].size() > 500)
+    //     {
+    //         wall_exists = true;
+    //         coe_0 = M_PI_4;
+    //         std::cout<< "wall_exists" <<std::endl;
+    //         break;
+    //     }
+    // }
+
+    std::cout<< "coe_0 = " << coe_0 << "[rad] "<< coe_0/M_PI*180 << "[deg]"<<std::endl;
     for (int cellnum=0;cellnum<mapsize;cellnum++)
     {
         double x = cellnum/cols * x_increment + x_min;
@@ -592,14 +662,15 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
         // coe_x = POTENTIAL_BIAS_COEFFICIENT_0;
         // coe_y = POTENTIAL_BIAS_COEFFICIENT_1;
         
-        coe_x = cos(coe_0 + M_PI_2);
-        coe_y = sin(coe_0 + M_PI_2);
+        coe_x = cos(coe_0 + M_PI);
+        coe_y = sin(coe_0 + M_PI);
 
         //std::cout<< "coe_x =" << coe_x << "coe_y =" << coe_y <<std::endl;
 
-        double bias = (coe_x * (x - odom.pose.pose.position.x)) + (coe_y * (y - odom.pose.pose.position.y)) + 1.1;
+        double bias = (coe_x * (x - odom.pose.pose.position.x)) + (coe_y * (y - odom.pose.pose.position.y)) + 1;
+        //bias = 1;
 
-        PV.potential_value[cellnum] = potential_val;// * bias;
+        PV.potential_value[cellnum] = potential_val * bias;
 
         if (x >= odom.pose.pose.position.x - (x_increment*0.9) && x <= odom.pose.pose.position.x + (x_increment*0.9) &&
             y >= odom.pose.pose.position.y - (y_increment*0.9) && y <= odom.pose.pose.position.y + (y_increment*0.9))
@@ -683,6 +754,188 @@ bool in(int num,std::vector<int> vec)
     return false;
 }
 
+double nCr(double n, double r)
+{
+    double top = 1.0;
+    double bottom = 1.0;
+
+    for(double i = 0.0; i < r; i++)
+    {
+        top *= n-i;
+    }
+
+    for(double i = 0.0; i < r; i++)
+    {
+        bottom *= i+1.0;
+    }
+    
+    return top/bottom;
+}
+
+void bezier(std::vector<geometry_msgs::Vector3>& points)
+{
+    std::vector<geometry_msgs::Vector3> points_original = points;
+    int n = points_original.size();
+
+    for (int i = 0; i < n; i++)
+    {
+        points[i].x = points[i].y = 0.0;
+    }
+
+    int bezier_idx = 0;
+    for (double t = 0.0; t <= 1.0; t += 0.1)
+    {
+        points.resize(bezier_idx+1);
+        for (double i = 0.0; i <= n-1.0; i++)
+        {
+            
+            points[bezier_idx].x += nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original[int(i)].x;
+            points[bezier_idx].y += nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original[int(i)].y;
+        }
+        //std::cout<< bezier_idx << " bezier = (" << points[bezier_idx].x << ", " << points[bezier_idx].y << ")" <<std::endl;
+        bezier_idx++;
+    }
+}
+
+void spline(std::vector<geometry_msgs::Vector3>& points)
+{
+	std::vector<geometry_msgs::Vector3> points_original = points;
+    int N = points_original.size() - 1;
+	Eigen::VectorXd x(N+1);
+	Eigen::VectorXd y(N+1);
+
+	for(int j=0; j<N+1; j++)
+	{
+		x[j] = points_original[j].x;
+		y[j] = points_original[j].y;
+	}
+
+	Eigen::VectorXd h(N);
+	for(int j=0; j<N; j++)
+	{
+		h[j] = x[j+1] - x[j];
+	}
+
+	Eigen::VectorXd v(N-1);
+	for(int j=1; j<N; j++)
+	{
+		v[j-1] = 6*(((y[j+1] - y[j])/h[j]) - ((y[j] - y[j-1])/h[j-1]));
+	}
+
+	Eigen::MatrixXd H(N-1, N-1);
+	for(int j=0; j<N-1; j++)
+	{
+		for(int k=0; k<N-1; k++)
+		{
+			if(j == 0)
+			{
+				if(k == 0)
+				{
+					H(j,k) = 2*(h[j] + h[j+1]);
+				}
+				else if (k == 1)
+				{
+					H(j,k) = h[j+1];
+				}
+				else
+				{
+					H(j,k) = 0.0;
+				}
+			}
+			else if(j == N-2)
+			{
+				if(k == N-2)
+				{
+					H(j,k) = 2*(h[j] + h[j+1]);
+				}
+				else if (k == N-3)
+				{
+					H(j,k) = h[j];
+				}
+				else
+				{
+					H(j,k) = 0.0;
+				}
+			}
+			else
+			{
+				if(k == j-1)
+				{
+					H(j,k) = h[j];
+				}
+				else if (k == j)
+				{
+					H(j,k) = 2*(h[j] + h[j+1]);
+				}
+				else if (k == j+1)
+				{
+					H(j,k) = h[j+1];
+				}
+				else
+				{
+					H(j,k) = 0.0;
+				}
+			}
+		}
+	}
+
+	Eigen::FullPivLU<Eigen::MatrixXd> LU(H);
+	Eigen::VectorXd U = LU.solve(v);
+	
+	int U_size = U.size();
+	Eigen::VectorXd u(U_size+2);
+	int idx = 0;
+	for (int i = 0; i < U_size+2; i++)
+	{
+		if(i == 0 || i == U_size+1)
+		{
+			u(i) = 0.0;
+		}
+		else
+		{
+			u(i) = U(idx++);
+		}
+	}
+
+	Eigen::VectorXd a(N);
+	Eigen::VectorXd b(N);
+	Eigen::VectorXd c(N);
+	Eigen::VectorXd d(N);
+	for (int j = 0; j < N; j++)
+	{
+		a(j) = (u(j+1) - u(j)) / (6*(x(j+1) - x(j)));
+		b(j) = u(j) / 2;
+		c(j) = ((y(j+1) - y(j)) / (x(j+1) - x(j))) - ((1.0/6.0)*(x(j+1) - x(j))*(2.0*u(j) + u(j+1)));
+		d(j) = y(j);
+	}
+
+	points.resize(0);
+	for (int j = 0; j < N; j++)
+	{
+		for (double t = x(j); t <= x(j+1); t+=0.1)
+		{
+			geometry_msgs::Vector3 ans;
+			ans.x = t;
+			// if (j == 0 && t == x(j))
+			// {
+			// 	ans.y = ;
+			// }
+			// else if ()
+			// {
+
+			// }
+			// else
+			// {
+
+			// }
+			double x_xj = t - x(j);
+			ans.y = a(j)*pow(x_xj,3) + b(j)*pow(x_xj,2) + c(j)*x_xj + d(j);
+			points.push_back(ans);
+		}
+	}
+
+}
+
 void PotentialMethodClass::path_planning()
 {
 
@@ -742,7 +995,8 @@ void PotentialMethodClass::path_planning()
         }
         else
         {
-            //break;
+            
+            break;
         }
     }
     std::cout<<std::endl;
@@ -759,26 +1013,40 @@ void PotentialMethodClass::path_planning()
         path_score=path_score/double(num);
         std::cout<< "path score = " << path_score <<std::endl;
 
-        if (false && path_score > 15)
+        if (false&&robot_path.size() < 4)
         {
             robot_path.resize(robot_path_tmp.size());
             robot_path = robot_path_tmp;
         }
     }
     
-    if (pathsize < 3 && pathsize > 1)
+    //延長経路
+    // if (pathsize < 3 && pathsize > 1)
+    // {
+    //     double startx = robot_path[pathsize-1].x;
+    //     double starty = robot_path[pathsize-1].y;
+    //     double angle = atan2(robot_path[pathsize-1].y - robot_path[pathsize-2].y, robot_path[pathsize-1].x - robot_path[pathsize-2].x);
+    //     robot_path.resize(pathsize + 5);
+    //     for (int i=0;i<5;i++)
+    //     {
+    //         robot_path[pathsize+i].x = 0.2*(i+1)*cos(angle) + startx;
+    //         robot_path[pathsize+i].y = 0.2*(i+1)*sin(angle) + starty;
+    //     }
+    // }
+
+    bezier(robot_path);
+
+    double angle_sum = 0;
+    for (int i = 0; i < robot_path.size()-1; i++)
     {
-        double startx = robot_path[pathsize-1].x;
-        double starty = robot_path[pathsize-1].y;
-        double angle = atan2(robot_path[pathsize-1].y - robot_path[pathsize-2].y, robot_path[pathsize-1].x - robot_path[pathsize-2].x);
-        robot_path.resize(pathsize + 5);
-        for (int i=0;i<5;i++)
-        {
-            robot_path[pathsize+i].x = 0.2*(i+1)*cos(angle) + startx;
-            robot_path[pathsize+i].y = 0.2*(i+1)*sin(angle) + starty;
-        }
+        angle_sum += atan2(robot_path[i+1].x - robot_path[i].x,robot_path[i+1].y - robot_path[i].y);
     }
 
+    //coe_0 = angle_sum / double(robot_path.size()-1);
+
+    //std::cout<< "coe_0 = " << coe_0 << "[rad] "<< coe_0/M_PI*180 << "[deg]"<<std::endl;
+
+    //if (robot_path.size() >= 3) spline(robot_path);
     PP.data.resize(robot_path.size());
     PP.data = robot_path;
 
@@ -809,7 +1077,7 @@ void PotentialMethodClass::potential()
         //if(sqrt(pow(ans.x,2) + pow(ans.y,2)) != 0.0) period = 0.2;
 
         ros::Time nt = ros::Time::now();
-        if (path_update && (nt.toSec() > path_update_timestamp.toSec() + period || robot_path_index >= robot_path.size()))
+        if ((path_update && (nt.toSec() > path_update_timestamp.toSec() + period || robot_path_index >= robot_path.size())) || wall_exists)
         {
             // robot_path.resize(1);
             robot_path_index = 0;

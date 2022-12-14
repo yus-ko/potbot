@@ -10,6 +10,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <std_msgs/Float32.h>
+#include <autonomous_mobile_robot/ClassificationVelocityData.h>
 
 //クラスの定義
 class PotentialMethodClass{
@@ -24,7 +25,7 @@ class PotentialMethodClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub;
-		ros::Subscriber sub_encoder, sub_scan, sub_coefficient;
+		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster;
         //送信データ
 		ros::NodeHandle nhPub;
         ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP;
@@ -75,8 +76,10 @@ class PotentialMethodClass{
 
         std::vector<double> scan_range_maximum_angle;
         int scan_range_maximum_angle_size = 10, scan_range_maximum_angle_index = 0;
-        bool moving_average = false;
+        bool moving_average = false, wall_exists = false;
         double coe_x, coe_y, coe_0;
+
+        autonomous_mobile_robot::ClassificationVelocityData pcl_cluster;
 
         std::string ROBOT_NAME, PATH_PLANNING_METHOD, PATH_PLANNING_FILE;
         bool IS_SIMULATOR, PUBLISH_COMMAND, ANGLE_CORRECTION, PID_CONTROL, USE_AMCL;
@@ -102,6 +105,7 @@ class PotentialMethodClass{
         void pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg);
         void scan_callback(const sensor_msgs::LaserScan& msg);
         void coefficient_callback(const std_msgs::Float32& msg);
+        void cluster_callback(const autonomous_mobile_robot::ClassificationVelocityData& msg);
         void get_topic();
 
         void manage();

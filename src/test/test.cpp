@@ -35,6 +35,145 @@ ros::Time encoder_time_now, encoder_time_pre;
 // 	//ROS_INFO("subscribe: %d", msg.data);
 // }
 
+void spline(std::vector<geometry_msgs::Vector3>& points)
+{
+	std::vector<geometry_msgs::Vector3> points_original = points;
+    int N = points_original.size() - 1;
+	Eigen::VectorXd x(N+1);
+	Eigen::VectorXd y(N+1);
+
+	for(int j=0; j<N+1; j++)
+	{
+		x[j] = points_original[j].x;
+		y[j] = points_original[j].y;
+	}
+
+	Eigen::VectorXd h(N);
+	for(int j=0; j<N; j++)
+	{
+		h[j] = x[j+1] - x[j];
+	}
+
+	Eigen::VectorXd v(N-1);
+	for(int j=1; j<N; j++)
+	{
+		v[j-1] = 6*(((y[j+1] - y[j])/h[j]) - ((y[j] - y[j-1])/h[j-1]));
+	}
+
+	Eigen::MatrixXd H(N-1, N-1);
+	for(int j=0; j<N-1; j++)
+	{
+		for(int k=0; k<N-1; k++)
+		{
+			if(j == 0)
+			{
+				if(k == 0)
+				{
+					H(j,k) = 2*(h[j] + h[j+1]);
+				}
+				else if (k == 1)
+				{
+					H(j,k) = h[j+1];
+				}
+				else
+				{
+					H(j,k) = 0.0;
+				}
+			}
+			else if(j == N-2)
+			{
+				if(k == N-2)
+				{
+					H(j,k) = 2*(h[j] + h[j+1]);
+				}
+				else if (k == N-3)
+				{
+					H(j,k) = h[j];
+				}
+				else
+				{
+					H(j,k) = 0.0;
+				}
+			}
+			else
+			{
+				if(k == j-1)
+				{
+					H(j,k) = h[j];
+				}
+				else if (k == j)
+				{
+					H(j,k) = 2*(h[j] + h[j+1]);
+				}
+				else if (k == j+1)
+				{
+					H(j,k) = h[j+1];
+				}
+				else
+				{
+					H(j,k) = 0.0;
+				}
+			}
+		}
+	}
+
+	Eigen::FullPivLU<Eigen::MatrixXd> LU(H);
+	Eigen::VectorXd U = LU.solve(v);
+	
+	int U_size = U.size();
+	Eigen::VectorXd u(U_size+2);
+	int idx = 0;
+	for (int i = 0; i < U_size+2; i++)
+	{
+		if(i == 0 || i == U_size+1)
+		{
+			u(i) = 0.0;
+		}
+		else
+		{
+			u(i) = U(idx++);
+		}
+	}
+
+	Eigen::VectorXd a(N);
+	Eigen::VectorXd b(N);
+	Eigen::VectorXd c(N);
+	Eigen::VectorXd d(N);
+	for (int j = 0; j < N; j++)
+	{
+		a(j) = (u(j+1) - u(j)) / (6*(x(j+1) - x(j)));
+		b(j) = u(j) / 2;
+		c(j) = ((y(j+1) - y(j)) / (x(j+1) - x(j))) - ((1.0/6.0)*(x(j+1) - x(j))*(2.0*u(j) + u(j+1)));
+		d(j) = y(j);
+	}
+
+	points.resize(0);
+	for (int j = 0; j < N; j++)
+	{
+		for (double t = x(j); t <= x(j+1); t+=0.1)
+		{
+			geometry_msgs::Vector3 ans;
+			ans.x = t;
+			// if (j == 0 && t == x(j))
+			// {
+			// 	ans.y = ;
+			// }
+			// else if ()
+			// {
+
+			// }
+			// else
+			// {
+
+			// }
+			double x_xj = t - x(j);
+			ans.y = a(j)*pow(x_xj,3) + b(j)*pow(x_xj,2) + c(j)*x_xj + d(j);
+			points.push_back(ans);
+		}
+	}
+
+}
+
 int main(int argc,char **argv){
 	ros::init(argc,argv,"autonomous_mobile_robot_2022_te");
 
@@ -134,6 +273,38 @@ int main(int argc,char **argv){
 	std::cout<<ea(0)*180.0/M_PI<<",";//roll
 	std::cout<<ea(1)*180.0/M_PI<<",";//pitch
 	std::cout<<ea(2)*180.0/M_PI<<std::endl;//yaw
+
+	std::vector<double> path_x = {0,1,2,4,5};
+	std::vector<double> path_y = {0,2,1,4,1};
+	std::vector<geometry_msgs::Vector3> robot_path;
+
+	int size = path_x.size();
+	robot_path.resize(size);
+
+	for (int i = 0; i < size; i++)
+	{
+		robot_path[i].x = path_x[i];
+		robot_path[i].y = path_y[i];
+	}
+
+	spline(robot_path);
+
+	std::cout<< "xx = [";
+	for (int i = 0; i < robot_path.size(); i++)
+	{
+		std::cout<< robot_path[i].x <<" ";
+	}
+	std::cout<< "];" << std::endl;
+
+	std::cout<< "yy = [";
+	for (int i = 0; i < robot_path.size(); i++)
+	{
+		std::cout<< robot_path[i].y <<" ";
+	}
+	std::cout<< "];" << std::endl;
+
+	// std::cout << "x=" << std::endl;
+	// std::cout << x.transpose() << std::endl;
 
     //ros::spin();
 
