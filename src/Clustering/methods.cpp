@@ -121,7 +121,6 @@ void PointCloudClass::Clustering()
     float cX,cY;
 
     int datanum = cloud.data.size();
-    std::cout<< datanum <<std::endl;
     bool added[datanum];
     bool centered[datanum];
     for(int i = 0; i < datanum; i++)

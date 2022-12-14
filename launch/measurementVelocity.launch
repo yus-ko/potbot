@@ -1,0 +1,53 @@
+<launch>
+  <!-- rqt_reconfigure -->
+  <arg name="measurementVelocity/rqt_reconfigure" default="true"/>
+  <!-- output_screen-->
+  <arg name="measurementVelocity/output_screen" default="false"/>
+  <!--weight-->
+  <arg name="measurementVelocity/weight/image" default="1.0"/>
+  <arg name="measurementVelocity/weight/size" default="1.0"/>
+  <arg name="measurementVelocity/weight/gravity" default="1.0"/>
+  <!-- threshold -->
+  <arg name="measurementVelocity/trackThreshold" default="3"/><!-- 関係ない -->
+  <!-- debug -->
+  <arg name="measurementVelocity/debugType" default="1"/>
+  <arg name="measurementVelocity/timeRange" default="5"/>
+  <arg name="measurementVelocity/timeInteval" default="0.5"/><!-- 1.0 -->
+  <!-- <arg name="robot_name"        default="robot2"/> -->
+  <!-- <group ns="$(arg robot_name)"> -->
+  <group if="$(arg measurementVelocity/output_screen)">
+    <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_mv" type="autonomous_mobile_robot_2022_mv" respawn="true" output="screen">
+      <param name="measurementVelocity/debugType" value="$(arg measurementVelocity/debugType)"/>
+      <!--weight parameter-->
+      <param name="measurementVelocity/weight/image" value="$(arg measurementVelocity/weight/image)"/>
+      <param name="measurementVelocity/weight/size" value="$(arg measurementVelocity/weight/size)"/>
+      <param name="measurementVelocity/weight/gravity" value="$(arg measurementVelocity/weight/gravity)"/>
+      <!-- track threshold -->
+      <param name="measurementVelocity/trackThreshold" value="$(arg measurementVelocity/trackThreshold)"/>
+      <!-- debug -->
+      <param name="measurementVelocity/debugType" value="$(arg measurementVelocity/debugType)"/>
+      <param name="measurementVelocity/timeRange" value="$(arg measurementVelocity/timeRange)"/>
+      <param name="measurementVelocity/timeInteval" value="$(arg measurementVelocity/timeInteval)"/>
+      <!-- rqt_reconfigure -->
+      <param name="measurementVelocity/rqt_reconfigure" value="$(arg measurementVelocity/rqt_reconfigure)"/>
+    </node>
+  </group>
+  <group unless="$(arg measurementVelocity/output_screen)">
+    <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_mv" type="autonomous_mobile_robot_2022_mv" respawn="true">
+      <param name="measurementVelocity/debugType" value="$(arg measurementVelocity/debugType)"/>
+      <!--weight parameter-->
+      <param name="measurementVelocity/weight/image" value="$(arg measurementVelocity/weight/image)"/>
+      <param name="measurementVelocity/weight/size" value="$(arg measurementVelocity/weight/size)"/>
+      <param name="measurementVelocity/weight/gravity" value="$(arg measurementVelocity/weight/gravity)"/>
+      <!-- track threshold -->
+      <param name="measurementVelocity/trackThreshold" value="$(arg measurementVelocity/trackThreshold)"/>
+      <!-- debug -->
+      <param name="measurementVelocity/debugType" value="$(arg measurementVelocity/debugType)"/>
+      <param name="measurementVelocity/timeRange" value="$(arg measurementVelocity/timeRange)"/>
+      <param name="measurementVelocity/timeInteval" value="$(arg measurementVelocity/timeInteval)"/>
+      <!-- rqt_reconfigure -->
+      <param name="measurementVelocity/rqt_reconfigure" value="$(arg measurementVelocity/rqt_reconfigure)"/>
+    </node>
+  </group>
+  <!-- </group> -->
+</launch>

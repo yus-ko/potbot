@@ -1,0 +1,54 @@
+<launch>
+ <!--camera-->
+ <arg name="camera/focus" default="370.985"/>
+ <arg name="camera/cameraHeight" value="0.5"/>
+ <!-- lrf -->
+ <arg name="lrf/sensorHigh" value="0.2"/>
+ <!--map-->
+ <arg name="localMap/width/float" default="4.6"/><!--2.3  -->
+ <arg name="localMap/height/float" default="12.0"/><!--6.0  -->
+ <arg name="localMap/resolution" default="0.05"/>
+ <!-- output_screen -->
+ <arg name="lrfCamera/output_screen" default="false"/>
+ <!--node-->
+ <!--stereo camera-->
+ <group if="$(arg lrfCamera/output_screen)">
+   <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_sc" type="autonomous_mobile_robot_2022_sc" output="screen" >
+     <param name="camera/focus" value="$(arg camera/focus)"/>
+     <param name="camera/cameraHeight" value="$(arg camera/cameraHeight)"/>
+     <!--map parameter-->
+     <param name="localMap/width/float" value="$(arg localMap/width/float)"/>
+     <param name="localMap/height/float" value="$(arg localMap/height/float)"/>
+     <param name="localMap/resolution" value="$(arg localMap/resolution)"/>
+   </node>
+ </group>
+ <group unless="$(arg lrfCamera/output_screen)">
+   <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_sc" type="autonomous_mobile_robot_2022_sc" >
+     <param name="camera/focus" value="$(arg camera/focus)"/>
+     <param name="camera/cameraHeight" value="$(arg camera/cameraHeight)"/>
+     <!--map parameter-->
+     <param name="localMap/width/float" value="$(arg localMap/width/float)"/>
+     <param name="localMap/height/float" value="$(arg localMap/height/float)"/>
+     <param name="localMap/resolution" value="$(arg localMap/resolution)"/>
+   </node>
+ </group>
+ <!--laser range finder-->
+ <!-- <group if="$(arg lrfCamera/output_screen)"> -->
+   <!-- <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_lrf" type="autonomous_mobile_robot_2022_lrf" output="screen" > -->
+     <!-- <param name="lrf/sensorHigh" value="$(arg lrf/sensorHigh)"/> -->
+     <!-- map parameter -->
+     <!-- <param name="localMap/width/float" value="$(arg localMap/width/float)"/> -->
+     <!-- <param name="localMap/height/float" value="$(arg localMap/height/float)"/> -->
+     <!-- <param name="localMap/resolution" value="$(arg localMap/resolution)"/> -->
+   <!-- </node> -->
+ <!-- </group> -->
+ <!-- <group unless="$(arg lrfCamera/output_screen)"> -->
+   <!-- <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_lrf" type="autonomous_mobile_robot_2022_lrf" > -->
+     <!-- <param name="lrf/sensorHigh" value="$(arg lrf/sensorHigh)"/> -->
+     <!-- map parameter -->
+     <!-- <param name="localMap/width/float" value="$(arg localMap/width/float)"/> -->
+     <!-- <param name="localMap/height/float" value="$(arg localMap/height/float)"/> -->
+     <!-- <param name="localMap/resolution" value="$(arg localMap/resolution)"/> -->
+   <!-- </node> -->
+ <!-- </group> -->
+</launch>

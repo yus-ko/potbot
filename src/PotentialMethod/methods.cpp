@@ -50,7 +50,7 @@ void PotentialMethodClass::coefficient_callback(const std_msgs::Float32& msg)
     coe_0 = msg.data;
 }
 
-void PotentialMethodClass::cluster_callback(const autonomous_mobile_robot::ClassificationVelocityData& msg)
+void PotentialMethodClass::cluster_callback(const autonomous_mobile_robot_2022::ClassificationVelocityData& msg)
 {
 
     pcl_cluster = msg;

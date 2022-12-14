@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   #dynamixel_sdk_examples
   #obstacle_detection_2019
   visualization_msgs
-  autonomous_mobile_robot
+  #autonomous_mobile_robot
 )
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
@@ -59,8 +59,13 @@ find_package(PCL REQUIRED)
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  ClassificationData.msg
+  ClassificationElement.msg
+  ClassificationVelocityData.msg
   synchronizedImage.msg
   MaskImageData.msg
+  ImageMatchingData.msg
+  ImageFlow2D.msg
   SensorMapData.msg
   #BridgeImageData.msg
   PointCloudData.msg
@@ -144,11 +149,27 @@ include_directories(
 #   src/${PROJECT_NAME}/autonomous_mobile_robot_2022.cpp
 # )
 
+add_executable(${PROJECT_NAME}_cc # classification
+  src/classification/constructor.cpp
+  src/classification/methods.cpp
+  src/classification/debug_main.cpp
+  src/classification/debug_methods.cpp
+  src/classification/property.cpp
+)
+
 add_executable(${PROJECT_NAME}_sc # stereo camera 
   src/convCamData/constructor.cpp
   src/convCamData/methods.cpp
   src/convCamData/debug_main.cpp
   src/convCamData/property.cpp
+)
+
+add_executable(${PROJECT_NAME}_mv # measure Velocity
+ src/measureVelocity/constructor.cpp
+ src/measureVelocity/methods.cpp
+ src/measureVelocity/debug_main.cpp
+ src/measureVelocity/debug_methods.cpp
+ src/measureVelocity/property.cpp
 )
 
 add_executable(${PROJECT_NAME}_si # point cloud
@@ -164,6 +185,22 @@ add_executable(${PROJECT_NAME}_frm # manage
   src/frameRateManagement/debug_main.cpp
   src/frameRateManagement/debug_methods.cpp
   src/frameRateManagement/property.cpp
+)
+
+add_executable(${PROJECT_NAME}_im # image matching
+   src/imageMatching/constructor.cpp
+   src/imageMatching/methods.cpp
+   src/imageMatching/debug_main.cpp
+   src/imageMatching/debug_methods.cpp
+   src/imageMatching/property.cpp
+ )
+
+add_executable(${PROJECT_NAME}_estimate # manage
+  src/estimationVelocity/constructor.cpp
+  src/estimationVelocity/methods.cpp
+  src/estimationVelocity/debug_main.cpp
+  src/estimationVelocity/property.cpp
+  src/estimationVelocity/debug_methods.cpp
 )
 
 add_executable(${PROJECT_NAME}_pc # manage
@@ -208,9 +245,13 @@ add_executable(${PROJECT_NAME}_tf # manage
   src/tf/property.cpp
 )
 
+add_dependencies(${PROJECT_NAME}_cc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_sc ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_mv ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_si ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_frm ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_im ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_estimate ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_pc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_rc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_pm ${PROJECT_NAME}_generate_messages_cpp)
@@ -218,9 +259,13 @@ add_dependencies(${PROJECT_NAME}_te ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_rv ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_tf ${PROJECT_NAME}_generate_messages_cpp)
 
-target_link_libraries(${PROJECT_NAME}_sc ${catkin_LIBRARIES}) # stereo camera 
+target_link_libraries(${PROJECT_NAME}_cc ${catkin_LIBRARIES}) # classification
+target_link_libraries(${PROJECT_NAME}_sc ${catkin_LIBRARIES}) # stereo camera
+target_link_libraries(${PROJECT_NAME}_mv ${catkin_LIBRARIES} ) # measurement velocity 
 target_link_libraries(${PROJECT_NAME}_si ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}) # synchro image
 target_link_libraries(${PROJECT_NAME}_frm ${catkin_LIBRARIES} ) # manege 
+target_link_libraries(${PROJECT_NAME}_im ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}) # image matching
+target_link_libraries(${PROJECT_NAME}_estimate ${catkin_LIBRARIES} ) # estimate 
 target_link_libraries(${PROJECT_NAME}_pc ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_rc ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_pm ${catkin_LIBRARIES} )
