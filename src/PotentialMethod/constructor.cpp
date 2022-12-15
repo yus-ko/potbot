@@ -85,27 +85,22 @@ PotentialMethodClass::PotentialMethodClass()
 	{
 		if(IS_SIMULATOR)
 		{
-			sub_encoder=nhSub.subscribe("/vmegarover/diff_drive_controller/odom",1,&PotentialMethodClass::encoder_callback_sim,this);
+			if (!USE_AMCL) sub_encoder=nhSub.subscribe("/vmegarover/diff_drive_controller/odom",1,&PotentialMethodClass::encoder_callback_sim,this);
 			if(PUBLISH_COMMAND) pub_cmd= nhPub.advertise<geometry_msgs::Twist>("/vmegarover/diff_drive_controller/cmd_vel", 1);
 		}
 		else
 		{
-			sub_encoder=nhSub.subscribe("/rover_odo",1,&PotentialMethodClass::encoder_callback,this);
+			if (!USE_AMCL) sub_encoder=nhSub.subscribe("/rover_odo",1,&PotentialMethodClass::encoder_callback,this);
 			if(PUBLISH_COMMAND) pub_cmd= nhPub.advertise<geometry_msgs::Twist>("/rover_twist", 1);
 		}
 	}
 	else if (robot_id == 1)
 	{
-		if (USE_AMCL)
-		{
-			sub_encoder = nhSub.subscribe("/amcl_pose", 1, &PotentialMethodClass::pwcs_callback, this);
-		}
-		else
-		{
-			sub_encoder = nhSub.subscribe("/odom", 1, &PotentialMethodClass::encoder_callback_sim, this);
-		}
+		if (!USE_AMCL) sub_encoder = nhSub.subscribe("/odom", 1, &PotentialMethodClass::encoder_callback_sim, this);
 		if(PUBLISH_COMMAND) pub_cmd = nhPub.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 	}
+
+	if (USE_AMCL) sub_encoder = nhSub.subscribe("/amcl_pose", 1, &PotentialMethodClass::pwcs_callback, this);
 
 	sub_cluster = nhSub.subscribe("classificationDataEstimateVelocity", 1, &PotentialMethodClass::cluster_callback, this);
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PotentialMethodClass::coefficient_callback, this);

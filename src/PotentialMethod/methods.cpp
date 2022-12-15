@@ -423,7 +423,7 @@ void PotentialMethodClass::transform_obstacle_pos()
         double angle = i * scan.angle_increment + scan.angle_min + odom.pose.pose.orientation.z;
         double distance = scan.ranges[i] + scan.range_min;
 
-        if (!isinf(scan.ranges[i]))
+        if (!isinf(scan.ranges[i]) && distance >= 0.05)
         {
             
 
@@ -476,13 +476,15 @@ void PotentialMethodClass::transform_obstacle_pos()
     {
         double gcx = pcl_cluster.data[i].gc.x;
         double gcy = pcl_cluster.data[i].gc.y;
-        //std::cout<< i << " (x,y) = (" << gcx << ", " << gcy<< ")" <<std::endl;
+        if (sqrt(pow(gcx,2.0) + pow(gcy,2.0)) >= 0.05)
+        {
+            //std::cout<< i << " (x,y) = (" << gcx << ", " << gcy<< ")" <<std::endl;
 
-        obstacle[0][obstacle_index] = gcy + odom.pose.pose.position.x;
-        obstacle[1][obstacle_index] = gcx + odom.pose.pose.position.y;
-        obstacle_index++;
-        if (obstacle_index >= obstacle_size) obstacle_index = 0;
-
+            obstacle[0][obstacle_index] = gcy + odom.pose.pose.position.x;
+            obstacle[1][obstacle_index] = gcx + odom.pose.pose.position.y;
+            obstacle_index++;
+            if (obstacle_index >= obstacle_size) obstacle_index = 0;
+        }
     }
 
 }
@@ -668,7 +670,7 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
         //std::cout<< "coe_x =" << coe_x << "coe_y =" << coe_y <<std::endl;
 
         double bias = (coe_x * (x - odom.pose.pose.position.x)) + (coe_y * (y - odom.pose.pose.position.y)) + 1;
-        //bias = 1;
+        bias = 1;
 
         PV.potential_value[cellnum] = potential_val * bias;
 

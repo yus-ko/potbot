@@ -1,19 +1,19 @@
 <launch>
  <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_pm" type="autonomous_mobile_robot_2022_pm" output="screen">
-  <param name="ROBOT_NAME" value="turtlebot3"/>
+  <param name="ROBOT_NAME" value="megarover"/>
   <!--megarover turtlebot3-->
   <param name="PATH_PLANNING_METHOD" value="potential_method"/>
   <!--potential_method csv-->
   <param name="PATH_PLANNING_FILE" value="$(find autonomous_mobile_robot_2022)/path/-sin.csv"/>
-  <param name="USE_AMCL" value="false"/>
+  <param name="USE_AMCL" value="true"/>
   <param name="IS_SIMULATOR" value="true"/>
   <param name="PUBLISH_COMMAND" value="true"/>
   <param name="PID_CONTROL" value="false"/>
   <param name="ANGLE_CORRECTION" value="true"/>
   <param name="MAX_VELOCITY" value="0.5"/>
   <param name="MAX_ANGULAR" value="3.141592653589793"/>
-  <param name="TARGET_POSITION_X" value="6.0"/><!--DESTINATION  -9.5, -8.0-->
-  <param name="TARGET_POSITION_Y" value="0.0"/>
+  <param name="TARGET_POSITION_X" value="-9.5"/><!--DESTINATION  -9.5, -8.0-->
+  <param name="TARGET_POSITION_Y" value="-8.0"/>
   <param name="GAIN_PROPORTIONAL" value="1.0"/>
   <param name="GAIN_INTEGRAL" value="10.0"/>
   <param name="GAIN_DIFFERENTIAL" value="0.001"/>
