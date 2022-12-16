@@ -23,6 +23,7 @@
   <param name="POTENTIAL_FIELD_WIDTH" value="2"/>
   <param name="POTENTIAL_FIELD_DIVDE_X" value="20"/>
   <param name="POTENTIAL_FIELD_DIVDE_Y" value="20"/>
+  <param name="CALCULATE_BIAS" value="true"/>
   <param name="POTENTIAL_BIAS_COEFFICIENT_0" value="-1.0"/>
   <param name="POTENTIAL_BIAS_COEFFICIENT_1" value="0.5"/>
  </node>

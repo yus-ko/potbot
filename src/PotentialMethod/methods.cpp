@@ -669,8 +669,8 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
 
         //std::cout<< "coe_x =" << coe_x << "coe_y =" << coe_y <<std::endl;
 
-        double bias = (coe_x * (x - odom.pose.pose.position.x)) + (coe_y * (y - odom.pose.pose.position.y)) + 1;
-        bias = 1;
+        double bias = 1;
+        if (CALCULATE_BIAS) bias = (coe_x * (x - odom.pose.pose.position.x)) + (coe_y * (y - odom.pose.pose.position.y)) + 1;
 
         PV.potential_value[cellnum] = potential_val * bias;
 
