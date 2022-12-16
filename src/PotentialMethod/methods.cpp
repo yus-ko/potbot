@@ -233,20 +233,37 @@ void PotentialMethodClass::manage()
 //pure pursuite法
 void PotentialMethodClass::line_following()
 {
-    geometry_msgs::Vector3 sub_goal = robot_path[robot_path_index];
     int robot_path_size = robot_path.size();
-    //std::cout<< "robot_path_size = " << robot_path_size <<std::endl;
-    //std::cout<< "robot_path_index = " << robot_path_index <<std::endl;
+    std::cout<< "robot_path_size = " << robot_path_size <<std::endl;
+    std::cout<< "robot_path_index = " << robot_path_index <<std::endl;
 
     double margin = PATH_TRACKING_MARGIN;
     //if (robot_path_index >= robot_path_size - 1) margin = 0.1;
 
-    double l_d = sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2) + pow(odom.pose.pose.position.y - sub_goal.y,2));
-    if (l_d <= margin)
-    //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
+    geometry_msgs::Vector3 sub_goal;
+    double l_d;
+    path_update = false;
+    while(true)
     {
-        robot_path_index++;
+        sub_goal = robot_path[robot_path_index];
+        l_d = sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2) + pow(odom.pose.pose.position.y - sub_goal.y,2));
+        if (l_d <= margin)
+        //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
+        {
+            robot_path_index++;
+            if (robot_path_index >= robot_path_size-2)
+            {
+                path_update = true;
+                break;
+            }
+        }
+        else
+        {
+            break;
+        }
     }
+
+    
 
     cmd.linear.x = cmd.linear.y = cmd.linear.z = 0.0;
     cmd.angular.x = cmd.angular.y = cmd.angular.z = 0.0;
@@ -265,7 +282,7 @@ void PotentialMethodClass::line_following()
         }
         else
         {
-            path_update = true;
+            //path_update = true;
         }
     
     }
@@ -415,6 +432,7 @@ void PotentialMethodClass::transform_obstacle_pos()
     double maximum = 0;
     double maximum_angle;
     double diff_angle_min = 99999999;
+    double angle_sensor = 0;
     double angle_to_goal = atan2(TARGET_POSITION_Y - odom.pose.pose.position.y,TARGET_POSITION_X - odom.pose.pose.position.x);
 
     for (int i = 0; i < size; i++)
@@ -440,13 +458,17 @@ void PotentialMethodClass::transform_obstacle_pos()
             }
         }
 
-        if (scan.ranges[i] >= 2.5 && abs(angle - angle_to_goal) < diff_angle_min)
+        double tmp_angle = abs(angle - angle_to_goal);
+        if (scan.ranges[i] >= 2.5 && tmp_angle < diff_angle_min)
         {
-            coe_0 = angle - odom.pose.pose.orientation.z;
+            diff_angle_min = tmp_angle;
+            angle_sensor = angle - odom.pose.pose.orientation.z;
         }
 
         
     }
+
+    coe_0 = 0.5*angle_sensor + 0.5*odom.pose.pose.orientation.z;
 
     //移動平均
     scan_range_maximum_angle[scan_range_maximum_angle_index++] = maximum_angle;
@@ -653,7 +675,7 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
     //     }
     // }
 
-    std::cout<< "coe_0 = " << coe_0 << "[rad] "<< coe_0/M_PI*180 << "[deg]"<<std::endl;
+    //std::cout<< "coe_0 = " << coe_0 << "[rad] "<< coe_0/M_PI*180 << "[deg]"<<std::endl;
     for (int cellnum=0;cellnum<mapsize;cellnum++)
     {
         double x = cellnum/cols * x_increment + x_min;
@@ -714,6 +736,7 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
 void PotentialMethodClass::create_exploration_idx(int width)
 {
     int idx = 0;
+    exploration_arr.resize(idx);
 
     for (int i=width; i>0; i--)
     {
@@ -776,6 +799,22 @@ double nCr(double n, double r)
 
 void bezier(std::vector<geometry_msgs::Vector3>& points)
 {
+    // https://www.f.waseda.jp/moriya/PUBLIC_HTML/education/classes/infomath6/applet/fractal/spline/
+
+    std::cout<< "plot([";
+    for(int i = 0; i < points.size(); i++)
+    {
+        std::cout<< points[i].x << " ";
+    }
+    std::cout<<"],";
+    std::cout<< "[";
+    for(int i = 0; i < points.size(); i++)
+    {
+        std::cout<< points[i].y << " ";
+    }
+    std::cout<<"])"<< std::endl;
+
+
     std::vector<geometry_msgs::Vector3> points_original = points;
     int n = points_original.size();
 
@@ -801,6 +840,9 @@ void bezier(std::vector<geometry_msgs::Vector3>& points)
 
 void spline(std::vector<geometry_msgs::Vector3>& points)
 {
+    // http://www.yamamo10.jp/yamamoto/lecture/2006/5E/interpolation/interpolation_html/node3.html
+    // 高橋大輔.数値計算.岩波書店,1996.pp43-49
+
 	std::vector<geometry_msgs::Vector3> points_original = points;
     int N = points_original.size() - 1;
 	Eigen::VectorXd x(N+1);
@@ -967,6 +1009,7 @@ void PotentialMethodClass::path_planning()
 
         double p_min = std::numeric_limits<double>::infinity();
         int width = 2;
+        bool exist_p_min = false;
         while (width == 2)
         //while (p_min > 1000)
         {
@@ -977,6 +1020,7 @@ void PotentialMethodClass::path_planning()
                 
                 if (PV.potential_value[idx] < p_min) 
                 {
+                    exist_p_min = true;
                     p_min_idx = idx;
                     p_min = PV.potential_value[idx];
                 }
@@ -984,7 +1028,7 @@ void PotentialMethodClass::path_planning()
             }
         }
         
-        if (!in(p_min_idx, centered))
+        if (!in(p_min_idx, centered) && exist_p_min)
         {
             robot_path.resize(pathindex+1);
             robot_path[pathindex].x   = p_min_idx/PV.cols * PV.x_increment + PV.x_min;
@@ -997,7 +1041,6 @@ void PotentialMethodClass::path_planning()
         }
         else
         {
-            
             break;
         }
     }
@@ -1079,7 +1122,8 @@ void PotentialMethodClass::potential()
         //if(sqrt(pow(ans.x,2) + pow(ans.y,2)) != 0.0) period = 0.2;
 
         ros::Time nt = ros::Time::now();
-        if ((path_update && (nt.toSec() > path_update_timestamp.toSec() + period || robot_path_index >= robot_path.size())) || wall_exists)
+        //if ((path_update && (nt.toSec() > path_update_timestamp.toSec() + period || robot_path_index >= robot_path.size())) || wall_exists)
+        if (path_update)
         {
             // robot_path.resize(1);
             robot_path_index = 0;
