@@ -247,7 +247,7 @@ void PotentialMethodClass::line_following()
     {
         sub_goal = robot_path[robot_path_index];
         l_d = sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2) + pow(odom.pose.pose.position.y - sub_goal.y,2));
-        if (l_d <= margin)
+        if (l_d <= margin || (sub_goal.x - odom.pose.pose.position.x < AHEAD_PATH))
         //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
         {
             robot_path_index++;
@@ -441,7 +441,7 @@ void PotentialMethodClass::transform_obstacle_pos()
         double angle = i * scan.angle_increment + scan.angle_min + odom.pose.pose.orientation.z;
         double distance = scan.ranges[i] + scan.range_min;
 
-        if (!isinf(scan.ranges[i]) && distance >= 0.05)
+        if (!isinf(scan.ranges[i]) && distance >= EXCLUDE_LRF)
         {
             
 
@@ -468,7 +468,7 @@ void PotentialMethodClass::transform_obstacle_pos()
         
     }
 
-    coe_0 = 0.5*angle_sensor + 0.5*odom.pose.pose.orientation.z;
+    coe_0 = 0.9*angle_sensor + 0.05*odom.pose.pose.orientation.z;
 
     //移動平均
     scan_range_maximum_angle[scan_range_maximum_angle_index++] = maximum_angle;
@@ -1045,6 +1045,25 @@ void PotentialMethodClass::path_planning()
         }
     }
     std::cout<<std::endl;
+    
+    int i = 1;
+    double th = sqrt(pow(0.25,2)+pow(0.25,2));
+    while(i < robot_path.size())
+    {
+        if (sqrt(pow(robot_path[i].x - robot_path[i-1].x,2) + pow(robot_path[i].y - robot_path[i-1].y,2)) > th)
+        {
+            for (int j = i; j < robot_path.size()-1; j++)
+            {
+                robot_path[j] = robot_path[j+1];
+            }
+            robot_path.resize(robot_path.size()-1);
+            i = 1;
+        }
+        else
+        {
+            i++;
+        }
+    }
 
     int pathsize = robot_path_tmp.size();
     if (pathsize > 0)

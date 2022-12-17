@@ -27,5 +27,6 @@ void PotentialMethodClass::setLaunchParam(){
     n.getParam("CALCULATE_BIAS",CALCULATE_BIAS);
     n.getParam("POTENTIAL_BIAS_COEFFICIENT_0",POTENTIAL_BIAS_COEFFICIENT_0);
     n.getParam("POTENTIAL_BIAS_COEFFICIENT_1",POTENTIAL_BIAS_COEFFICIENT_1);
-
+    n.getParam("AHEAD_PATH",AHEAD_PATH);
+    n.getParam("EXCLUDE_LRF",EXCLUDE_LRF);
 }

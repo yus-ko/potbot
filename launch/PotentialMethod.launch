@@ -26,5 +26,7 @@
   <param name="CALCULATE_BIAS" value="true"/>
   <param name="POTENTIAL_BIAS_COEFFICIENT_0" value="-1.0"/>
   <param name="POTENTIAL_BIAS_COEFFICIENT_1" value="0.5"/>
+  <param name="AHEAD_PATH" value="0.3"/>
+  <param name="EXCLUDE_LRF" value="0.05"/>
  </node>
 </launch>
