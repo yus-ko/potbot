@@ -992,13 +992,9 @@ void PotentialMethodClass::path_planning()
     int exploration_size = exploration_arr.size();
     int idx,p_min_idx,cnt=0,cnt_max=sqrt(pow(PV.cols,2)+pow(PV.rows,2))/2;
     int center = PV.robot_position;
-    double x_robot = center/PV.cols * PV.x_increment + PV.x_min;
-    double y_robot = center%PV.cols * PV.y_increment + PV.y_min;
     centered.resize(1);
     centered[0] = {center};
-    double x_pre = std::numeric_limits<double>::infinity();
-    double y_pre = 0;
-
+    
     while (true)
     {
         double x = center/PV.cols * PV.x_increment + PV.x_min;
@@ -1009,33 +1005,24 @@ void PotentialMethodClass::path_planning()
         //     continue;
         // }
 
-        if (x <= PV.x_min || x >= PV.x_max || y <= PV.y_min || y >= PV.y_max || cnt > 5) break;
+        if (x <= PV.x_min || x >= PV.x_max || y <= PV.y_min || y >= PV.y_max || cnt > cnt_max) break;
 
-        
+        double p_min = std::numeric_limits<double>::infinity();
         int width = 2;
         bool exist_p_min = false;
         while (width == 2)
         //while (p_min > 1000)
         {
             create_exploration_idx(width++);
-            double p_min = std::numeric_limits<double>::infinity();
             for (int i=0; i<exploration_arr.size(); i++)
             {
                 idx = center+exploration_arr[i];
-                if (!in(idx, centered))
+                
+                if (PV.potential_value[idx] < p_min) 
                 {
-                    double x_tmp = idx/PV.cols * PV.x_increment + PV.x_min;
-                    double y_tmp = idx%PV.cols * PV.y_increment + PV.y_min;
-                    double positiondiff = sqrt(pow(TARGET_POSITION_X - x_tmp,2) + pow(TARGET_POSITION_Y - y_tmp,2));
-                    double posediff = abs(atan2(y_tmp-y_pre,x_tmp-x_pre) - odom.pose.pose.orientation.z);
-                    double J = 0.1*PV.potential_value[idx] + positiondiff + posediff;
-
-                    if (J < p_min) 
-                    {
-                        exist_p_min = true;
-                        p_min_idx = idx;
-                        p_min = J;
-                    }
+                    exist_p_min = true;
+                    p_min_idx = idx;
+                    p_min = PV.potential_value[idx];
                 }
                 
             }
@@ -1044,13 +1031,8 @@ void PotentialMethodClass::path_planning()
         if (!in(p_min_idx, centered) && exist_p_min)
         {
             robot_path.resize(pathindex+1);
-            double x_tmp = p_min_idx/PV.cols * PV.x_increment + PV.x_min;
-            double y_tmp = p_min_idx%PV.cols * PV.y_increment + PV.y_min;
-            robot_path[pathindex].x   = x_tmp;
-            robot_path[pathindex++].y = y_tmp;
-            double x_pre = x_tmp;
-            double y_pre = y_tmp;
-            
+            robot_path[pathindex].x   = p_min_idx/PV.cols * PV.x_increment + PV.x_min;
+            robot_path[pathindex++].y = p_min_idx%PV.cols * PV.y_increment + PV.y_min;
             center = p_min_idx;
             std::cout<< center << ", ";
             centered.resize(centered.size()+1);
@@ -1115,8 +1097,8 @@ void PotentialMethodClass::path_planning()
     //         robot_path[pathsize+i].y = 0.2*(i+1)*sin(angle) + starty;
     //     }
     // }
-    
-    if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
+
+    bezier(robot_path);
 
     double angle_sum = 0;
     for (int i = 0; i < robot_path.size()-1; i++)
