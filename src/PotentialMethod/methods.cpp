@@ -182,7 +182,7 @@ void PotentialMethodClass::manage()
         publishodom();
         // publishShortestDistance();
         publishPotentialValue();
-        publishPathPlan();
+        
     }
 }
 
@@ -247,7 +247,7 @@ void PotentialMethodClass::line_following()
     {
         sub_goal = robot_path[robot_path_index];
         l_d = sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2) + pow(odom.pose.pose.position.y - sub_goal.y,2));
-        if (l_d <= margin || (sub_goal.x - odom.pose.pose.position.x < AHEAD_PATH))
+        if (l_d <= margin)// || (sub_goal.x - odom.pose.pose.position.x < AHEAD_PATH))
         //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
         {
             robot_path_index++;
@@ -276,7 +276,7 @@ void PotentialMethodClass::line_following()
         cmd.angular.z = 2*cmd.linear.x*sin(alpha)/l_d;
         if(abs(cmd.angular.z) > M_PI_2)
         {
-            cmd.linear.x = 0.0;
+            //cmd.linear.x = 0.0;
             // path_update_timestamp = ros::Time::now();
             // path_update = false;
         }
@@ -843,7 +843,75 @@ void spline(std::vector<geometry_msgs::Vector3>& points)
     // http://www.yamamo10.jp/yamamoto/lecture/2006/5E/interpolation/interpolation_html/node3.html
     // 高橋大輔.数値計算.岩波書店,1996.pp43-49
 
-	std::vector<geometry_msgs::Vector3> points_original = points;
+
+
+
+    // geometry_msgs::Vector3 end = *points.end();
+    // geometry_msgs::Vector3 begin = *points.begin();
+    // double xdiff = abs(points[points.size()-1].x - points[0].x);
+    // double ydiff = abs(points[points.size()-1].y - points[0].y);
+    // ROS_INFO("xdiff:%f     ydiff:%f",xdiff,ydiff);
+    // std::vector<geometry_msgs::Vector3> points_original;
+
+    // if (xdiff > ydiff)
+    // {
+    //     points_original = points;
+    // }
+    // else
+    // {
+    //     points_original.resize(points.size());
+    //     int i = 0;
+    //     for (geometry_msgs::Vector3 p : points)
+    //     {
+    //         std::cout<< "points =\n" << p <<std::endl;
+    //         points_original[i].x = p.y;
+    //         points_original[i].y = p.x;
+    //         points_original[i].z = p.z;
+    //         std::cout<< "points_original =\n" << points_original[i] <<std::endl;
+    //         i++;
+    //     }
+    // }
+
+
+
+    // std::vector<geometry_msgs::Vector3> points_original;
+    // points_original.resize(points.size());
+    // int i = 0;
+    // for (geometry_msgs::Vector3 p : points)
+    // {
+    //     std::cout<< "points =\n" << p <<std::endl;
+    //     points_original[i].x = p.y;
+    //     points_original[i].y = p.x;
+    //     points_original[i].z = p.z;
+    //     std::cout<< "points_original =\n" << points_original[i] <<std::endl;
+    //     i++;
+    // }
+
+
+
+
+    // std::vector<geometry_msgs::Vector3> points_original;
+    // points_original.resize(points.size());
+    // int size = points.size()-1;
+    // for(int i = 0; i < size; i++)
+    // {
+    //     double xdiff = abs(points[i+1].x - points[i].x);
+    //     double ydiff = abs(points[i+1].y - points[i].y);
+    //     if (xdiff > ydiff)
+    //     {
+    //         points_original[i] = points[i];
+    //     }
+    //     else
+    //     {
+    //         points_original[i].x = points[i].y;
+    //         points_original[i].y = points[i].x;
+    //         points_original[i].z = points[i].z;
+    //     }
+    // }
+
+
+    std::vector<geometry_msgs::Vector3> points_original = points;
+
     int N = points_original.size() - 1;
 	Eigen::VectorXd x(N+1);
 	Eigen::VectorXd y(N+1);
@@ -956,7 +1024,8 @@ void spline(std::vector<geometry_msgs::Vector3>& points)
 	points.resize(0);
 	for (int j = 0; j < N; j++)
 	{
-		for (double t = x(j); t <= x(j+1); t+=0.1)
+        double increase = (x(j+1) - x(j)) / 10;
+		for (double t = x(j); t < x(j+1); t+=increase)
 		{
 			geometry_msgs::Vector3 ans;
 			ans.x = t;
@@ -1116,7 +1185,18 @@ void PotentialMethodClass::path_planning()
     //     }
     // }
     
-    if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
+    //if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
+
+    bool use_spline = true;
+    for(int i = 1; i < robot_path.size(); i++)
+    {
+        if (robot_path[i].x == robot_path[i-1].x)
+        {
+            use_spline = false;
+            break;
+        }
+    }
+    if (use_spline) spline(robot_path);
 
     double angle_sum = 0;
     for (int i = 0; i < robot_path.size()-1; i++)
@@ -1134,6 +1214,8 @@ void PotentialMethodClass::path_planning()
 
     PV.path_plan.resize(centered.size());
     PV.path_plan = centered;
+
+    publishPathPlan();
     
 }
 

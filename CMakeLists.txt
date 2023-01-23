@@ -245,6 +245,13 @@ add_executable(${PROJECT_NAME}_tf # manage
   src/tf/property.cpp
 )
 
+add_executable(${PROJECT_NAME}_lo # manage
+  src/Localization/constructor.cpp
+  src/Localization/methods.cpp
+  src/Localization/debug_main.cpp
+  src/Localization/property.cpp
+)
+
 add_dependencies(${PROJECT_NAME}_cc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_sc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_mv ${PROJECT_NAME}_generate_messages_cpp)
@@ -258,6 +265,7 @@ add_dependencies(${PROJECT_NAME}_pm ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_te ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_rv ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_tf ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_lo ${PROJECT_NAME}_generate_messages_cpp)
 
 target_link_libraries(${PROJECT_NAME}_cc ${catkin_LIBRARIES}) # classification
 target_link_libraries(${PROJECT_NAME}_sc ${catkin_LIBRARIES}) # stereo camera
@@ -272,6 +280,7 @@ target_link_libraries(${PROJECT_NAME}_pm ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_te ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_rv ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_tf ${catkin_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME}_lo ${catkin_LIBRARIES} )
 
 #############
 ## Install ##

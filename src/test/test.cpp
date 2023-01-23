@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 //#include <Eigen/Dense>
 #include <Eigen/Geometry> //EigenのGeometry関連の関数を使う場合，これが必要
+#include <random>
 
 nav_msgs::Odometry odom;
 bool first = true;
@@ -174,6 +175,22 @@ void spline(std::vector<geometry_msgs::Vector3>& points)
 
 }
 
+double pf_ran_gaussian(double sigma)
+{
+  double x1, x2, w, r;
+
+  do
+  {
+    do { r = drand48(); } while (r==0.0);
+    x1 = 2.0 * r - 1.0;
+    do { r = drand48(); } while (r==0.0);
+    x2 = 2.0 * r - 1.0;
+    w = x1*x1 + x2*x2;
+  } while(w > 1.0 || w==0.0);
+
+  return(sigma * x2 * sqrt(-2.0*log(w)/w));
+}
+
 int main(int argc,char **argv){
 	ros::init(argc,argv,"autonomous_mobile_robot_2022_te");
 
@@ -274,37 +291,56 @@ int main(int argc,char **argv){
 	std::cout<<ea(1)*180.0/M_PI<<",";//pitch
 	std::cout<<ea(2)*180.0/M_PI<<std::endl;//yaw
 
-	std::vector<double> path_x = {0,1,2,4,5};
-	std::vector<double> path_y = {0,2,1,4,1};
-	std::vector<geometry_msgs::Vector3> robot_path;
+	// std::vector<double> path_x = {0,1,2,4,5};
+	// std::vector<double> path_y = {0,2,1,4,1};
+	// std::vector<geometry_msgs::Vector3> robot_path;
 
-	int size = path_x.size();
-	robot_path.resize(size);
+	// int size = path_x.size();
+	// robot_path.resize(size);
 
-	for (int i = 0; i < size; i++)
-	{
-		robot_path[i].x = path_x[i];
-		robot_path[i].y = path_y[i];
-	}
+	// for (int i = 0; i < size; i++)
+	// {
+	// 	robot_path[i].x = path_x[i];
+	// 	robot_path[i].y = path_y[i];
+	// }
 
-	spline(robot_path);
+	// spline(robot_path);
 
-	std::cout<< "xx = [";
-	for (int i = 0; i < robot_path.size(); i++)
-	{
-		std::cout<< robot_path[i].x <<" ";
-	}
-	std::cout<< "];" << std::endl;
+	// std::cout<< "xx = [";
+	// for (int i = 0; i < robot_path.size(); i++)
+	// {
+	// 	std::cout<< robot_path[i].x <<" ";
+	// }
+	// std::cout<< "];" << std::endl;
 
-	std::cout<< "yy = [";
-	for (int i = 0; i < robot_path.size(); i++)
-	{
-		std::cout<< robot_path[i].y <<" ";
-	}
-	std::cout<< "];" << std::endl;
+	// std::cout<< "yy = [";
+	// for (int i = 0; i < robot_path.size(); i++)
+	// {
+	// 	std::cout<< robot_path[i].y <<" ";
+	// }
+	// std::cout<< "];" << std::endl;
 
 	// std::cout << "x=" << std::endl;
 	// std::cout << x.transpose() << std::endl;
+
+	std::random_device seed_gen;
+	std::default_random_engine engine(seed_gen());
+
+	// 0.0以上1.0未満の値を等確率で発生させる
+	//std::uniform_real_distribution<> dist(0.0, 1.0);
+
+	// 平均0.0、標準偏差1.0で分布させる
+  	std::normal_distribution<> dist(0.0, 1.0);
+
+	std::cout << "result = [";
+	for (std::size_t n = 0; n < 1000; ++n) 
+	{
+		// 一様実数分布で乱数を生成する
+		double result = dist(engine);
+
+		std::cout << result << " ";
+	}
+	std::cout << "]" << std::endl;
 
     //ros::spin();
 
