@@ -1,0 +1,25 @@
+<launch>
+	<env name="GAZEBO_MODEL_PATH" value="$(find autonomous_mobile_robot_2022)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+	<arg name="world_name" default="$(find turtlebot3_gazebo)/worlds/empty.world"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <include file="$(find autonomous_mobile_robot_2022)/launch/gazebo/spawn_turtlebot3.launch">
+    <!-- <arg name="name" value="robot_0"/> -->
+  </include>
+
+  <include file="$(find autonomous_mobile_robot_2022)/launch/gazebo/spawn_turtlebot3.launch">
+    <arg name="name" value="robot_1"/>
+    <arg name="x_pos" value="6.0"/>
+    <arg name="yaw" value="3.14159265"/>
+  </include>
+
+</launch>

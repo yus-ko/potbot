@@ -1,0 +1,7 @@
+<launch>
+ <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_rv" type="autonomous_mobile_robot_2022_rv" output="screen">
+  <!--<param name="ROBOT_NAME" value="turtlebot3"/>-->
+  <param name="POTENTIAL_VALUE_PLOT_LIMIT" value="4.0"/>
+  <param name="POTENTIAL_VALUE_PLOT_SHRINK_SCALE" value="10.0"/>
+ </node>
+</launch>

@@ -1,0 +1,13 @@
+<launch>
+ <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_lo" type="autonomous_mobile_robot_2022_lo" output="screen">
+  <param name="ROBOT_NAME" value="megarover"/>
+  <!--megarover turtlebot3-->
+  <param name="IS_SIMULATOR" value="false"/>
+  <param name="COVARIANCE_VV" value="0.05"/>
+  <param name="COVARIANCE_VOMEGA" value="0.025"/>
+  <param name="COVARIANCE_OMEGAOMEGA" value="0.05"/>
+  <param name="INITIAL_POSE_X" value="-9.5"/>
+  <param name="INITIAL_POSE_Y" value="-0.6"/>
+  <param name="INITIAL_POSE_THETA" value="-1.5708"/>
+ </node>
+</launch>

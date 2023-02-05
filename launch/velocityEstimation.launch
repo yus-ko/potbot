@@ -1,0 +1,138 @@
+<launch>
+  <!-- rqt_reconfigure -->
+  <arg name="estimationVelocity/rqt_reconfigure" default="false"/>
+  <!-- output_screen-->
+  <arg name="estimationVelocity/output_screen" default="false"/>
+  <!--kalmanfilter-->
+  <!-- 観測誤差 -->
+  <arg name="observationDelta/1/1" default="0.0025"/>
+  <arg name="observationDelta/2/2" default="0.0025"/>
+  <arg name="observationDelta/3/3" default="0.02"/>
+  <arg name="observationDelta/4/4" default="0.02"/>
+  <arg name="observationDelta/5/5" default="0.001"/><!-- 変更 -->
+  <arg name="observationDelta/1/3" default="0"/>
+  <arg name="observationDelta/3/1" default="0"/>
+  <arg name="observationDelta/2/4" default="0"/>
+  <arg name="observationDelta/4/2" default="0"/>
+  <!-- モデル誤差 -->
+  <arg name="predictionSigma/1/1" default="0.0025"/>
+  <arg name="predictionSigma/2/2" default="0.0025"/>
+  <arg name="predictionSigma/3/3" default="0.02"/>
+  <arg name="predictionSigma/4/4" default="0.02"/>
+  <arg name="predictionSigma/5/5" default="0.001"/><!-- 変更 -->
+  <arg name="predictionSigma/1/3" default="0"/>
+  <arg name="predictionSigma/3/1" default="0"/>
+  <arg name="predictionSigma/2/4" default="0"/>
+  <arg name="predictionSigma/4/2" default="0"/>
+  <!-- 推定共分散の初期値 -->
+  <arg name="estimationSigma/1/1" default="0.01"/>
+  <arg name="estimationSigma/2/2" default="0.01"/>
+  <arg name="estimationSigma/3/3" default="0.09"/>
+  <arg name="estimationSigma/4/4" default="0.09"/>
+  <arg name="estimationSigma/5/5" default="1"/><!-- 変更 -->
+  <arg name="estimationSigma/1/3" default="0"/>
+  <arg name="estimationSigma/3/1" default="0"/>
+  <arg name="estimationSigma/2/4" default="0"/>
+  <arg name="estimationSigma/4/2" default="0"/>
+  <!-- threshold -->
+  <arg name="estimationVelocity/trackThreshold" default="5"/>
+  <arg name="estimationVelocity/sizeMinThreshold" default="0.01"/>
+  <arg name="estimationVelocity/sizeMaxThreshold" default="0.5"/>
+  <arg name="estimationVelocity/velSigmaThreshold" default="1"/>
+  <arg name="estimationVelocity/velMinThreshold" default="0.1"/>
+  <arg name="estimationVelocity/velMaxThreshold" default="1.5"/>
+  <!-- average filter -->
+  <arg name="estimationVelocity/filterN" default="5"/>
+  <!-- debug -->
+  <arg name="estimationVelocity/debugType" default="1"/>
+  <arg name="estimationVelocity/timeRange" default="5"/>
+  <arg name="estimationVelocity/timeInteval" default="0.5"/><!-- 1.0 -->
+  <!-- <arg name="robot_name"        default="robot2"/> -->
+  <!-- <group ns="$(arg robot_name)"> -->
+  <group if="$(arg estimationVelocity/output_screen)">
+    <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_estimate" type="autonomous_mobile_robot_2022_estimate" output="screen" respawn="true">
+      <!-- 観測誤差 -->
+      <param name="observationDelta/1/1" value="$(arg observationDelta/1/1)"/>
+      <param name="observationDelta/2/2" value="$(arg observationDelta/2/2)"/>
+      <param name="observationDelta/3/3" value="$(arg observationDelta/3/3)"/>
+      <param name="observationDelta/4/4" value="$(arg observationDelta/4/4)"/>
+      <param name="observationDelta/5/5" value="$(arg observationDelta/5/5)"/>
+      <param name="observationDelta/1/3" value="$(arg observationDelta/1/3)"/>
+      <param name="observationDelta/3/1" value="$(arg observationDelta/3/1)"/>
+      <param name="observationDelta/2/4" value="$(arg observationDelta/2/4)"/>
+      <param name="observationDelta/4/2" value="$(arg observationDelta/4/2)"/>
+      <!-- モデル誤差 -->
+      <param name="predictionSigma/1/1" value="$(arg predictionSigma/1/1)"/>
+      <param name="predictionSigma/2/2" value="$(arg predictionSigma/2/2)"/>
+      <param name="predictionSigma/3/3" value="$(arg predictionSigma/3/3)"/>
+      <param name="predictionSigma/4/4" value="$(arg predictionSigma/4/4)"/>
+      <param name="predictionSigma/5/5" value="$(arg predictionSigma/5/5)"/>
+      <param name="predictionSigma/1/3" value="$(arg predictionSigma/1/3)"/>
+      <param name="predictionSigma/3/1" value="$(arg predictionSigma/3/1)"/>
+      <param name="predictionSigma/2/4" value="$(arg predictionSigma/2/4)"/>
+      <param name="predictionSigma/4/2" value="$(arg predictionSigma/4/2)"/>
+      <!-- 推定共分散の初期値 -->
+      <param name="estimationSigma/1/1" value="$(arg estimationSigma/1/1)"/>
+      <param name="estimationSigma/2/2" value="$(arg estimationSigma/2/2)"/>
+      <param name="estimationSigma/3/3" value="$(arg estimationSigma/3/3)"/>
+      <param name="estimationSigma/4/4" value="$(arg estimationSigma/4/4)"/>
+      <param name="estimationSigma/5/5" value="$(arg estimationSigma/5/5)"/>
+      <param name="estimationSigma/1/3" value="$(arg estimationSigma/1/3)"/>
+      <param name="estimationSigma/3/1" value="$(arg estimationSigma/3/1)"/>
+      <param name="estimationSigma/2/4" value="$(arg estimationSigma/2/4)"/>
+      <param name="estimationSigma/4/2" value="$(arg estimationSigma/4/2)"/>
+      <!-- track threshold -->
+      <param name="estimationVelocity/trackThreshold" value="$(arg estimationVelocity/trackThreshold)"/>
+      <!-- debug -->
+      <param name="estimationVelocity/debugType" value="$(arg estimationVelocity/debugType)"/>
+      <param name="estimationVelocity/timeRange" value="$(arg estimationVelocity/timeRange)"/>
+      <param name="estimationVelocity/timeInteval" value="$(arg estimationVelocity/timeInteval)"/>
+      <!-- rqt_reconfigure -->
+      <param name="estimationVelocity/rqt_reconfigure" value="$(arg estimationVelocity/rqt_reconfigure)"/>
+    </node>
+  </group>
+  <group unless="$(arg estimationVelocity/output_screen)">
+    <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_estimate" type="autonomous_mobile_robot_2022_estimate" respawn="true">
+    <!-- 観測誤差 -->
+      <param name="observationDelta/1/1" value="$(arg observationDelta/1/1)"/>
+      <param name="observationDelta/2/2" value="$(arg observationDelta/2/2)"/>
+      <param name="observationDelta/3/3" value="$(arg observationDelta/3/3)"/>
+      <param name="observationDelta/4/4" value="$(arg observationDelta/4/4)"/>
+      <param name="observationDelta/5/5" value="$(arg observationDelta/5/5)"/>
+      <param name="observationDelta/1/3" value="$(arg observationDelta/1/3)"/>
+      <param name="observationDelta/3/1" value="$(arg observationDelta/3/1)"/>
+      <param name="observationDelta/2/4" value="$(arg observationDelta/2/4)"/>
+      <param name="observationDelta/4/2" value="$(arg observationDelta/4/2)"/>
+      <!-- モデル誤差 -->
+      <param name="predictionSigma/1/1" value="$(arg predictionSigma/1/1)"/>
+      <param name="predictionSigma/2/2" value="$(arg predictionSigma/2/2)"/>
+      <param name="predictionSigma/3/3" value="$(arg predictionSigma/3/3)"/>
+      <param name="predictionSigma/4/4" value="$(arg predictionSigma/4/4)"/>
+      <param name="predictionSigma/5/5" value="$(arg predictionSigma/5/5)"/>
+      <param name="predictionSigma/1/3" value="$(arg predictionSigma/1/3)"/>
+      <param name="predictionSigma/3/1" value="$(arg predictionSigma/3/1)"/>
+      <param name="predictionSigma/2/4" value="$(arg predictionSigma/2/4)"/>
+      <param name="predictionSigma/4/2" value="$(arg predictionSigma/4/2)"/>
+      <!-- 推定共分散の初期値 -->
+      <param name="estimationSigma/1/1" value="$(arg estimationSigma/1/1)"/>
+      <param name="estimationSigma/2/2" value="$(arg estimationSigma/2/2)"/>
+      <param name="estimationSigma/3/3" value="$(arg estimationSigma/3/3)"/>
+      <param name="estimationSigma/4/4" value="$(arg estimationSigma/4/4)"/>
+      <param name="estimationSigma/5/5" value="$(arg estimationSigma/5/5)"/>
+      <param name="estimationSigma/1/3" value="$(arg estimationSigma/1/3)"/>
+      <param name="estimationSigma/3/1" value="$(arg estimationSigma/3/1)"/>
+      <param name="estimationSigma/2/4" value="$(arg estimationSigma/2/4)"/>
+      <param name="estimationSigma/4/2" value="$(arg estimationSigma/4/2)"/>
+      <!-- track threshold -->
+      <param name="estimationVelocity/trackThreshold" value="$(arg estimationVelocity/trackThreshold)"/>
+      <!-- debug -->
+      <param name="estimationVelocity/debugType" value="$(arg estimationVelocity/debugType)"/>
+      <param name="estimationVelocity/timeRange" value="$(arg estimationVelocity/timeRange)"/>
+      <param name="estimationVelocity/timeInteval" value="$(arg estimationVelocity/timeInteval)"/>
+      <!-- rqt_reconfigure -->
+      <param name="estimationVelocity/rqt_reconfigure" value="$(arg estimationVelocity/rqt_reconfigure)"/>
+    </node>
+  </group>
+
+  <!-- </group> -->
+</launch>
