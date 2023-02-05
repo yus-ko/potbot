@@ -1,4 +1,4 @@
-#include<autonomous_mobile_robot_2022/rviz.h>
+#include<potbot/rviz.h>
 
 rvizClass::rvizClass()
 {

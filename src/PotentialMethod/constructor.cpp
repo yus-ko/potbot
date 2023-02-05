@@ -1,4 +1,4 @@
-#include<autonomous_mobile_robot_2022/PotentialMethod.h>
+#include<potbot/PotentialMethod.h>
 #include <fstream>
 
 PotentialMethodClass::PotentialMethodClass()
@@ -107,8 +107,8 @@ PotentialMethodClass::PotentialMethodClass()
 	
 	pub_odom= nhPub.advertise<nav_msgs::Odometry>("/autonomous_mobile_robot_2022/odom", 1);
 	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("/autonomous_mobile_robot_2022/ShortestDistance", 1);
-	pub_PV = nhPub.advertise<autonomous_mobile_robot_2022::PotentialValue>("/autonomous_mobile_robot_2022/PotentialValue", 1);
-	pub_PP = nhPub.advertise<autonomous_mobile_robot_2022::PathPlan>("/autonomous_mobile_robot_2022/Path", 1);
+	pub_PV = nhPub.advertise<potbot::PotentialValue>("/autonomous_mobile_robot_2022/PotentialValue", 1);
+	pub_PP = nhPub.advertise<potbot::PathPlan>("/autonomous_mobile_robot_2022/Path", 1);
 
 	start_time = ros::WallTime::now();
 	

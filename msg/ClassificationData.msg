@@ -14,4 +14,4 @@ std_msgs/Int32 heightInt
 geometry_msgs/Point cp
 #クラスタデータ
 std_msgs/Int32 size #クラスタ数
-autonomous_mobile_robot_2022/ClassificationElement[] data
+potbot/ClassificationElement[] data

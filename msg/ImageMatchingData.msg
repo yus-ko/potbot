@@ -15,4 +15,4 @@ geometry_msgs/Point cp
 #インデックスデータ
 std_msgs/Int32[] index
 #マッチングデータ
-autonomous_mobile_robot_2022/ImageFlow2D[] data
+potbot/ImageFlow2D[] data

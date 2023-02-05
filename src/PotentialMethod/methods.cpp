@@ -1,4 +1,4 @@
-#include<autonomous_mobile_robot_2022/PotentialMethod.h>
+#include<potbot/PotentialMethod.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -50,7 +50,7 @@ void PotentialMethodClass::coefficient_callback(const std_msgs::Float32& msg)
     coe_0 = msg.data;
 }
 
-void PotentialMethodClass::cluster_callback(const autonomous_mobile_robot_2022::ClassificationVelocityData& msg)
+void PotentialMethodClass::cluster_callback(const potbot::ClassificationVelocityData& msg)
 {
 
     pcl_cluster = msg;

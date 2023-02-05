@@ -1,4 +1,4 @@
-#include<autonomous_mobile_robot_2022/PotentialMethod.h>
+#include<potbot/PotentialMethod.h>
 
 void PotentialMethodClass::setLaunchParam(){
     

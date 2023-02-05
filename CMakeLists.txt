@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(autonomous_mobile_robot_2022)
+project(potbot)
 ##
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -41,7 +41,6 @@ generate_messages(
   geometry_msgs
 )
 
-
 catkin_package(
   CATKIN_DEPENDS roscpp sensor_msgs message_runtime 
 )
@@ -54,57 +53,57 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}_cc # classification
-  src/classification/constructor.cpp
-  src/classification/methods.cpp
-  src/classification/debug_main.cpp
-  src/classification/debug_methods.cpp
-  src/classification/property.cpp
+  src/StereoCamera/classification/constructor.cpp
+  src/StereoCamera/classification/methods.cpp
+  src/StereoCamera/classification/debug_main.cpp
+  src/StereoCamera/classification/debug_methods.cpp
+  src/StereoCamera/classification/property.cpp
 )
 
 add_executable(${PROJECT_NAME}_sc # stereo camera 
-  src/convCamData/constructor.cpp
-  src/convCamData/methods.cpp
-  src/convCamData/debug_main.cpp
-  src/convCamData/property.cpp
+  src/StereoCamera/convCamData/constructor.cpp
+  src/StereoCamera/convCamData/methods.cpp
+  src/StereoCamera/convCamData/debug_main.cpp
+  src/StereoCamera/convCamData/property.cpp
 )
 
 add_executable(${PROJECT_NAME}_mv # measure Velocity
- src/measureVelocity/constructor.cpp
- src/measureVelocity/methods.cpp
- src/measureVelocity/debug_main.cpp
- src/measureVelocity/debug_methods.cpp
- src/measureVelocity/property.cpp
+ src/StereoCamera/measureVelocity/constructor.cpp
+ src/StereoCamera/measureVelocity/methods.cpp
+ src/StereoCamera/measureVelocity/debug_main.cpp
+ src/StereoCamera/measureVelocity/debug_methods.cpp
+ src/StereoCamera/measureVelocity/property.cpp
 )
 
 add_executable(${PROJECT_NAME}_si # point cloud
-  src/synchroImage/constructor.cpp
-  src/synchroImage/methods.cpp
-  src/synchroImage/debug_main.cpp
-  src/synchroImage/debug_methods.cpp
-  src/synchroImage/property.cpp
+  src/StereoCamera/synchroImage/constructor.cpp
+  src/StereoCamera/synchroImage/methods.cpp
+  src/StereoCamera/synchroImage/debug_main.cpp
+  src/StereoCamera/synchroImage/debug_methods.cpp
+  src/StereoCamera/synchroImage/property.cpp
 )
 add_executable(${PROJECT_NAME}_frm # manage
-  src/frameRateManagement/constructor.cpp
-  src/frameRateManagement/methods.cpp
-  src/frameRateManagement/debug_main.cpp
-  src/frameRateManagement/debug_methods.cpp
-  src/frameRateManagement/property.cpp
+  src/StereoCamera/frameRateManagement/constructor.cpp
+  src/StereoCamera/frameRateManagement/methods.cpp
+  src/StereoCamera/frameRateManagement/debug_main.cpp
+  src/StereoCamera/frameRateManagement/debug_methods.cpp
+  src/StereoCamera/frameRateManagement/property.cpp
 )
 
 add_executable(${PROJECT_NAME}_im # image matching
-   src/imageMatching/constructor.cpp
-   src/imageMatching/methods.cpp
-   src/imageMatching/debug_main.cpp
-   src/imageMatching/debug_methods.cpp
-   src/imageMatching/property.cpp
+   src/StereoCamera/imageMatching/constructor.cpp
+   src/StereoCamera/imageMatching/methods.cpp
+   src/StereoCamera/imageMatching/debug_main.cpp
+   src/StereoCamera/imageMatching/debug_methods.cpp
+   src/StereoCamera/imageMatching/property.cpp
  )
 
 add_executable(${PROJECT_NAME}_estimate # manage
-  src/estimationVelocity/constructor.cpp
-  src/estimationVelocity/methods.cpp
-  src/estimationVelocity/debug_main.cpp
-  src/estimationVelocity/property.cpp
-  src/estimationVelocity/debug_methods.cpp
+  src/StereoCamera/estimationVelocity/constructor.cpp
+  src/StereoCamera/estimationVelocity/methods.cpp
+  src/StereoCamera/estimationVelocity/debug_main.cpp
+  src/StereoCamera/estimationVelocity/property.cpp
+  src/StereoCamera/estimationVelocity/debug_methods.cpp
 )
 
 add_executable(${PROJECT_NAME}_pm

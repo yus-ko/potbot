@@ -1,1 +1,1 @@
-autonomous_mobile_robot_2022/PointCloudData[] data
+potbot/PointCloudData[] data

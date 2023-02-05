@@ -1,6 +1,6 @@
-#include<autonomous_mobile_robot_2022/rviz.h>
+#include<potbot/rviz.h>
 
-void rvizClass::PotentialValue_callback(const autonomous_mobile_robot_2022::PotentialValue& msg)
+void rvizClass::PotentialValue_callback(const potbot::PotentialValue& msg)
 {
     PV = msg;
     addMarker();
@@ -14,7 +14,7 @@ void rvizClass::odom_callback(const nav_msgs::Odometry& msg)
     publishPath();
 }
 
-void rvizClass::PathPlan_callback(const autonomous_mobile_robot_2022::PathPlan& msg)
+void rvizClass::PathPlan_callback(const potbot::PathPlan& msg)
 {
     PP = msg;
     addMarker_pathplan();

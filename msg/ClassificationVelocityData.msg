@@ -14,7 +14,7 @@ std_msgs/Int32 heightInt
 geometry_msgs/Point cp
 #クラスタデータ
 std_msgs/Int32 size #クラスタ数
-autonomous_mobile_robot_2022/ClassificationElement[] data
+potbot/ClassificationElement[] data
 geometry_msgs/TwistWithCovariance[] twist #測定速度データ
 int32[] trackingNum #追跡回数
 int32[] match #currentCluster->previousClusterの参照
