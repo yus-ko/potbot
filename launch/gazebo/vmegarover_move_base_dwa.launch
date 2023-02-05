@@ -11,7 +11,7 @@ Navigationサンプルのlaunch（シミュレータ用）
   
  
   <!-- mapサーバー -->
-  <arg name="map_file" default="$(find autonomous_mobile_robot_2022)/maps/patern1.yaml"/>　<!--マップファイルのパスの指定 -->
+  <arg name="map_file" default="$(find potbot)/maps/patern1.yaml"/>　<!--マップファイルのパスの指定 -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
  
   <!-- 

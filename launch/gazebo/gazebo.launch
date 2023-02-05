@@ -1,5 +1,5 @@
 <launch>
-	<env name="GAZEBO_MODEL_PATH" value="$(find autonomous_mobile_robot_2022)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+	<env name="GAZEBO_MODEL_PATH" value="$(find potbot)/models:$(optenv GAZEBO_MODEL_PATH)"/>
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="x_pos" default="0.0"/>
   <arg name="y_pos" default="0.0"/>
@@ -18,7 +18,7 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <include file="$(find autonomous_mobile_robot_2022)/launch/gazebo/spawn_turtlebot3.launch">
+  <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
     <arg name="x_pos" value="$(arg x_pos)"/>
     <arg name="y_pos" value="$(arg y_pos)"/>
     <arg name="z_pos" value="$(arg z_pos)"/>

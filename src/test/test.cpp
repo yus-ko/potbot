@@ -192,7 +192,7 @@ double pf_ran_gaussian(double sigma)
 }
 
 int main(int argc,char **argv){
-	ros::init(argc,argv,"autonomous_mobile_robot_2022_te");
+	ros::init(argc,argv,"potbot_te");
 
 	ros::NodeHandle nhSub,nhPub;
 	ros::Publisher pub_odom;

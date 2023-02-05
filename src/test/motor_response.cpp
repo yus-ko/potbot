@@ -2,7 +2,7 @@
 #include <geometry_msgs/Twist.h>
 
 int main(int argc,char **argv){
-	ros::init(argc,argv,"autonomous_mobile_robot_2022_te");
+	ros::init(argc,argv,"potbot_te");
 
 	ros::NodeHandle nhPub;
 	ros::Publisher pub_cmd = nhPub.advertise<geometry_msgs::Twist>("/cmd_vel", 1);

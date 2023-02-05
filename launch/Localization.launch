@@ -1,5 +1,5 @@
 <launch>
- <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_lo" type="autonomous_mobile_robot_2022_lo" output="screen">
+ <node pkg="potbot" name="potbot_lo" type="potbot_lo" output="screen">
   <param name="ROBOT_NAME" value="megarover"/>
   <!--megarover turtlebot3-->
   <param name="IS_SIMULATOR" value="false"/>

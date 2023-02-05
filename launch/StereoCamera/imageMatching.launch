@@ -12,7 +12,7 @@
   <!-- <arg name="robot_name"        default="robot2"/> -->
   <!-- <group ns="$(arg robot_name)"> -->
   <group if="$(arg imageMatching/output_screen)">
-    <node pkg="autonomous_mobile_robot_2022" type="autonomous_mobile_robot_2022_im" name="autonomous_mobile_robot_2022_im" respawn="true" output="screen">
+    <node pkg="potbot" type="potbot_im" name="potbot_im" respawn="true" output="screen">
       <param name="imageMatching/debugType" value="$(arg imageMatching/debugType)"/>
       <!--map parameter-->
       <param name="localMap/width/float" value="$(arg localMap/width/float)"/>
@@ -25,7 +25,7 @@
     </node>
   </group>
   <group unless="$(arg imageMatching/output_screen)">
-    <node pkg="autonomous_mobile_robot_2022" type="autonomous_mobile_robot_2022_im" name="autonomous_mobile_robot_2022_im" respawn="true" >
+    <node pkg="potbot" type="potbot_im" name="potbot_im" respawn="true" >
       <param name="imageMatching/debugType" value="$(arg imageMatching/debugType)"/>
       <!--map parameter-->
       <param name="localMap/width/float" value="$(arg localMap/width/float)"/>

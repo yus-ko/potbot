@@ -105,10 +105,10 @@ PotentialMethodClass::PotentialMethodClass()
 	sub_cluster = nhSub.subscribe("classificationDataEstimateVelocity", 1, &PotentialMethodClass::cluster_callback, this);
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PotentialMethodClass::coefficient_callback, this);
 	
-	pub_odom= nhPub.advertise<nav_msgs::Odometry>("/autonomous_mobile_robot_2022/odom", 1);
-	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("/autonomous_mobile_robot_2022/ShortestDistance", 1);
-	pub_PV = nhPub.advertise<potbot::PotentialValue>("/autonomous_mobile_robot_2022/PotentialValue", 1);
-	pub_PP = nhPub.advertise<potbot::PathPlan>("/autonomous_mobile_robot_2022/Path", 1);
+	pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
+	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("/potbot/ShortestDistance", 1);
+	pub_PV = nhPub.advertise<potbot::PotentialValue>("/potbot/PotentialValue", 1);
+	pub_PP = nhPub.advertise<potbot::PathPlan>("/potbot/Path", 1);
 
 	start_time = ros::WallTime::now();
 	

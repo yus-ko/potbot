@@ -50,7 +50,7 @@
   <!-- <arg name="robot_name"        default="robot2"/> -->
   <!-- <group ns="$(arg robot_name)"> -->
   <group if="$(arg estimationVelocity/output_screen)">
-    <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_estimate" type="autonomous_mobile_robot_2022_estimate" output="screen" respawn="true">
+    <node pkg="potbot" name="potbot_estimate" type="potbot_estimate" output="screen" respawn="true">
       <!-- 観測誤差 -->
       <param name="observationDelta/1/1" value="$(arg observationDelta/1/1)"/>
       <param name="observationDelta/2/2" value="$(arg observationDelta/2/2)"/>
@@ -92,7 +92,7 @@
     </node>
   </group>
   <group unless="$(arg estimationVelocity/output_screen)">
-    <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_estimate" type="autonomous_mobile_robot_2022_estimate" respawn="true">
+    <node pkg="potbot" name="potbot_estimate" type="potbot_estimate" respawn="true">
     <!-- 観測誤差 -->
       <param name="observationDelta/1/1" value="$(arg observationDelta/1/1)"/>
       <param name="observationDelta/2/2" value="$(arg observationDelta/2/2)"/>

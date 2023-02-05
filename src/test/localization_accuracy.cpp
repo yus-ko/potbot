@@ -1,14 +1,14 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
-#include <autonomous_mobile_robot_2022/test.h>
+#include <potbot/test.h>
 
 //ros::NodeHandle nhPub, nhSub;
 
 //std::numeric_limits<double>::quiet_NaN()
 test::test()
 {
-	pub_odom = nhPub.advertise<nav_msgs::Odometry>("/autonomous_mobile_robot_2022/odom", 1);
+	pub_odom = nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 	pub_cmd = nhPub.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 	sub_encoder = nhSub.subscribe("/odom",1,&test::encoder_callback,this);
 	start_time = ros::WallTime::now();
@@ -78,7 +78,7 @@ void test::encoder_callback(const nav_msgs::Odometry& msg)
 
 int main(int argc,char **argv){
 
-	ros::init(argc,argv,"autonomous_mobile_robot_2022_te");
+	ros::init(argc,argv,"potbot_te");
 
     test te;
 	ros::spin();

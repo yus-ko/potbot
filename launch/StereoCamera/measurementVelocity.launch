@@ -16,7 +16,7 @@
   <!-- <arg name="robot_name"        default="robot2"/> -->
   <!-- <group ns="$(arg robot_name)"> -->
   <group if="$(arg measurementVelocity/output_screen)">
-    <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_mv" type="autonomous_mobile_robot_2022_mv" respawn="true" output="screen">
+    <node pkg="potbot" name="potbot_mv" type="potbot_mv" respawn="true" output="screen">
       <param name="measurementVelocity/debugType" value="$(arg measurementVelocity/debugType)"/>
       <!--weight parameter-->
       <param name="measurementVelocity/weight/image" value="$(arg measurementVelocity/weight/image)"/>
@@ -33,7 +33,7 @@
     </node>
   </group>
   <group unless="$(arg measurementVelocity/output_screen)">
-    <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_mv" type="autonomous_mobile_robot_2022_mv" respawn="true">
+    <node pkg="potbot" name="potbot_mv" type="potbot_mv" respawn="true">
       <param name="measurementVelocity/debugType" value="$(arg measurementVelocity/debugType)"/>
       <!--weight parameter-->
       <param name="measurementVelocity/weight/image" value="$(arg measurementVelocity/weight/image)"/>

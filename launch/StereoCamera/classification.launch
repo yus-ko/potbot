@@ -19,7 +19,7 @@
  <!--node-->
  <!--classification-->
  <group if="$(arg classification/output_screen)">
-   <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_cc" type="autonomous_mobile_robot_2022_cc" output="screen">
+   <node pkg="potbot" name="potbot_cc" type="potbot_cc" output="screen">
      <!--camera parameter-->
      <param name="camera/minDeg" value="$(arg camera/minDeg)"/>
      <param name="camera/maxDeg" value="$(arg camera/maxDeg)"/>
@@ -38,7 +38,7 @@
    </node>
  </group>
  <group unless="$(arg classification/output_screen)">
-   <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_cc" type="autonomous_mobile_robot_2022_cc" >
+   <node pkg="potbot" name="potbot_cc" type="potbot_cc" >
      <!--camera parameter-->
      <param name="camera/minDeg" value="$(arg camera/minDeg)"/>
      <param name="camera/maxDeg" value="$(arg camera/maxDeg)"/>

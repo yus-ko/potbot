@@ -13,7 +13,7 @@
  <!--node-->
  <!--stereo camera-->
  <group if="$(arg lrfCamera/output_screen)">
-   <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_sc" type="autonomous_mobile_robot_2022_sc" output="screen" >
+   <node pkg="potbot" name="potbot_sc" type="potbot_sc" output="screen" >
      <param name="camera/focus" value="$(arg camera/focus)"/>
      <param name="camera/cameraHeight" value="$(arg camera/cameraHeight)"/>
      <!--map parameter-->
@@ -23,7 +23,7 @@
    </node>
  </group>
  <group unless="$(arg lrfCamera/output_screen)">
-   <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_sc" type="autonomous_mobile_robot_2022_sc" >
+   <node pkg="potbot" name="potbot_sc" type="potbot_sc" >
      <param name="camera/focus" value="$(arg camera/focus)"/>
      <param name="camera/cameraHeight" value="$(arg camera/cameraHeight)"/>
      <!--map parameter-->
@@ -34,7 +34,7 @@
  </group>
  <!--laser range finder-->
  <!-- <group if="$(arg lrfCamera/output_screen)"> -->
-   <!-- <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_lrf" type="autonomous_mobile_robot_2022_lrf" output="screen" > -->
+   <!-- <node pkg="potbot" name="potbot_lrf" type="potbot_lrf" output="screen" > -->
      <!-- <param name="lrf/sensorHigh" value="$(arg lrf/sensorHigh)"/> -->
      <!-- map parameter -->
      <!-- <param name="localMap/width/float" value="$(arg localMap/width/float)"/> -->
@@ -43,7 +43,7 @@
    <!-- </node> -->
  <!-- </group> -->
  <!-- <group unless="$(arg lrfCamera/output_screen)"> -->
-   <!-- <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_lrf" type="autonomous_mobile_robot_2022_lrf" > -->
+   <!-- <node pkg="potbot" name="potbot_lrf" type="potbot_lrf" > -->
      <!-- <param name="lrf/sensorHigh" value="$(arg lrf/sensorHigh)"/> -->
      <!-- map parameter -->
      <!-- <param name="localMap/width/float" value="$(arg localMap/width/float)"/> -->

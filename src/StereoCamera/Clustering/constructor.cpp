@@ -6,7 +6,7 @@ PointCloudClass::PointCloudClass()
 	sub=nhSub.subscribe("/mynteye/points/data_raw",1,&PointCloudClass::pcl_callback,this);
 	sub_depthimage=nhSub.subscribe("/mynteye/depth/image_raw",1,&PointCloudClass::depthimage_callback,this);
 
-	sub_odom=nhSub.subscribe("/autonomous_mobile_robot_2022/odom",1,&PointCloudClass::odom_callback,this);
+	sub_odom=nhSub.subscribe("/potbot/odom",1,&PointCloudClass::odom_callback,this);
 	//sub_encoder=nhSub.subscribe("/encoder",1,&PointCloudClass::encoder_callback,this);
 	//publisher
     pubpc= nhPub1.advertise<potbot::PointCloudData>("Extracted_PointCloud", 1);

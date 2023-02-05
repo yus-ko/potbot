@@ -1,10 +1,10 @@
 <launch>
- <node pkg="autonomous_mobile_robot_2022" name="autonomous_mobile_robot_2022_pm" type="autonomous_mobile_robot_2022_pm" output="screen">
+ <node pkg="potbot" name="potbot_pm" type="potbot_pm" output="screen">
   <param name="ROBOT_NAME" value="turtlebot3"/>
   <!--megarover turtlebot3-->
   <param name="PATH_PLANNING_METHOD" value="potential_method"/>
   <!--potential_method csv-->
-  <param name="PATH_PLANNING_FILE" value="$(find autonomous_mobile_robot_2022)/path/-sin.csv"/>
+  <param name="PATH_PLANNING_FILE" value="$(find potbot)/path/-sin.csv"/>
   <param name="USE_AMCL" value="false"/>
   <param name="IS_SIMULATOR" value="true"/>
   <param name="PUBLISH_COMMAND" value="true"/>
