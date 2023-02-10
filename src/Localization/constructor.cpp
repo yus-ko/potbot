@@ -36,9 +36,9 @@ LocalizationClass::LocalizationClass()
 		sub_encoder_ = nhSub_.subscribe("/odom", 1, &LocalizationClass::encoder_callback_sim, this);
 	}
 
-	pub_particle_ = nhPub_.advertise<visualization_msgs::MarkerArray>("/autonomous_mobile_robot_2022/Particle", 1);
-	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("/autonomous_mobile_robot_2022/Localmap", 1);
-	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>("/autonomous_mobile_robot_2022/odom", 1);
+	pub_particle_ = nhPub_.advertise<visualization_msgs::MarkerArray>("/potbot/Particle", 1);
+	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("/potbot/Localmap", 1);
+	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 
 	particles_.markers.resize(particle_num_);
 	weights_.resize(particle_num_);

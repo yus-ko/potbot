@@ -77,7 +77,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: LocalMap
-      Topic: /autonomous_mobile_robot_2022/Localmap
+      Topic: /potbot/Localmap
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -86,7 +86,7 @@ Visualization Manager:
       Marker Topic: /autonomous_mobile_robot_2022/Particle
       Name: Particles
       Namespaces:
-        Particle_display: true
+        {}
       Queue Size: 100
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -127,7 +127,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: map
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
@@ -151,25 +151,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.33497428894043
+      Distance: 14.917698860168457
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -8.511858940124512
-        Y: 3.517704963684082
-        Z: 15.684708595275879
+        X: -5.90537166595459
+        Y: -2.4974420070648193
+        Z: 14.811995506286621
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.1447960138320923
+      Pitch: 1.2847959995269775
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.544049859046936
+      Yaw: 3.1940505504608154
     Saved: ~
 Window Geometry:
   Displays:

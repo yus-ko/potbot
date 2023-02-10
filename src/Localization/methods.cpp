@@ -28,8 +28,8 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
     local_map_.header = header_;
     local_map_.info = world_map_.info;
     local_map_.info.map_load_time = header_.stamp;
-    local_map_.info.width = 120;
-    local_map_.info.height = 120;
+    local_map_.info.width = 240;
+    local_map_.info.height = 240;
     local_map_.info.resolution = 0.05;
 
     //ROS_INFO("maximum likefood particle:%d",maximum_likefood_particle_id_);
@@ -211,7 +211,7 @@ double LocalizationClass::match_rate(nav_msgs::OccupancyGrid local,nav_msgs::Occ
 
 void LocalizationClass::manage()
 {
-    if (encoder_first_)
+    if (false&&encoder_first_)
     {
         create_particle();
 
