@@ -7,11 +7,20 @@ LocalizationClass::LocalizationClass()
 
 	if (ROBOT_NAME == "megarover")
 	{
-		robot_id_ = 0;
+		robot_id_ = MEGAROVER;
 	}
 	else if (ROBOT_NAME == "turtlebot3")
 	{
-		robot_id_ = 1;
+		robot_id_ = TURTLEBOT3;
+	}
+
+	if (LOCALIZATION_METHOD == "dead_reckoning")
+	{
+		localization_method_id_ = DEAD_RECKONING;
+	}
+	else if (LOCALIZATION_METHOD == "paticle_filter")
+	{
+		localization_method_id_ = PARTICLE_FILTER;
 	}
 
 	sub_scan_=nhSub_.subscribe("/scan",1,&LocalizationClass::scan_callback,this);
@@ -20,7 +29,7 @@ LocalizationClass::LocalizationClass()
 	sub_goal_=nhSub_.subscribe("/move_base_simple/goal",1,&LocalizationClass::goal_callback,this);
 	sub_point_=nhSub_.subscribe("/clicked_point",1,&LocalizationClass::point_callback,this);
 
-	if (robot_id_ == 0)
+	if (robot_id_ == MEGAROVER)
 	{
 		if(IS_SIMULATOR)
 		{
@@ -31,12 +40,16 @@ LocalizationClass::LocalizationClass()
 			sub_encoder_=nhSub_.subscribe("/rover_odo",1,&LocalizationClass::encoder_callback,this);
 		}
 	}
-	else if (robot_id_ == 1)
+	else if (robot_id_ == TURTLEBOT3)
 	{
 		sub_encoder_ = nhSub_.subscribe("/odom", 1, &LocalizationClass::encoder_callback_sim, this);
 	}
 
-	pub_particle_ = nhPub_.advertise<visualization_msgs::MarkerArray>("/potbot/Particle", 1);
+	if (localization_method_id_ == PARTICLE_FILTER)
+	{
+		pub_particle_ = nhPub_.advertise<visualization_msgs::MarkerArray>("/potbot/Particle", 1);
+	}
+
 	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("/potbot/Localmap", 1);
 	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 

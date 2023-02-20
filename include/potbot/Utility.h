@@ -1,0 +1,8 @@
+#define MEGAROVER 0
+#define TURTLEBOT3 1
+
+#define DEAD_RECKONING 0
+#define PARTICLE_FILTER 1
+
+#define CSV_PATH 0
+#define POTENTIAL_METHOD 1

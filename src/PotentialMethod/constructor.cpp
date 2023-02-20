@@ -32,14 +32,14 @@ PotentialMethodClass::PotentialMethodClass()
 
 	if (PATH_PLANNING_METHOD == "csv")
 	{
-		path_planning_id = 0;
+		path_planning_id = CSV_PATH;
 	}
 	else if (PATH_PLANNING_METHOD == "potential_method")
 	{
-		path_planning_id = 1;
+		path_planning_id = POTENTIAL_METHOD;
 	}
 	
-	if (path_planning_id == 0)
+	if (path_planning_id == CSV_PATH)
 	{
 		std::string str_buf;
 		std::string str_conma_buf;
@@ -72,31 +72,32 @@ PotentialMethodClass::PotentialMethodClass()
 
 	if (ROBOT_NAME == "megarover")
 	{
-		robot_id = 0;
+		robot_id = MEGAROVER;
 	}
 	else if (ROBOT_NAME == "turtlebot3")
 	{
-		robot_id = 1;
+		robot_id = TURTLEBOT3;
 	}
 
 	sub_scan=nhSub.subscribe("/scan",1,&PotentialMethodClass::scan_callback,this);
 
-	if (robot_id == 0)
+	sub_encoder = nhSub.subscribe("/potbot/odom", 1, &PotentialMethodClass::encoder_callback_sim, this);
+	if (robot_id == MEGAROVER)
 	{
 		if(IS_SIMULATOR)
 		{
-			if (!USE_AMCL) sub_encoder=nhSub.subscribe("/vmegarover/diff_drive_controller/odom",1,&PotentialMethodClass::encoder_callback_sim,this);
+			//if (!USE_AMCL) sub_encoder=nhSub.subscribe("/vmegarover/diff_drive_controller/odom",1,&PotentialMethodClass::encoder_callback_sim,this);
 			if(PUBLISH_COMMAND) pub_cmd= nhPub.advertise<geometry_msgs::Twist>("/vmegarover/diff_drive_controller/cmd_vel", 1);
 		}
 		else
 		{
-			if (!USE_AMCL) sub_encoder=nhSub.subscribe("/rover_odo",1,&PotentialMethodClass::encoder_callback,this);
+			//if (!USE_AMCL) sub_encoder=nhSub.subscribe("/rover_odo",1,&PotentialMethodClass::encoder_callback,this);
 			if(PUBLISH_COMMAND) pub_cmd= nhPub.advertise<geometry_msgs::Twist>("/rover_twist", 1);
 		}
 	}
-	else if (robot_id == 1)
+	else if (robot_id == TURTLEBOT3)
 	{
-		if (!USE_AMCL) sub_encoder = nhSub.subscribe("/odom", 1, &PotentialMethodClass::encoder_callback_sim, this);
+		//if (!USE_AMCL) sub_encoder = nhSub.subscribe("/odom", 1, &PotentialMethodClass::encoder_callback_sim, this);
 		if(PUBLISH_COMMAND) pub_cmd = nhPub.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 	}
 
@@ -105,7 +106,7 @@ PotentialMethodClass::PotentialMethodClass()
 	sub_cluster = nhSub.subscribe("classificationDataEstimateVelocity", 1, &PotentialMethodClass::cluster_callback, this);
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PotentialMethodClass::coefficient_callback, this);
 	
-	pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
+	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("/potbot/ShortestDistance", 1);
 	pub_PV = nhPub.advertise<potbot::PotentialValue>("/potbot/PotentialValue", 1);
 	pub_PP = nhPub.advertise<potbot::PathPlan>("/potbot/Path", 1);

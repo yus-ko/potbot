@@ -824,7 +824,7 @@ void bezier(std::vector<geometry_msgs::Vector3>& points)
     }
 
     int bezier_idx = 0;
-    for (double t = 0.0; t <= 1.0; t += 0.1)
+    for (double t = 0.0; t <= 1.0; t += 0.01)
     {
         points.resize(bezier_idx+1);
         for (double i = 0.0; i <= n-1.0; i++)
@@ -1185,19 +1185,19 @@ void PotentialMethodClass::path_planning()
     //     }
     // }
     
-    //if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
+    if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
 
-    bool use_spline = true;
-    for(int i = 1; i < robot_path.size(); i++)
-    {
-        if (robot_path[i].x == robot_path[i-1].x)
-        {
-            use_spline = false;
-            break;
-        }
-    }
-    if (use_spline) spline(robot_path);
-
+    // bool use_spline = true;
+    // for(int i = 1; i < robot_path.size(); i++)
+    // {
+    //     if (robot_path[i].x == robot_path[i-1].x)
+    //     {
+    //         use_spline = false;
+    //         break;
+    //     }
+    // }
+    // if (use_spline) spline(robot_path);
+    
     double angle_sum = 0;
     for (int i = 0; i < robot_path.size()-1; i++)
     {
@@ -1269,7 +1269,7 @@ void PotentialMethodClass::publishcmd()
 }
 void PotentialMethodClass::publishodom()
 {
-    pub_odom.publish(odom);
+    //pub_odom.publish(odom);
     odom_pre = odom;
 }
 void PotentialMethodClass::publishShortestDistance()

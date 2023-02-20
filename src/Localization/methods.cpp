@@ -13,6 +13,8 @@ void LocalizationClass::encoder_callback(const geometry_msgs::Twist& msg)
 void LocalizationClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
 {
     //encoder_value.header = msg.header;
+    odom_.pose = msg.pose;
+    odom_.twist = msg.twist;
     encoder_value_ = msg.twist.twist;
     header_ = msg.header;
     //std::cout<<msg.header<<std::endl;
@@ -211,20 +213,37 @@ double LocalizationClass::match_rate(nav_msgs::OccupancyGrid local,nav_msgs::Occ
 
 void LocalizationClass::manage()
 {
-    if (false&&encoder_first_)
+    if (header_pre_.stamp.toSec() != 0.0)
     {
-        create_particle();
-
-        if (header_.stamp.toSec() > resampling_time_.stamp.toSec() + 2)
-        {
-            resampling_time_ = header_;
-            resampling();
-        }
-
         nav_msgs::Odometry odom;
         odom.header = header_;
-        odom.pose.pose = particles_.markers[maximum_likefood_particle_id_].pose;
+
+        if (localization_method_id_ == PARTICLE_FILTER)
+        {
+            //パーティクル生成
+            create_particle();
+
+            //2秒毎にリサンプリング
+            if (header_.stamp.toSec() > resampling_time_.stamp.toSec() + 2)
+            {
+                resampling_time_ = header_;
+                resampling();
+            }
+
+            //尤度値の最も高いパーティクルを自己位置とする
+            
+            odom.pose.pose = particles_.markers[maximum_likefood_particle_id_].pose;
+            
+        }
+        else if(localization_method_id_ == DEAD_RECKONING)
+        {
+            odom.pose = odom_.pose;
+            odom.twist = odom_.twist;
+            //odometry();
+        }
+        
         pub_odom_.publish(odom);
+        
     }
     else
     {
@@ -232,6 +251,37 @@ void LocalizationClass::manage()
     }
     header_pre_ = header_;
 
+}
+
+void LocalizationClass::odometry()
+{
+    static nav_msgs::Odometry odom;
+    odom.header = header_;
+    static double time_pre = 0;
+    static double theta = 0;    //初期姿勢
+    static double x = 0;    //初期位置
+    static double y = 0;    //初期位置
+    if (time_pre != 0)
+    {
+        double vel = encoder_value_.linear.x;
+        double ang = encoder_value_.angular.z;
+        double dt = header_.stamp.toSec() - time_pre;
+
+        theta += ang*dt;
+        x += vel*cos(theta)*dt;
+        y += vel*sin(theta)*dt;
+        
+        geometry_msgs::Quaternion quat_msg;
+        tf2::Quaternion quat;
+        quat.setRPY(0, 0, theta);
+        tf2::convert(quat, quat_msg);
+
+        odom.pose.pose.position.x = x;
+        odom.pose.pose.position.y = y;
+        odom.pose.pose.orientation = quat_msg;
+        pub_odom_.publish(odom);
+    }
+    time_pre = header_.stamp.toSec();
 }
 
 double LocalizationClass::draw_gaussian(double mu, double sigma)

@@ -1,0 +1,8 @@
+<launch>
+ <node pkg="potbot" name="potbot_co" type="potbot_co" output="screen">
+  <param name="ROBOT_NAME" value="turtlebot3"/>
+  <!--megarover turtlebot3-->
+  <param name="IS_SIMULATOR" value="false"/>
+  <param name="PATH_PLANNING_FILE" value="$(find potbot)/path/route_robo_2.csv"/>
+ </node>
+</launch>
