@@ -5,16 +5,16 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/Path.h>
 #include <sensor_msgs/LaserScan.h>
 #include <potbot/PotentialValue.h>
-#include <potbot/PathPlan.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <std_msgs/Float32.h>
 #include <potbot/ClassificationVelocityData.h>
 
 //クラスの定義
-class PotentialMethodClass{
+class PathPlanningClass{
 
     private:
         tf::TransformBroadcaster robotState_broadcaster;
@@ -31,8 +31,9 @@ class PotentialMethodClass{
 		ros::NodeHandle nhPub;
         ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP;
 
+        std_msgs::Header header_;
+
         ros::Time encoder_time_pre, potential_time_pre, manage_time, manage_time_pre;
-        ros::WallTime start_time;
         geometry_msgs::Twist encoder_value, cmd;
         nav_msgs::Odometry odom, odom_pre, odom_msg;
         double bottom_v = 0,bottom_omega = 0;
@@ -43,7 +44,7 @@ class PotentialMethodClass{
 
         geometry_msgs::PoseWithCovarianceStamped pwcs_msg;
 
-        int robot_id = 0, path_planning_id = 1;
+        int path_planning_id = POTENTIAL_METHOD;
 
         bool encoder_first = false, scan_first = false;
 
@@ -66,12 +67,11 @@ class PotentialMethodClass{
         potbot::PotentialValue PV;
 
         std::vector<int> exploration_arr;
-        std::vector<geometry_msgs::Vector3> robot_path;
+        //std::vector<geometry_msgs::Vector3> robot_path;
+        nav_msgs::Path robot_path;
         std::vector<int> centered;
-        bool path_update = true;
         geometry_msgs::Vector3 sub_start;
         int robot_path_index = 0, robot_path_index_pre = 0;
-        potbot::PathPlan PP;
         
         ros::Time path_update_timestamp;
 
@@ -82,20 +82,20 @@ class PotentialMethodClass{
 
         potbot::ClassificationVelocityData pcl_cluster;
 
-        std::string ROBOT_NAME, PATH_PLANNING_METHOD, PATH_PLANNING_FILE;
-        bool IS_SIMULATOR, PUBLISH_COMMAND, ANGLE_CORRECTION, PID_CONTROL, USE_AMCL;
+        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE;
+        bool ANGLE_CORRECTION, PID_CONTROL, USE_AMCL;
         double MAX_VELOCITY, MAX_ANGULAR, TARGET_POSITION_X, TARGET_POSITION_Y;
         double GAIN_PROPORTIONAL, GAIN_INTEGRAL, GAIN_DIFFERENTIAL;
-        double PATH_TRACKING_MARGIN, PATH_CREATE_PERIOD, POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
+        double TARGET_POSITION_MARGIN, PATH_CREATE_PERIOD, POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
         double POTENTIAL_BIAS_COEFFICIENT_0, POTENTIAL_BIAS_COEFFICIENT_1, AHEAD_PATH, EXCLUDE_LRF;
         bool CALCULATE_BIAS;
 
     public:
         //in constracter.cpp
         //コンストラクタ：クラス定義に呼び出されるメソッド
-        PotentialMethodClass();
+        PathPlanningClass();
         //デストラクタ：クラスが消滅するときに呼びだされるメソッド
-        ~PotentialMethodClass();
+        ~PathPlanningClass();
         //メソッド：関数のようなもの:後でlaunchファイルからの読み込みメソッドを追加
         //in property.cpp
         //セット：内部パラメータの書き込み
@@ -111,8 +111,6 @@ class PotentialMethodClass{
         void get_topic();
 
         void manage();
-
-        void odometry();
 
         void transform_obstacle_pos();
 
@@ -133,12 +131,7 @@ class PotentialMethodClass{
         void cont_vel(double vel_x, double vel_y);
         void cont_pos(double goal_x, double goal_y);
 
-        //センサデータ送信
-        void publishcmd();//データ送信
-        void publishodom();
         void publishShortestDistance();
         void publishPotentialValue();
         void publishPathPlan();
-        //データクリア
-        //void clearMessages();
 };

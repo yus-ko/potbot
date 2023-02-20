@@ -1,15 +1,15 @@
-#include<potbot/PotentialMethod.h>
+#include<potbot/PathPlanning.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-void PotentialMethodClass::encoder_callback(const geometry_msgs::Twist& msg)
+void PathPlanningClass::encoder_callback(const geometry_msgs::Twist& msg)
 {
     encoder_value = msg;
     encoder_first = true;
     manage();
 }
 
-void PotentialMethodClass::pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg)
+void PathPlanningClass::pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg)
 {
     pwcs_msg = msg;
     odom.pose.pose.position = msg.pose.pose.position;
@@ -30,34 +30,36 @@ void PotentialMethodClass::pwcs_callback(const geometry_msgs::PoseWithCovariance
     manage();
 }
 
-void PotentialMethodClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
+void PathPlanningClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
 {
+    header_ = msg.header;
     odom_msg = msg;
+    odom = msg;
     encoder_value = msg.twist.twist;
     encoder_first = true;
     manage();
 }
 
-void PotentialMethodClass::scan_callback(const sensor_msgs::LaserScan& msg)
+void PathPlanningClass::scan_callback(const sensor_msgs::LaserScan& msg)
 {
     scan = msg;
     scan_first = true;
     manage();
 }
 
-void PotentialMethodClass::coefficient_callback(const std_msgs::Float32& msg)
+void PathPlanningClass::coefficient_callback(const std_msgs::Float32& msg)
 {
     coe_0 = msg.data;
 }
 
-void PotentialMethodClass::cluster_callback(const potbot::ClassificationVelocityData& msg)
+void PathPlanningClass::cluster_callback(const potbot::ClassificationVelocityData& msg)
 {
 
     pcl_cluster = msg;
     
 }
 
-void PotentialMethodClass::get_topic()
+void PathPlanningClass::get_topic()
 {
     //時間
     manage_time_pre = manage_time;
@@ -159,142 +161,31 @@ void PotentialMethodClass::get_topic()
 
 }
 
-void PotentialMethodClass::manage()
+void PathPlanningClass::manage()
 {
     //std::cout<< "----------------------------------------" <<std::endl;
     //get_topic();
     
 
-    if (!USE_AMCL) odometry();
+    //if (!USE_AMCL) odometry();
     if (encoder_first && scan_first)
     {
         transform_obstacle_pos();
-        if (path_planning_id == 1) potential();
+        if (path_planning_id == POTENTIAL_METHOD) potential();
 
-        line_following();
         //cont_pos(2,1);
 
         // cmd.linear.x = cmd.linear.y = cmd.linear.z = 0.0;
         // cmd.angular.x = cmd.angular.y = cmd.angular.z = 0.0;
         // cmd.linear.x = 0.2;
-
-        publishcmd();
-        publishodom();
         // publishShortestDistance();
         publishPotentialValue();
         
     }
+    odom_pre = odom;
 }
 
-// void PotentialMethodClass::line_following()
-// {
-//     //std::cout<< "======================================" <<std::endl;
-//     geometry_msgs::Vector3 sub_goal = robot_path[robot_path_index];
-//     int robot_path_size = robot_path.size();
-//     //std::cout<< "robot_path_index = " << robot_path_index <<std::endl;
-
-//     double margin = 0.1;
-//     //if (robot_path_index >= robot_path_size - 1) margin = 0.01;
-
-//     if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2) + pow(odom.pose.pose.position.y - sub_goal.y,2)) <= margin)
-//     //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
-//     {
-//         robot_path_index++;
-//     }
-
-//     cmd.linear.x = cmd.linear.y = cmd.linear.z = 0.0;
-//     cmd.angular.x = cmd.angular.y = cmd.angular.z = 0.0;
-
-//     if (robot_path_index < robot_path_size)
-//     {    
-//         if (robot_path_index == robot_path_index_pre)
-//         {
-//             double y_pr = -sin(sub_start.z) * (odom.pose.pose.position.x - sub_start.x) + cos(sub_start.z) * (odom.pose.pose.position.y - sub_start.y);
-//             cmd.linear.x = 0.2;
-//             cmd.angular.z = - 1.0 * -y_pr - 5.0 * (odom.pose.pose.orientation.z - sub_start.z);
-//         }
-//         else
-//         {
-//             sub_start.x = odom.pose.pose.position.x;
-//             sub_start.y = odom.pose.pose.position.y;
-//             sub_start.z = atan2(robot_path[robot_path_index].y - odom.pose.pose.position.y, robot_path[robot_path_index].x - odom.pose.pose.position.x);
-//         }
-//     }
-
-//     if (cmd.angular.z > M_PI_2) cmd.angular.z = M_PI_2;
-//     //std::cout<< "omega = " << cmd.angular.z /M_PI*180 <<std::endl;
-
-//     //std::cout<< "sub_start : \n\tx = " << sub_start.x << "\n\ty = " << sub_start.y << "\n\tz = " << sub_start.z /M_PI*180 <<std::endl;
-//     //std::cout<< "sub_goal : \n\tx = " << sub_goal.x << "\n\ty = " << sub_goal.y << "\n\tz = " << sub_start.z /M_PI*180 <<std::endl;
-
-//     robot_path_index_pre = robot_path_index;
-// }
-
-//pure pursuite法
-void PotentialMethodClass::line_following()
-{
-    int robot_path_size = robot_path.size();
-    std::cout<< "robot_path_size = " << robot_path_size <<std::endl;
-    std::cout<< "robot_path_index = " << robot_path_index <<std::endl;
-
-    double margin = PATH_TRACKING_MARGIN;
-    //if (robot_path_index >= robot_path_size - 1) margin = 0.1;
-
-    geometry_msgs::Vector3 sub_goal;
-    double l_d;
-    path_update = false;
-    while(true)
-    {
-        sub_goal = robot_path[robot_path_index];
-        l_d = sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2) + pow(odom.pose.pose.position.y - sub_goal.y,2));
-        if (l_d <= margin)// || (sub_goal.x - odom.pose.pose.position.x < AHEAD_PATH))
-        //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
-        {
-            robot_path_index++;
-            if (robot_path_index >= robot_path_size-2)
-            {
-                path_update = true;
-                break;
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    
-
-    cmd.linear.x = cmd.linear.y = cmd.linear.z = 0.0;
-    cmd.angular.x = cmd.angular.y = cmd.angular.z = 0.0;
-
-    if (robot_path_index < robot_path_size && sqrt(pow(TARGET_POSITION_X - odom.pose.pose.position.x,2) + pow(TARGET_POSITION_Y - odom.pose.pose.position.y,2)) > margin)
-    {   
-        double alpha = atan2(sub_goal.y - odom.pose.pose.position.y, sub_goal.x - odom.pose.pose.position.x) - odom.pose.pose.orientation.z;
-
-        cmd.linear.x = 0.2;
-        cmd.angular.z = 2*cmd.linear.x*sin(alpha)/l_d;
-        if(abs(cmd.angular.z) > M_PI_2)
-        {
-            //cmd.linear.x = 0.0;
-            // path_update_timestamp = ros::Time::now();
-            // path_update = false;
-        }
-        else
-        {
-            //path_update = true;
-        }
-    
-    }
-    
-    //std::cout<< "x, y, theta = " << odom.pose.pose.position.x << ", " << odom.pose.pose.position.y << ", " << odom.pose.pose.orientation.z /M_PI*180 <<std::endl;
-    //std::cout<< "omega = " << cmd.angular.z /M_PI*180 <<std::endl;
-
-    //std::cout<< "sub_start : \n\tx = " << sub_start.x << "\n\ty = " << sub_start.y << "\n\tz = " << sub_start.z /M_PI*180 <<std::endl;
-    //std::cout<< "sub_goal : \n\tx = " << sub_goal.x << "\n\ty = " << sub_goal.y << "\n\tz = " << sub_start.z /M_PI*180 <<std::endl;
-}
-
-void PotentialMethodClass::cont_vel(double vel_x, double vel_y)
+void PathPlanningClass::cont_vel(double vel_x, double vel_y)
 {
     double vel = sqrt(pow(vel_x,2) + pow(vel_y,2));
     if (distance_to_obstacle <= 0.5) vel = 0;
@@ -311,7 +202,7 @@ void PotentialMethodClass::cont_vel(double vel_x, double vel_y)
 
 }
 
-void PotentialMethodClass::cont_pos(double goal_x, double goal_y)
+void PathPlanningClass::cont_pos(double goal_x, double goal_y)
 {
     //return;
     
@@ -364,59 +255,7 @@ void PotentialMethodClass::cont_pos(double goal_x, double goal_y)
 
 }
 
-//自己位置
-void PotentialMethodClass::odometry()
-{
-    ros::Time now = ros::Time::now();
-    odom.header.stamp = now;
-    odom.header.frame_id = "/odom";
-
-    if (odometry_firsttime)
-    {
-		encoder_time_pre = now;
-		odometry_firsttime = false;
-        odom.twist.twist.linear.x = odom.twist.twist.linear.y = odom.twist.twist.linear.z = 0.0;
-        odom.twist.twist.angular.x = odom.twist.twist.angular.y = odom.twist.twist.angular.z = 0.0;
-        odom.pose.pose.position.x = 0.0;
-        odom.pose.pose.position.y = 0.0;
-        odom.pose.pose.position.z = 0.0;
-        odom.pose.pose.orientation.x = odom.pose.pose.orientation.y = 0.0;
-        odom.pose.pose.orientation.z = 0.0;
-        odom.pose.pose.orientation.w = 1.0;
-	}
-    else
-    {
-		encoder_deltatime = now.toSec() - encoder_time_pre.toSec();
-
-        if (bottom_v == 0 && bottom_omega == 0)
-        {
-            bottom_v = encoder_value.linear.x;
-            bottom_omega = encoder_value.angular.z;
-        }
-
-        odom.pose.pose.orientation.z += (bottom_omega + encoder_value.angular.z) * encoder_deltatime / 2;
-        double vel = (bottom_v + encoder_value.linear.x) * encoder_deltatime / 2;
-        odom.pose.pose.position.x += vel * cos(odom.pose.pose.orientation.z);
-        odom.pose.pose.position.y += vel * sin(odom.pose.pose.orientation.z);
-
-        bottom_v = encoder_value.linear.x;
-        bottom_omega = encoder_value.angular.z;
-
-        //std::cout<< ros::WallTime::now() - start_time <<std::endl;
-        //std::cout<< encoder_value <<std::endl;
-		//std::cout<< odom.pose.pose<<std::endl;
-
-        // std::cout<< "odom_x     = " << odom.pose.pose.position.x <<std::endl;
-        // std::cout<< "odom_y     = " << odom.pose.pose.position.y <<std::endl;
-        // std::cout<< "odom_theta = " << odom.pose.pose.orientation.z /M_PI*180 <<std::endl;
-
-		encoder_time_pre = now;
-    }
-    //std::cout<< odom.pose.pose.position <<std::endl;
-    
-}
-
-geometry_msgs::Vector3 PotentialMethodClass::F_xd()
+geometry_msgs::Vector3 PathPlanningClass::F_xd()
 {   
     geometry_msgs::Vector3 ans;
     ans.x = -1.0 * (odom.pose.pose.position.x - TARGET_POSITION_X);
@@ -425,7 +264,7 @@ geometry_msgs::Vector3 PotentialMethodClass::F_xd()
     return ans;
 }
 
-void PotentialMethodClass::transform_obstacle_pos()
+void PathPlanningClass::transform_obstacle_pos()
 {
 
     int size = scan.ranges.size();
@@ -511,7 +350,7 @@ void PotentialMethodClass::transform_obstacle_pos()
 
 }
 
-// void PotentialMethodClass::transform_obstacle_pos()
+// void PathPlanningClass::transform_obstacle_pos()
 // {
 //     obstacle_index = 0;
 //     for (double x = 2; x <= 3; x += 0.025)
@@ -525,7 +364,7 @@ void PotentialMethodClass::transform_obstacle_pos()
 
 // }
 
-geometry_msgs::Vector3 PotentialMethodClass::rho_x(double robot_x, double robot_y)
+geometry_msgs::Vector3 PathPlanningClass::rho_x(double robot_x, double robot_y)
 {
     geometry_msgs::Vector3 ans;
     ans.z = 99999999999;
@@ -562,7 +401,7 @@ geometry_msgs::Vector3 PotentialMethodClass::rho_x(double robot_x, double robot_
     return ans;
 }
 
-geometry_msgs::Vector3 PotentialMethodClass::U_xd(double robot_x, double robot_y)
+geometry_msgs::Vector3 PathPlanningClass::U_xd(double robot_x, double robot_y)
 {
     double k_p = 1;
     geometry_msgs::Vector3 ans;
@@ -572,7 +411,7 @@ geometry_msgs::Vector3 PotentialMethodClass::U_xd(double robot_x, double robot_y
     return ans;
 }
 
-geometry_msgs::Vector3 PotentialMethodClass::U_o(double robot_x, double robot_y)
+geometry_msgs::Vector3 PathPlanningClass::U_o(double robot_x, double robot_y)
 {
     double eta = 10000;
     bool in_obstacle = false;
@@ -593,7 +432,7 @@ geometry_msgs::Vector3 PotentialMethodClass::U_o(double robot_x, double robot_y)
     return ans;
 }
 
-geometry_msgs::Vector3 PotentialMethodClass::U(double robot_x, double robot_y)
+geometry_msgs::Vector3 PathPlanningClass::U(double robot_x, double robot_y)
 {
     geometry_msgs::Vector3 ans;
     geometry_msgs::Vector3 a = U_xd(robot_x, robot_y);
@@ -603,7 +442,7 @@ geometry_msgs::Vector3 PotentialMethodClass::U(double robot_x, double robot_y)
     return ans;
 }
 
-geometry_msgs::Vector3 PotentialMethodClass::F()
+geometry_msgs::Vector3 PathPlanningClass::F()
 {
     geometry_msgs::Vector3 ans;
 
@@ -722,7 +561,7 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
     return ans;
 }
 
-// void PotentialMethodClass::path_planning()
+// void PathPlanningClass::path_planning()
 // {
 //     robot_path.resize(1);
 //     robot_path[0].x = PV.min_potential_position/PV.cols * PV.x_increment + PV.x_min;
@@ -733,7 +572,7 @@ geometry_msgs::Vector3 PotentialMethodClass::F()
     
 // }
 
-void PotentialMethodClass::create_exploration_idx(int width)
+void PathPlanningClass::create_exploration_idx(int width)
 {
     int idx = 0;
     exploration_arr.resize(idx);
@@ -797,41 +636,41 @@ double nCr(double n, double r)
     return top/bottom;
 }
 
-void bezier(std::vector<geometry_msgs::Vector3>& points)
+void bezier(nav_msgs::Path& points)
 {
     // https://www.f.waseda.jp/moriya/PUBLIC_HTML/education/classes/infomath6/applet/fractal/spline/
 
     std::cout<< "plot([";
-    for(int i = 0; i < points.size(); i++)
+    for(int i = 0; i < points.poses.size(); i++)
     {
-        std::cout<< points[i].x << " ";
+        std::cout<< points.poses[i].pose.position.x << " ";
     }
     std::cout<<"],";
     std::cout<< "[";
-    for(int i = 0; i < points.size(); i++)
+    for(int i = 0; i < points.poses.size(); i++)
     {
-        std::cout<< points[i].y << " ";
+        std::cout<< points.poses[i].pose.position.y << " ";
     }
     std::cout<<"])"<< std::endl;
 
 
-    std::vector<geometry_msgs::Vector3> points_original = points;
-    int n = points_original.size();
+    nav_msgs::Path points_original = points;
+    int n = points_original.poses.size();
 
     for (int i = 0; i < n; i++)
     {
-        points[i].x = points[i].y = 0.0;
+        points.poses[i].pose.position.x = points.poses[i].pose.position.y = 0.0;
     }
 
     int bezier_idx = 0;
     for (double t = 0.0; t <= 1.0; t += 0.01)
     {
-        points.resize(bezier_idx+1);
+        points.poses.resize(bezier_idx+1);
         for (double i = 0.0; i <= n-1.0; i++)
         {
             
-            points[bezier_idx].x += nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original[int(i)].x;
-            points[bezier_idx].y += nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original[int(i)].y;
+            points.poses[bezier_idx].pose.position.x += nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original.poses[int(i)].pose.position.x;
+            points.poses[bezier_idx].pose.position.y += nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original.poses[int(i)].pose.position.y;
         }
         //std::cout<< bezier_idx << " bezier = (" << points[bezier_idx].x << ", " << points[bezier_idx].y << ")" <<std::endl;
         bezier_idx++;
@@ -1049,10 +888,10 @@ void spline(std::vector<geometry_msgs::Vector3>& points)
 
 }
 
-void PotentialMethodClass::path_planning()
+void PathPlanningClass::path_planning()
 {
-
-    std::vector<geometry_msgs::Vector3> robot_path_tmp = robot_path;
+    robot_path.header = header_;
+    nav_msgs::Path robot_path_tmp = robot_path;
 
     int pathindex = 0;
     // std::vector<int> exploration_arr = {-PV.cols-1, -PV.cols, -PV.cols+1, 1, PV.cols+1, PV.cols, PV.cols-1, -1,-PV.cols-1,
@@ -1112,11 +951,11 @@ void PotentialMethodClass::path_planning()
         
         if (!in(p_min_idx, centered) && exist_p_min)
         {
-            robot_path.resize(pathindex+1);
+            robot_path.poses.resize(pathindex+1);
             double x_tmp = p_min_idx/PV.cols * PV.x_increment + PV.x_min;
             double y_tmp = p_min_idx%PV.cols * PV.y_increment + PV.y_min;
-            robot_path[pathindex].x   = x_tmp;
-            robot_path[pathindex++].y = y_tmp;
+            robot_path.poses[pathindex].pose.position.x   = x_tmp;
+            robot_path.poses[pathindex++].pose.position.y = y_tmp;
             double x_pre = x_tmp;
             double y_pre = y_tmp;
             
@@ -1135,15 +974,16 @@ void PotentialMethodClass::path_planning()
     
     int i = 1;
     double th = sqrt(pow(0.25,2)+pow(0.25,2));
-    while(i < robot_path.size())
+    while(i < robot_path.poses.size())
     {
-        if (sqrt(pow(robot_path[i].x - robot_path[i-1].x,2) + pow(robot_path[i].y - robot_path[i-1].y,2)) > th)
+        if (sqrt(pow(robot_path.poses[i].pose.position.x - robot_path.poses[i-1].pose.position.x,2) +
+                 pow(robot_path.poses[i].pose.position.y - robot_path.poses[i-1].pose.position.y,2)) > th)
         {
-            for (int j = i; j < robot_path.size()-1; j++)
+            for (int j = i; j < robot_path.poses.size()-1; j++)
             {
-                robot_path[j] = robot_path[j+1];
+                robot_path.poses[j] = robot_path.poses[j+1];
             }
-            robot_path.resize(robot_path.size()-1);
+            robot_path.poses.resize(robot_path.poses.size()-1);
             i = 1;
         }
         else
@@ -1152,21 +992,22 @@ void PotentialMethodClass::path_planning()
         }
     }
 
-    int pathsize = robot_path_tmp.size();
+    int pathsize = robot_path_tmp.poses.size();
     if (pathsize > 0)
     {
         double path_score = 0;
         int num = 3;
         for(int i=0; i<num; i++)
         {
-            path_score += sqrt(pow(robot_path_tmp[i].x - robot_path[i].x,2)+pow(robot_path_tmp[i].y - robot_path[i].y,2));
+            path_score += sqrt(pow(robot_path_tmp.poses[i].pose.position.x - robot_path.poses[i].pose.position.x,2) +
+                                pow(robot_path_tmp.poses[i].pose.position.y - robot_path.poses[i].pose.position.y,2));
         }
         path_score=path_score/double(num);
         std::cout<< "path score = " << path_score <<std::endl;
 
-        if (false&&robot_path.size() < 4)
+        if (false&&robot_path.poses.size() < 4)
         {
-            robot_path.resize(robot_path_tmp.size());
+            robot_path.poses.resize(robot_path_tmp.poses.size());
             robot_path = robot_path_tmp;
         }
     }
@@ -1185,7 +1026,8 @@ void PotentialMethodClass::path_planning()
     //     }
     // }
     
-    if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
+    //if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
+    bezier(robot_path);
 
     // bool use_spline = true;
     // for(int i = 1; i < robot_path.size(); i++)
@@ -1199,9 +1041,10 @@ void PotentialMethodClass::path_planning()
     // if (use_spline) spline(robot_path);
     
     double angle_sum = 0;
-    for (int i = 0; i < robot_path.size()-1; i++)
+    for (int i = 0; i < robot_path.poses.size()-1; i++)
     {
-        angle_sum += atan2(robot_path[i+1].x - robot_path[i].x,robot_path[i+1].y - robot_path[i].y);
+        angle_sum += atan2(robot_path.poses[i+1].pose.position.x - robot_path.poses[i].pose.position.x, 
+                            robot_path.poses[i+1].pose.position.y - robot_path.poses[i].pose.position.y);
     }
 
     //coe_0 = angle_sum / double(robot_path.size()-1);
@@ -1209,18 +1052,14 @@ void PotentialMethodClass::path_planning()
     //std::cout<< "coe_0 = " << coe_0 << "[rad] "<< coe_0/M_PI*180 << "[deg]"<<std::endl;
 
     //if (robot_path.size() >= 3) spline(robot_path);
-    PP.data.resize(robot_path.size());
-    PP.data = robot_path;
 
     PV.path_plan.resize(centered.size());
     PV.path_plan = centered;
-
-    publishPathPlan();
     
 }
 
 //ポテンシャル法
-void PotentialMethodClass::potential()
+void PathPlanningClass::potential()
 {
 
     // geometry_msgs::Vector3 potential_min_point = F();
@@ -1242,15 +1081,15 @@ void PotentialMethodClass::potential()
 
         ros::Time nt = ros::Time::now();
         //if ((path_update && (nt.toSec() > path_update_timestamp.toSec() + period || robot_path_index >= robot_path.size())) || wall_exists)
-        if (path_update || nt.toSec() > path_update_timestamp.toSec() + period)
+        if (nt.toSec() > path_update_timestamp.toSec() + period)
         //if (path_update)
         {
             // robot_path.resize(1);
-            robot_path_index = 0;
-            robot_path_index_pre = -1;
             path_update_timestamp = nt;
             // robot_path[0] = potential_min_point;
             path_planning();
+            if (sqrt(pow(TARGET_POSITION_X - odom.pose.pose.position.x,2) + pow(TARGET_POSITION_Y - odom.pose.pose.position.y,2)) > TARGET_POSITION_MARGIN)
+                publishPathPlan();
         }
         
     }
@@ -1263,24 +1102,15 @@ void PotentialMethodClass::potential()
 
 }
 
-void PotentialMethodClass::publishcmd()
-{
-    if (PUBLISH_COMMAND) pub_cmd.publish(cmd);
-}
-void PotentialMethodClass::publishodom()
-{
-    //pub_odom.publish(odom);
-    odom_pre = odom;
-}
-void PotentialMethodClass::publishShortestDistance()
+void PathPlanningClass::publishShortestDistance()
 {
     pub_ShortestDistance.publish(ShortestDistance);
 }
-void PotentialMethodClass::publishPotentialValue()
+void PathPlanningClass::publishPotentialValue()
 {
     pub_PV.publish(PV);
 }
-void PotentialMethodClass::publishPathPlan()
+void PathPlanningClass::publishPathPlan()
 {
-    pub_PP.publish(PP);
+    pub_PP.publish(robot_path);
 }

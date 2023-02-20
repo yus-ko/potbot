@@ -17,6 +17,7 @@ void LocalizationClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
     odom_.twist = msg.twist;
     encoder_value_ = msg.twist.twist;
     header_ = msg.header;
+    header_.frame_id = "/map";
     //std::cout<<msg.header<<std::endl;
     manage();
 }
@@ -239,7 +240,7 @@ void LocalizationClass::manage()
         {
             odom.pose = odom_.pose;
             odom.twist = odom_.twist;
-            //odometry();
+            if (robot_id_ == MEGAROVER && !IS_SIMULATOR) odometry();
         }
         
         pub_odom_.publish(odom);
@@ -279,7 +280,6 @@ void LocalizationClass::odometry()
         odom.pose.pose.position.x = x;
         odom.pose.pose.position.y = y;
         odom.pose.pose.orientation = quat_msg;
-        pub_odom_.publish(odom);
     }
     time_pre = header_.stamp.toSec();
 }

@@ -1,0 +1,8 @@
+<launch>
+
+  <include file="$(find potbot)/launch/Localization.launch"/>
+  <include file="$(find potbot)/launch/PathPlanning.launch"/>
+  <include file="$(find potbot)/launch/Controller.launch"/>
+  <include file="$(find potbot)/launch/rviz.launch"/>
+
+</launch>

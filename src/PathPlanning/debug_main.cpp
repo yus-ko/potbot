@@ -1,9 +1,9 @@
-#include<potbot/PotentialMethod.h>
+#include<potbot/PathPlanning.h>
 
 int main(int argc,char **argv){
-	ros::init(argc,argv,"potbot_pm");
+	ros::init(argc,argv,"potbot_pp");
 
-    PotentialMethodClass rcc;
+    PathPlanningClass rcc;
 	ros::spin();
 
     // ros::Rate loop_rate(5);

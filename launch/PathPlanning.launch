@@ -1,25 +1,21 @@
 <launch>
- <node pkg="potbot" name="potbot_pm" type="potbot_pm" output="screen">
-  <param name="ROBOT_NAME" value="turtlebot3"/>
-  <!--megarover turtlebot3-->
+ <node pkg="potbot" name="potbot_pp" type="potbot_pp" output="log">
   <param name="PATH_PLANNING_METHOD" value="potential_method"/>
   <!--potential_method csv-->
   <param name="PATH_PLANNING_FILE" value="$(find potbot)/path/-sin.csv"/>
   <param name="USE_AMCL" value="false"/>
-  <param name="IS_SIMULATOR" value="true"/>
-  <param name="PUBLISH_COMMAND" value="true"/>
   <param name="PID_CONTROL" value="false"/>
   <param name="ANGLE_CORRECTION" value="true"/>
   <param name="MAX_VELOCITY" value="0.5"/>
   <param name="MAX_ANGULAR" value="3.141592653589793"/>
   <param name="TARGET_POSITION_X" value="6.0"/><!--DESTINATION  -9.5, -8.0-->
   <param name="TARGET_POSITION_Y" value="0.0"/>
+  <param name="TARGET_POSITION_MARGIN" value="0.3"/>
   <param name="GAIN_PROPORTIONAL" value="1.0"/>
   <param name="GAIN_INTEGRAL" value="10.0"/>
   <param name="GAIN_DIFFERENTIAL" value="0.001"/>
   <param name="AVOIDANCE_RADIUS" value="0.4"/>
-  <param name="PATH_TRACKING_MARGIN" value="0.3"/>
-  <param name="PATH_CREATE_PERIOD" value="1.5"/>
+  <param name="PATH_CREATE_PERIOD" value="0.0"/>
   <param name="POTENTIAL_FIELD_WIDTH" value="2"/>
   <param name="POTENTIAL_FIELD_DIVDE_X" value="20"/>
   <param name="POTENTIAL_FIELD_DIVDE_Y" value="20"/>

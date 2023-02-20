@@ -32,7 +32,6 @@ add_message_files(
   PointCloudData.msg
   ClusterData.msg
   PotentialValue.msg
-  PathPlan.msg
 )
 
 generate_messages(
@@ -106,11 +105,11 @@ add_executable(${PROJECT_NAME}_estimate # manage
   src/StereoCamera/estimationVelocity/debug_methods.cpp
 )
 
-add_executable(${PROJECT_NAME}_pm
-  src/PotentialMethod/constructor.cpp
-  src/PotentialMethod/methods.cpp
-  src/PotentialMethod/debug_main.cpp
-  src/PotentialMethod/property.cpp
+add_executable(${PROJECT_NAME}_pp
+  src/PathPlanning/constructor.cpp
+  src/PathPlanning/methods.cpp
+  src/PathPlanning/debug_main.cpp
+  src/PathPlanning/property.cpp
 )
 
 add_executable(${PROJECT_NAME}_te
@@ -148,7 +147,7 @@ add_dependencies(${PROJECT_NAME}_si ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_frm ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_im ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_estimate ${PROJECT_NAME}_generate_messages_cpp)
-add_dependencies(${PROJECT_NAME}_pm ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_pp ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_te ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_rv ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_lo ${PROJECT_NAME}_generate_messages_cpp)
@@ -161,7 +160,7 @@ target_link_libraries(${PROJECT_NAME}_si ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
 target_link_libraries(${PROJECT_NAME}_frm ${catkin_LIBRARIES} ) # manege 
 target_link_libraries(${PROJECT_NAME}_im ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}) # image matching
 target_link_libraries(${PROJECT_NAME}_estimate ${catkin_LIBRARIES} ) # estimate 
-target_link_libraries(${PROJECT_NAME}_pm ${catkin_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME}_pp ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_te ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_rv ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_lo ${catkin_LIBRARIES} )

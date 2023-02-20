@@ -3,7 +3,7 @@
 void ControllerClass::odom_callback(const nav_msgs::Odometry& msg)
 {
     //encoder_value.header = msg.header;
-
+    robot_ = msg;
     double roll, pitch, yaw;
     tf2::Quaternion quat;
     tf2::convert(msg.pose.pose.orientation, quat);
@@ -16,88 +16,78 @@ void ControllerClass::odom_callback(const nav_msgs::Odometry& msg)
     manage();
 }
 
+void ControllerClass::path_callback(const nav_msgs::Path& msg)
+{
+    robot_path_ = msg;
+    robot_path_index_ = 0;
+}
+
 void ControllerClass::manage()
 {
     controller();
-    publishcmd();
+    if(PUBLISH_COMMAND) publishcmd();
 }
 
 void ControllerClass::controller()
 {
-    // bool straight = false;
-    // bool rotation = false;
+    line_following();
+}
 
-    // int size = robot_path_.size();
-    // double distance ,angle;
-    // while (robot_path_index_ < size)
-    // {
-    //     double x_diff = robot_path_[robot_path_index_].x - robot_pose_x_;
-    //     double y_diff = robot_path_[robot_path_index_].y - robot_pose_y_;
-    //     distance = sqrt(pow(x_diff,2) + pow(y_diff,2));
-    //     angle = atan2(x_diff, y_diff) - robot_pose_theta_;
-    //     if (abs(angle) < 0.3490)
-    //     {
-    //         rotation = false;
-    //         if (distance < 0.5)
-    //         {
-    //             straight = false;
-    //             robot_path_index_++;
-    //             ROS_INFO("--------------------------------------%d", robot_path_index_);
-    //         }
-    //         else
-    //         {
-    //             straight = true;
-    //             break;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         rotation = true;
-    //         break;
-    //     }
-        
-    // }
-    // geometry_msgs::Twist cmd;
-    // if (robot_path_index_ < size)
-    // {
-    //     ROS_INFO("distance: %f, angle: %f, path: %d", distance, angle/M_PI*180, robot_path_index_);
+//pure pursuite法
+void ControllerClass::line_following()
+{
+    int robot_path_size = robot_path_.poses.size();
+    if (robot_path_size == 0) return;
 
-        
-    //     ROS_INFO("straight %d: rotation %d", straight,rotation);
-    //     if (straight)
-    //         cmd.linear.x = 0.3;
-    //     if (rotation)
-    //         cmd.angular.z = angle;
-    // }
-    
-    // cmd_ = cmd;
+    std::cout<< "robot_path_size = " << robot_path_size <<std::endl;
+    std::cout<< "robot_path_index = " << robot_path_index_ <<std::endl;
 
-    geometry_msgs::Twist cmd;
-    int size = robot_path_.size();
-    while (robot_path_index_ < size)
+    double margin = PATH_TRACKING_MARGIN;
+    //if (robot_path_index >= robot_path_size - 1) margin = 0.1;
+
+    geometry_msgs::Point sub_goal;
+    double l_d;
+    while(true)
     {
-        double x_diff = robot_path_[robot_path_index_].x - robot_pose_x_;
-        double y_diff = robot_path_[robot_path_index_].y - robot_pose_y_;
-        double distance = sqrt(pow(x_diff,2) + pow(y_diff,2));
-        if (distance > 0.2)
+        sub_goal = robot_path_.poses[robot_path_index_].pose.position;
+        l_d = sqrt(pow(robot_.pose.pose.position.x - sub_goal.x,2) + pow(robot_.pose.pose.position.y - sub_goal.y,2));
+        if (l_d <= margin)// || (sub_goal.x - odom.pose.pose.position.x < AHEAD_PATH))
+        //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
+        {
+            robot_path_index_++;
+            if (robot_path_index_ >= robot_path_size-2)
+            {
+                break;
+            }
+        }
+        else
         {
             break;
         }
-        robot_path_index_++;
     }
-    ROS_INFO("%d", robot_path_index_);
-    if (robot_path_index_ < size)
-    {
-        double x_diff = robot_path_[robot_path_index_].x - robot_pose_x_;
-        double y_diff = robot_path_[robot_path_index_].y - robot_pose_y_;
+
+    
+    geometry_msgs::Twist cmd;
+
+    if (robot_path_index_ < robot_path_size)
+    {   
+        double roll, pitch, yaw;
+        tf2::Quaternion quat;
+        tf2::convert(robot_.pose.pose.orientation, quat);
+        tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+        double alpha = atan2(sub_goal.y - robot_.pose.pose.position.y, sub_goal.x - robot_.pose.pose.position.x) - yaw;
 
         cmd.linear.x = 0.2;
-        double alpha = atan2(y_diff, x_diff) - robot_pose_theta_;
-        double ld = sqrt(pow(x_diff,2) + pow(y_diff,2));
-        cmd.angular.z = 2*cmd.linear.x*sin(alpha)/ld;
+        cmd.angular.z = 2*cmd.linear.x*sin(alpha)/l_d;
+        if(abs(cmd.angular.z) > M_PI_2)
+        {
+            //cmd.linear.x = 0.0;
+        }
+    
     }
     cmd_ = cmd;
 }
+
 void ControllerClass::publishcmd()
 {
     pub_cmd_.publish(cmd_);

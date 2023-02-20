@@ -10,21 +10,13 @@ void rvizClass::PotentialValue_callback(const potbot::PotentialValue& msg)
 void rvizClass::odom_callback(const nav_msgs::Odometry& msg)
 {
     odom = msg;
-    CreatePath();
-    publishPath();
-}
-
-void rvizClass::PathPlan_callback(const potbot::PathPlan& msg)
-{
-    PP = msg;
-    addMarker_pathplan();
-    publishMarker_pathplan();
+    CreateTraj();
+    publishTraj();
 }
 
 void rvizClass::manage()
 {
-    addMarker();
-    publishMarker();
+    
 }
 
 bool is_equal(geometry_msgs::Vector3 A,geometry_msgs::Vector3 B)
@@ -130,66 +122,16 @@ void rvizClass::addMarker()
     }
 }
 
-void rvizClass::addMarker_pathplan()
-{
-
-    int PP_size = PP.data.size();
-    int marker_size = marker_array_pp.markers.size();
-    int marker_resize = marker_size + PP_size;
-
-    visualization_msgs::MarkerArray marker_array_pp_tmp;
-    marker_array_pp_tmp.markers.resize(PP_size);
-
-    int PP_index = 0;
-    for (int i = 0; i < PP_size; i++)
-    //for (int i = marker_size; i < marker_resize; i++)
-    {
-        marker_array_pp_tmp.markers[i].header.frame_id = "/odom";
-        marker_array_pp_tmp.markers[i].header.stamp = ros::Time::now();
-        marker_array_pp_tmp.markers[i].ns = "PathPlan_display";
-        marker_array_pp_tmp.markers[i].id = i;
-        marker_array_pp_tmp.markers[i].lifetime = ros::Duration();
-
-        marker_array_pp_tmp.markers[i].type = visualization_msgs::Marker::SPHERE;
-        marker_array_pp_tmp.markers[i].action = visualization_msgs::Marker::ADD;
-
-        marker_array_pp_tmp.markers[i].pose.position.x = PP.data[PP_index].x;
-        marker_array_pp_tmp.markers[i].pose.position.y = PP.data[PP_index].y;
-        marker_array_pp_tmp.markers[i].pose.position.z = 0;
-
-        marker_array_pp_tmp.markers[i].scale.x = 0.08;
-        marker_array_pp_tmp.markers[i].scale.y = 0.08;
-        marker_array_pp_tmp.markers[i].scale.z = 0.08;
-
-        marker_array_pp_tmp.markers[i].pose.orientation.x = 0.0;
-        marker_array_pp_tmp.markers[i].pose.orientation.y = 0.0;
-        marker_array_pp_tmp.markers[i].pose.orientation.z = 0.0;
-        marker_array_pp_tmp.markers[i].pose.orientation.w = 1.0;
-
-        marker_array_pp_tmp.markers[i].color.a = 1;
-        marker_array_pp_tmp.markers[i].color.r = 1;
-        marker_array_pp_tmp.markers[i].color.g = 1;
-        marker_array_pp_tmp.markers[i].color.b = 0;
-
-        PP_index++;
-
-    }
-    marker_array_pp = marker_array_pp_tmp;
-    //std::cout<< "(x,y) = (" << marker_array_pp.markers[0].pose.position.x << "," << marker_array_pp.markers[0].pose.position.y << ")" <<std::endl;
-
-}
-
-void rvizClass::CreatePath()
+void rvizClass::CreateTraj()
 {
     ros::Time now = ros::Time::now();
-
-    robot_path.header.frame_id = "/odom";
-    robot_path.header.stamp = now;
+    robot_traj_.header = odom.header;
+    robot_traj_.header.frame_id = "/map";
 
     int size = 0;
-    if (now.toSec() < CreatePath_time_pre.toSec() + 1) size = robot_path.poses.size(); 
-    robot_path.poses.resize(++size);
-    robot_path.poses[size-1].pose = odom.pose.pose;
+    if (now.toSec() < CreatePath_time_pre.toSec() + 1) size = robot_traj_.poses.size(); 
+    robot_traj_.poses.resize(++size);
+    robot_traj_.poses[size-1].pose = odom.pose.pose;
 
     CreatePath_time_pre = now;
 }
@@ -199,12 +141,7 @@ void rvizClass::publishMarker()
     pub_marker.publish(marker_array);
 }
 
-void rvizClass::publishMarker_pathplan()
+void rvizClass::publishTraj()
 {
-    pub_marker_pp.publish(marker_array_pp);
-}
-
-void rvizClass::publishPath()
-{
-    pub_path.publish(robot_path);
+    pub_path.publish(robot_traj_);
 }

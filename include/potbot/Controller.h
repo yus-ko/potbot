@@ -1,8 +1,10 @@
 //include haeders
+#include <potbot/Utility.h>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/Path.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 //クラスの定義
@@ -12,22 +14,23 @@ class ControllerClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub_;
-		ros::Subscriber sub_odom_;
+		ros::Subscriber sub_odom_, sub_path_;
         //送信データ
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_cmd_;
 
-        int robot_id_ = 0;
+        int robot_id_ = MEGAROVER;
         
         geometry_msgs::Twist cmd_;
         double robot_pose_x_ = 0, robot_pose_y_ = 0, robot_pose_theta_ = 0;
 
-        std::vector<geometry_msgs::Vector3> robot_path_;
-        int robot_path_index_ = 0;
+        nav_msgs::Path robot_path_;
 
+        int robot_path_index_ = 0;
+        nav_msgs::Odometry robot_;
         std::string ROBOT_NAME;
-        bool IS_SIMULATOR;
-        std::string PATH_PLANNING_FILE;
+        bool IS_SIMULATOR, PUBLISH_COMMAND;
+        double PATH_TRACKING_MARGIN;
 
     public:
         //in constracter.cpp
@@ -42,9 +45,11 @@ class ControllerClass{
         //in methods.cpp
         //--センサーデータ受信
         void odom_callback(const nav_msgs::Odometry& msg);
+        void path_callback(const nav_msgs::Path& msg);
         
         void manage();
         void controller();
+        void line_following();
         void calculate_cmd();
         void publishcmd();
 
