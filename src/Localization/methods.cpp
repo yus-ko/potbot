@@ -257,9 +257,15 @@ void LocalizationClass::manage()
 
 void LocalizationClass::odometry(nav_msgs::Odometry& odo)
 {
+<<<<<<< HEAD
     ROS_INFO("odom");
     //static nav_msgs::Odometry odom;
     odo.header = header_;
+=======
+    ROSINFO("odometry");
+    static nav_msgs::Odometry odom;
+    odom.header = header_;
+>>>>>>> 180a132760195310063ae13ca3ac1a77004ff7c3
     static double time_pre = 0;
     static double theta = 0;    //初期姿勢
     static double x = 0;    //初期位置
