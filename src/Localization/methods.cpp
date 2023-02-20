@@ -238,9 +238,10 @@ void LocalizationClass::manage()
         }
         else if(localization_method_id_ == DEAD_RECKONING)
         {
+            //ROS_INFO("manage %d",robot_id_);
             odom.pose = odom_.pose;
             odom.twist = odom_.twist;
-            if (robot_id_ == MEGAROVER && !IS_SIMULATOR) odometry();
+            if (robot_id_ == MEGAROVER && !IS_SIMULATOR) odometry(odom);
         }
         
         pub_odom_.publish(odom);
@@ -254,10 +255,11 @@ void LocalizationClass::manage()
 
 }
 
-void LocalizationClass::odometry()
+void LocalizationClass::odometry(nav_msgs::Odometry& odo)
 {
-    static nav_msgs::Odometry odom;
-    odom.header = header_;
+    ROS_INFO("odom");
+    //static nav_msgs::Odometry odom;
+    odo.header = header_;
     static double time_pre = 0;
     static double theta = 0;    //初期姿勢
     static double x = 0;    //初期位置
@@ -277,10 +279,11 @@ void LocalizationClass::odometry()
         quat.setRPY(0, 0, theta);
         tf2::convert(quat, quat_msg);
 
-        odom.pose.pose.position.x = x;
-        odom.pose.pose.position.y = y;
-        odom.pose.pose.orientation = quat_msg;
+        odo.pose.pose.position.x = x;
+        odo.pose.pose.position.y = y;
+        odo.pose.pose.orientation = quat_msg;
     }
+    std::cout<<x<<y<<theta<<std::endl;
     time_pre = header_.stamp.toSec();
 }
 

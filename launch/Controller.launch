@@ -1,5 +1,5 @@
 <launch>
- <node pkg="potbot" name="potbot_co" type="potbot_co" output="screen">
+ <node pkg="potbot" name="potbot_co" type="potbot_co" output="log">
   <param name="ROBOT_NAME" value="megarover"/>
   <!--megarover turtlebot3-->
   <param name="IS_SIMULATOR" value="false"/>

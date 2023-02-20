@@ -14,12 +14,6 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#define MEGAROVER 0
-#define TURTLEBOT3 1
-
-#define DEAD_RECKONING 0
-#define PARTICLE_FILTER 1
-
 //クラスの定義
 class LocalizationClass{
 
@@ -87,7 +81,7 @@ class LocalizationClass{
         double match_rate(nav_msgs::OccupancyGrid local,nav_msgs::OccupancyGrid world);
         
         void manage();
-        void odometry();
+        void odometry(nav_msgs::Odometry& odo);
         double draw_gaussian(double mu, double sigma);
         void reset_particle();
         void create_particle();
