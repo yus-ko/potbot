@@ -1,5 +1,5 @@
 <launch>
- <node pkg="potbot" name="potbot_lo" type="potbot_lo" output="log">
+ <node pkg="potbot" name="potbot_lo" type="potbot_lo" output="screen">
   <param name="ROBOT_NAME" value="megarover"/>
   <!--megarover turtlebot3-->
   <param name="LOCALIZATION_METHOD" value="dead_reckoning"/>

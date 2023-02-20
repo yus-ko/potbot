@@ -256,6 +256,7 @@ void LocalizationClass::manage()
 
 void LocalizationClass::odometry()
 {
+    ROSINFO("odometry");
     static nav_msgs::Odometry odom;
     odom.header = header_;
     static double time_pre = 0;
