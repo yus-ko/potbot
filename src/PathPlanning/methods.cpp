@@ -54,9 +54,15 @@ void PathPlanningClass::coefficient_callback(const std_msgs::Float32& msg)
 
 void PathPlanningClass::cluster_callback(const potbot::ClassificationVelocityData& msg)
 {
-
     pcl_cluster = msg;
-    
+}
+
+void PathPlanningClass::goal_callback(const geometry_msgs::PoseStamped& msg)
+{
+    goal_ = msg;
+    ROS_INFO("subscribe goal");
+    //std::cout<< goal_ <<std::endl;
+    pub_goal_.publish(goal_);
 }
 
 void PathPlanningClass::get_topic()
@@ -166,8 +172,6 @@ void PathPlanningClass::manage()
     //std::cout<< "----------------------------------------" <<std::endl;
     //get_topic();
     
-
-    //if (!USE_AMCL) odometry();
     if (encoder_first && scan_first)
     {
         transform_obstacle_pos();
@@ -258,8 +262,8 @@ void PathPlanningClass::cont_pos(double goal_x, double goal_y)
 geometry_msgs::Vector3 PathPlanningClass::F_xd()
 {   
     geometry_msgs::Vector3 ans;
-    ans.x = -1.0 * (odom.pose.pose.position.x - TARGET_POSITION_X);
-    ans.y = -1.0 * (odom.pose.pose.position.y - TARGET_POSITION_Y);
+    ans.x = -1.0 * (odom.pose.pose.position.x - goal_.pose.position.x);
+    ans.y = -1.0 * (odom.pose.pose.position.y - goal_.pose.position.y);
     
     return ans;
 }
@@ -272,7 +276,7 @@ void PathPlanningClass::transform_obstacle_pos()
     double maximum_angle;
     double diff_angle_min = 99999999;
     double angle_sensor = 0;
-    double angle_to_goal = atan2(TARGET_POSITION_Y - odom.pose.pose.position.y,TARGET_POSITION_X - odom.pose.pose.position.x);
+    double angle_to_goal = atan2(goal_.pose.position.y - odom.pose.pose.position.y,goal_.pose.position.x - odom.pose.pose.position.x);
 
     for (int i = 0; i < size; i++)
     {
@@ -405,8 +409,8 @@ geometry_msgs::Vector3 PathPlanningClass::U_xd(double robot_x, double robot_y)
 {
     double k_p = 1;
     geometry_msgs::Vector3 ans;
-    ans.x = 0.5 * k_p * pow(robot_x - TARGET_POSITION_X, 2.0);
-    ans.y = 0.5 * k_p * pow(robot_y - TARGET_POSITION_Y, 2.0);
+    ans.x = 0.5 * k_p * pow(robot_x - goal_.pose.position.x, 2.0);
+    ans.y = 0.5 * k_p * pow(robot_y - goal_.pose.position.y, 2.0);
     
     return ans;
 }
@@ -934,7 +938,7 @@ void PathPlanningClass::path_planning()
                 {
                     double x_tmp = idx/PV.cols * PV.x_increment + PV.x_min;
                     double y_tmp = idx%PV.cols * PV.y_increment + PV.y_min;
-                    double positiondiff = sqrt(pow(TARGET_POSITION_X - x_tmp,2) + pow(TARGET_POSITION_Y - y_tmp,2));
+                    double positiondiff = sqrt(pow(goal_.pose.position.x - x_tmp,2) + pow(goal_.pose.position.y - y_tmp,2));
                     double posediff = abs(atan2(y_tmp-y_pre,x_tmp-x_pre) - odom.pose.pose.orientation.z);
                     double J = 0.1*PV.potential_value[idx] + positiondiff + posediff;
 
@@ -1088,7 +1092,7 @@ void PathPlanningClass::potential()
             path_update_timestamp = nt;
             // robot_path[0] = potential_min_point;
             path_planning();
-            if (sqrt(pow(TARGET_POSITION_X - odom.pose.pose.position.x,2) + pow(TARGET_POSITION_Y - odom.pose.pose.position.y,2)) > TARGET_POSITION_MARGIN)
+            if (sqrt(pow(goal_.pose.position.x - odom.pose.pose.position.x,2) + pow(goal_.pose.position.y - odom.pose.pose.position.y,2)) > TARGET_POSITION_MARGIN)
                 publishPathPlan();
         }
         

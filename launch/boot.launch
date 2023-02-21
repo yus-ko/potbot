@@ -1,8 +1,27 @@
 <launch>
 
-  <include file="$(find potbot)/launch/Localization.launch"/>
-  <include file="$(find potbot)/launch/PathPlanning.launch"/>
-  <include file="$(find potbot)/launch/Controller.launch"/>
-  <include file="$(find potbot)/launch/rviz.launch"/>
+  <arg name="ROBOT_NAME" default="turtlebot3"/>
+  <!--megarover turtlebot3-->
+  <arg name="IS_SIMULATOR" default="true"/>
+  <arg name="USE_RVIZ" default="true"/>
+
+  <include file="$(find potbot)/launch/Localization.launch">
+    <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
+    <arg name="IS_SIMULATOR" value="$(arg IS_SIMULATOR)"/>
+    <arg name="USE_RVIZ" value="$(arg USE_RVIZ)"/>
+  </include>
+
+  <include file="$(find potbot)/launch/PathPlanning.launch">
+    <arg name="USE_RVIZ" value="$(arg USE_RVIZ)"/>
+  </include>
+
+  <include file="$(find potbot)/launch/Controller.launch">
+    <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
+    <arg name="IS_SIMULATOR" value="$(arg IS_SIMULATOR)"/>
+  </include>
+  
+  <group if="$(arg USE_RVIZ)">
+    <include file="$(find potbot)/launch/rviz.launch"/>
+  </group>
 
 </launch>

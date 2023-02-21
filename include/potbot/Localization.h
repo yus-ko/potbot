@@ -51,7 +51,7 @@ class LocalizationClass{
         int maximum_likefood_particle_id_ = 0;
 
         std::string ROBOT_NAME, LOCALIZATION_METHOD;
-        bool IS_SIMULATOR;
+        bool IS_SIMULATOR, USE_RVIZ;
         double COVARIANCE_VV, COVARIANCE_VOMEGA, COVARIANCE_OMEGAOMEGA, INITIAL_POSE_X, INITIAL_POSE_Y, INITIAL_POSE_THETA;
 
     public:
@@ -81,7 +81,7 @@ class LocalizationClass{
         double match_rate(nav_msgs::OccupancyGrid local,nav_msgs::OccupancyGrid world);
         
         void manage();
-        void odometry(nav_msgs::Odometry& odo);
+        void odometry();
         double draw_gaussian(double mu, double sigma);
         void reset_particle();
         void create_particle();

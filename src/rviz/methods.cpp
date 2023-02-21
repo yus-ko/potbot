@@ -130,8 +130,9 @@ void rvizClass::CreateTraj()
 
     int size = 0;
     if (now.toSec() < CreatePath_time_pre.toSec() + 1) size = robot_traj_.poses.size(); 
-    robot_traj_.poses.resize(++size);
-    robot_traj_.poses[size-1].pose = odom.pose.pose;
+    robot_traj_.poses.resize(size+1);
+    robot_traj_.poses[size].header = odom.header;
+    robot_traj_.poses[size].pose = odom.pose.pose;
 
     CreatePath_time_pre = now;
 }

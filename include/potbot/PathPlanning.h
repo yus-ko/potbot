@@ -4,6 +4,7 @@
 #include <ros/package.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <sensor_msgs/LaserScan.h>
@@ -26,12 +27,14 @@ class PathPlanningClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub;
-		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster;
+		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_;
         //送信データ
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP;
+        ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP, pub_goal_;
 
         std_msgs::Header header_;
+
+        geometry_msgs::PoseStamped goal_;
 
         ros::Time encoder_time_pre, potential_time_pre, manage_time, manage_time_pre;
         geometry_msgs::Twist encoder_value, cmd;
@@ -83,7 +86,7 @@ class PathPlanningClass{
         potbot::ClassificationVelocityData pcl_cluster;
 
         std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE;
-        bool ANGLE_CORRECTION, PID_CONTROL, USE_AMCL;
+        bool ANGLE_CORRECTION, PID_CONTROL, USE_AMCL, USE_RVIZ;
         double MAX_VELOCITY, MAX_ANGULAR, TARGET_POSITION_X, TARGET_POSITION_Y;
         double GAIN_PROPORTIONAL, GAIN_INTEGRAL, GAIN_DIFFERENTIAL;
         double TARGET_POSITION_MARGIN, PATH_CREATE_PERIOD, POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
@@ -108,6 +111,7 @@ class PathPlanningClass{
         void scan_callback(const sensor_msgs::LaserScan& msg);
         void coefficient_callback(const std_msgs::Float32& msg);
         void cluster_callback(const potbot::ClassificationVelocityData& msg);
+        void goal_callback(const geometry_msgs::PoseStamped& msg);
         void get_topic();
 
         void manage();

@@ -1,5 +1,5 @@
 <launch>
- <node pkg="potbot" name="potbot_rv" type="potbot_rv" output="screen">
+ <node pkg="potbot" name="potbot_rv" type="potbot_rv" output="log">
   <!--<param name="ROBOT_NAME" value="turtlebot3"/>-->
   <param name="POTENTIAL_VALUE_PLOT_LIMIT" value="4.0"/>
   <param name="POTENTIAL_VALUE_PLOT_SHRINK_SCALE" value="10.0"/>

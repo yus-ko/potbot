@@ -45,6 +45,18 @@ PathPlanningClass::PathPlanningClass()
 
 	if (USE_AMCL) sub_encoder = nhSub.subscribe("/amcl_pose", 1, &PathPlanningClass::pwcs_callback, this);
 
+	pub_goal_ = nhPub.advertise<geometry_msgs::PoseStamped>("/potbot/goal", 1);
+	if (USE_RVIZ)
+	{
+		sub_goal_ = nhSub.subscribe("/move_base_simple/goal", 1, &PathPlanningClass::goal_callback, this);
+	}
+	else
+	{
+		goal_.pose.position.x = TARGET_POSITION_X;
+		goal_.pose.position.y = TARGET_POSITION_Y;
+		pub_goal_.publish(goal_);
+	}
+
 	sub_cluster = nhSub.subscribe("classificationDataEstimateVelocity", 1, &PathPlanningClass::cluster_callback, this);
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PathPlanningClass::coefficient_callback, this);
 	
@@ -52,7 +64,7 @@ PathPlanningClass::PathPlanningClass()
 	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("/potbot/ShortestDistance", 1);
 	pub_PV = nhPub.advertise<potbot::PotentialValue>("/potbot/PotentialValue", 1);
 	pub_PP = nhPub.advertise<nav_msgs::Path>("/potbot/Path", 1);
-	
+
 	if (path_planning_id == CSV_PATH)
 	{
 		std::string str_buf;

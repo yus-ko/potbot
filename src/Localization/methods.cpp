@@ -37,8 +37,8 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
     //ROS_INFO("maximum likefood particle:%d",maximum_likefood_particle_id_);
     geometry_msgs::Pose origin;
-    origin.position.x = -(local_map_.info.width*local_map_.info.resolution/2) + particles_.markers[maximum_likefood_particle_id_].pose.position.x;
-    origin.position.y = -(local_map_.info.height*local_map_.info.resolution/2) + particles_.markers[maximum_likefood_particle_id_].pose.position.y;
+    origin.position.x = -(local_map_.info.width*local_map_.info.resolution/2) + odom_.pose.pose.position.x;
+    origin.position.y = -(local_map_.info.height*local_map_.info.resolution/2) + odom_.pose.pose.position.y;
     local_map_.info.origin = origin;
     
     int mapsize = local_map_.info.width*local_map_.info.height;
@@ -48,7 +48,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
     double roll, pitch, yaw;
     tf2::Quaternion quat;
-    tf2::convert(particles_.markers[maximum_likefood_particle_id_].pose.orientation, quat);
+    tf2::convert(odom_.pose.pose.orientation, quat);
     tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
     int size = scan_.ranges.size();
@@ -58,8 +58,8 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
         {
             double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
             double distance = scan_.ranges[i] + scan_.range_min;
-            double x = distance * cos(angle) + particles_.markers[maximum_likefood_particle_id_].pose.position.x;
-            double y = distance * sin(angle) + particles_.markers[maximum_likefood_particle_id_].pose.position.y;
+            double x = distance * cos(angle) + odom_.pose.pose.position.x;
+            double y = distance * sin(angle) + odom_.pose.pose.position.y;
             //ROS_INFO("%f, %f, %f, %f, %d",x,y,local_map_.info.origin.position.x,local_map_.info.origin.position.y, get_index(x,y,local_map_.info));
             local_map_.data[get_index(x,y,local_map_.info)] = 100;
         }
@@ -74,7 +74,13 @@ void LocalizationClass::inipose_callback(const geometry_msgs::PoseWithCovariance
     initial_pose_ = msg;
     ROS_INFO("subscribe initial pose");
     //std::cout<< initial_pose_ <<std::endl;
-    set_pose(initial_pose_);
+
+    odom_.header = initial_pose_.header;
+    odom_.pose = initial_pose_.pose;
+
+    if (localization_method_id_ == PARTICLE_FILTER) set_pose(initial_pose_);
+
+    pub_odom_.publish(odom_);
 }
 
 void LocalizationClass::goal_callback(const geometry_msgs::PoseStamped& msg)
@@ -183,7 +189,7 @@ int LocalizationClass::get_index(double x, double y, nav_msgs::MapMetaData info)
 
     if (index < 0)
     {
-        ROS_INFO("%f, %f, %f, %f",x,y,info.origin.position.x,info.origin.position.y);
+        //ROS_INFO("%f, %f, %f, %f",x,y,info.origin.position.x,info.origin.position.y);
         index = 0;
     }
 
@@ -216,8 +222,7 @@ void LocalizationClass::manage()
 {
     if (header_pre_.stamp.toSec() != 0.0)
     {
-        nav_msgs::Odometry odom;
-        odom.header = header_;
+        odom_.header = header_;
 
         if (localization_method_id_ == PARTICLE_FILTER)
         {
@@ -232,19 +237,16 @@ void LocalizationClass::manage()
             }
 
             //尤度値の最も高いパーティクルを自己位置とする
-            
-            odom.pose.pose = particles_.markers[maximum_likefood_particle_id_].pose;
+            odom_.pose.pose = particles_.markers[maximum_likefood_particle_id_].pose;
+            odom_.twist.twist = encoder_value_;
             
         }
         else if(localization_method_id_ == DEAD_RECKONING)
         {
-            //ROS_INFO("manage %d",robot_id_);
-            odom.pose = odom_.pose;
-            odom.twist = odom_.twist;
-            if (robot_id_ == MEGAROVER && !IS_SIMULATOR) odometry(odom);
+            if (robot_id_ == MEGAROVER && !IS_SIMULATOR) odometry();
         }
         
-        pub_odom_.publish(odom);
+        pub_odom_.publish(odom_);
         
     }
     else
@@ -255,35 +257,31 @@ void LocalizationClass::manage()
 
 }
 
-void LocalizationClass::odometry(nav_msgs::Odometry& odo)
+void LocalizationClass::odometry()
 {
-    ROSINFO("odometry");
-    static nav_msgs::Odometry odom;
-    odom.header = header_;
     static double time_pre = 0;
-    static double theta = 0;    //初期姿勢
-    static double x = 0;    //初期位置
-    static double y = 0;    //初期位置
     if (time_pre != 0)
     {
         double vel = encoder_value_.linear.x;
         double ang = encoder_value_.angular.z;
         double dt = header_.stamp.toSec() - time_pre;
 
+        double roll, pitch, theta;
+        tf2::Quaternion quat;
+        tf2::convert(odom_.pose.pose.orientation, quat);
+        tf2::Matrix3x3(quat).getRPY(roll, pitch, theta);
+
         theta += ang*dt;
-        x += vel*cos(theta)*dt;
-        y += vel*sin(theta)*dt;
+        odom_.pose.pose.position.x += vel*cos(theta)*dt;
+        odom_.pose.pose.position.y += vel*sin(theta)*dt;
         
         geometry_msgs::Quaternion quat_msg;
-        tf2::Quaternion quat;
         quat.setRPY(0, 0, theta);
         tf2::convert(quat, quat_msg);
 
-        odo.pose.pose.position.x = x;
-        odo.pose.pose.position.y = y;
-        odo.pose.pose.orientation = quat_msg;
+        odom_.pose.pose.orientation = quat_msg;
+        odom_.twist.twist = encoder_value_;
     }
-    std::cout<<x<<y<<theta<<std::endl;
     time_pre = header_.stamp.toSec();
 }
 

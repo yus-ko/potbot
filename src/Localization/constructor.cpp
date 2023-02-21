@@ -4,7 +4,7 @@ LocalizationClass::LocalizationClass()
 {
 	
 	setLaunchParam();	// lanchファイルの読み込み
-
+	
 	if (ROBOT_NAME == "megarover")
 	{
 		robot_id_ = MEGAROVER;
@@ -62,7 +62,11 @@ LocalizationClass::LocalizationClass()
 	tf2::Quaternion quat;
 	quat.setRPY(0, 0, INITIAL_POSE_THETA);
 	tf2::convert(quat, initial_pose_.pose.pose.orientation);
-	set_pose(initial_pose_);
+
+	odom_.header = initial_pose_.header;
+    odom_.pose = initial_pose_.pose;
+    if (localization_method_id_ == PARTICLE_FILTER) set_pose(initial_pose_);
+    pub_odom_.publish(odom_);
 	
 }
 LocalizationClass::~LocalizationClass(){
