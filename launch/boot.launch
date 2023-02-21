@@ -1,8 +1,8 @@
 <launch>
 
-  <arg name="ROBOT_NAME" default="turtlebot3"/>
+  <arg name="ROBOT_NAME" default="megarover"/>
   <!--megarover turtlebot3-->
-  <arg name="IS_SIMULATOR" default="true"/>
+  <arg name="IS_SIMULATOR" default="false"/>
   <arg name="USE_RVIZ" default="true"/>
 
   <include file="$(find potbot)/launch/Localization.launch">
