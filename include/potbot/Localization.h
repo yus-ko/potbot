@@ -13,6 +13,7 @@
 #include <random>
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <potbot/ClassificationVelocityData.h>
 
 //クラスの定義
 class LocalizationClass{
@@ -21,7 +22,7 @@ class LocalizationClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub_;
-		ros::Subscriber sub_encoder_, sub_scan_, sub_map_, sub_inipose_, sub_goal_, sub_point_;
+		ros::Subscriber sub_encoder_, sub_scan_, sub_map_, sub_inipose_, sub_goal_, sub_point_, sub_cluster_;
         //送信データ
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_particle_, pub_localmap_, pub_odom_;
@@ -50,6 +51,8 @@ class LocalizationClass{
 
         int maximum_likefood_particle_id_ = 0;
 
+        potbot::ClassificationVelocityData pcl_cluster_;
+
         std::string ROBOT_NAME, LOCALIZATION_METHOD;
         bool IS_SIMULATOR, USE_RVIZ;
         double COVARIANCE_VV, COVARIANCE_VOMEGA, COVARIANCE_OMEGAOMEGA, INITIAL_POSE_X, INITIAL_POSE_Y, INITIAL_POSE_THETA;
@@ -73,6 +76,7 @@ class LocalizationClass{
         void inipose_callback(const geometry_msgs::PoseWithCovarianceStamped& msg);
         void goal_callback(const geometry_msgs::PoseStamped& msg);
         void point_callback(const geometry_msgs::PointStamped& msg);
+        void cluster_callback(const potbot::ClassificationVelocityData& msg);
 
         void set_pose(geometry_msgs::PoseWithCovarianceStamped pose);
         

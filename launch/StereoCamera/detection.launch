@@ -18,9 +18,9 @@
  
   <!-- <group ns="$(arg robot_name)"> -->
     <!-- synchro and manage node -->
-    <include file="$(find potbot)/launch/synchroImageManage.launch"/>
+    <include file="$(find potbot)/launch/StereoCamera/synchroImageManage.launch"/>
     <!-- stereo node -->
-    <include file="$(find potbot)/launch/lrfCamera.launch">
+    <include file="$(find potbot)/launch/StereoCamera/lrfCamera.launch">
       <!--map parameter-->
       <arg name="localMap/width/float" value="$(arg localMap/width/float)"/>
       <arg name="localMap/height/float" value="$(arg localMap/height/float)"/>
@@ -29,7 +29,7 @@
       <arg name="lrfCamera/output_screen" value="$(arg lrfCamera/output_screen)"/>
     </include>
     <!-- clussification node -->
-    <include file="$(find potbot)/launch/classification.launch">
+    <include file="$(find potbot)/launch/StereoCamera/classification.launch">
       <!--map parameter-->
       <arg name="localMap/width/float" value="$(arg localMap/width/float)"/>
       <arg name="localMap/height/float" value="$(arg localMap/height/float)"/>
@@ -40,7 +40,7 @@
       <arg name="classification/output_screen" value="$(arg classification/output_screen)"/>
     </include>
     <!-- image matching node -->
-    <include file="$(find potbot)/launch/imageMatching.launch">
+    <include file="$(find potbot)/launch/StereoCamera/imageMatching.launch">
       <arg name="imageMatching/debugType" value="1"/>
       <!--map parameter-->
       <arg name="localMap/width/float" value="$(arg localMap/width/float)"/>
@@ -52,7 +52,7 @@
       <arg name="imageMatching/output_screen" value="$(arg imageMatching/output_screen)"/>
     </include>
     <!-- measurement velocity -->
-    <include file="$(find potbot)/launch/measurementVelocity.launch">
+    <include file="$(find potbot)/launch/StereoCamera/measurementVelocity.launch">
       <arg name="measurementVelocity/debugType" value="1"/>
       <!--debug parameter-->
       <arg name="measurementVelocity/timeRange" value="10"/>
@@ -63,7 +63,7 @@
       <arg name="measurementVelocity/output_screen" value="$(arg measurementVelocity/output_screen)"/>
     </include>
     <!-- estimation velocity -->
-    <include file="$(find potbot)/launch/velocityEstimation.launch">
+    <include file="$(find potbot)/launch/StereoCamera/velocityEstimation.launch">
       <arg name="estimationVelocity/debugType" value="1"/>
       <!--debug parameter-->
       <arg name="estimationVelocity/timeRange" value="10"/>

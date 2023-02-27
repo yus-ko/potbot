@@ -132,6 +132,12 @@ void LocalizationClass::map_callback(const nav_msgs::OccupancyGrid& msg)
 
 }
 
+void LocalizationClass::cluster_callback(const potbot::ClassificationVelocityData& msg)
+{
+    pcl_cluster_ = msg;
+    ROS_INFO("cluster");
+}
+
 void LocalizationClass::set_pose(geometry_msgs::PoseWithCovarianceStamped pose)
 {
     maximum_likefood_particle_id_ = 0;

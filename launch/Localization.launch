@@ -3,8 +3,9 @@
     <!--megarover turtlebot3-->
     <arg name="IS_SIMULATOR" default="true"/>
     <arg name="USE_RVIZ" default="false"/>
+    <arg name="OUT_PUT" default="screen"/>
 
-    <node pkg="potbot" name="potbot_lo" type="potbot_lo" output="log">
+    <node pkg="potbot" name="potbot_lo" type="potbot_lo" output="screen">
         <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
         <param name="LOCALIZATION_METHOD" value="dead_reckoning"/>
         <!--dead_reckoning particle_filter-->
