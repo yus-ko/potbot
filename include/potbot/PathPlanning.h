@@ -1,7 +1,10 @@
 //include haeders
-#include <potbot/Utility.h>
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <potbot/Utility.h>
+#include <potbot/ClassificationVelocityData.h>
+#include <potbot/PotentialValue.h>
+#include <std_msgs/Float32.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -10,14 +13,15 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/GridCells.h>
 #include <sensor_msgs/LaserScan.h>
-#include <potbot/PotentialValue.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
-#include <std_msgs/Float32.h>
-#include <potbot/ClassificationVelocityData.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <dynamic_reconfigure/server.h>
+#include <potbot/PathPlanningConfig.h>
 
 //クラスの定義
 class PathPlanningClass{
@@ -93,6 +97,11 @@ class PathPlanningClass{
 
         potbot::ClassificationVelocityData pcl_cluster;
 
+        double rho_zero_=0.3, eta_=0.02, kp_=0.1;
+
+        dynamic_reconfigure::Server<potbot::PathPlanningConfig> server_;
+  	    dynamic_reconfigure::Server<potbot::PathPlanningConfig>::CallbackType f_;
+
         std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE;
         bool ANGLE_CORRECTION, PID_CONTROL, USE_AMCL, USE_RVIZ;
         double MAX_VELOCITY, MAX_ANGULAR, TARGET_POSITION_X, TARGET_POSITION_Y;
@@ -101,6 +110,8 @@ class PathPlanningClass{
         double POTENTIAL_BIAS_COEFFICIENT_0, POTENTIAL_BIAS_COEFFICIENT_1, AHEAD_PATH, EXCLUDE_LRF;
         bool CALCULATE_BIAS;
         
+        void __param_callback(const potbot::PathPlanningConfig& param, uint32_t level);
+
         void __print_Pose(geometry_msgs::Pose pose);
         geometry_msgs::PoseStamped __get_WorldCoordinate(std::string target_frame, ros::Time time);
         std::vector<geometry_msgs::Vector3> __get_ObstacleList(nav_msgs::OccupancyGrid map);
@@ -128,6 +139,7 @@ class PathPlanningClass{
         void cluster_callback(const potbot::ClassificationVelocityData& msg);
         void goal_callback(const geometry_msgs::PoseStamped& msg);
         void local_map_callback(const nav_msgs::OccupancyGrid& msg);
+        
         
         void run();
         void manage();

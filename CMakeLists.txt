@@ -40,6 +40,10 @@ generate_messages(
   geometry_msgs
 )
 
+generate_dynamic_reconfigure_options(
+  cfg/PathPlanning.cfg
+)
+
 catkin_package(
   CATKIN_DEPENDS roscpp sensor_msgs message_runtime 
 )
@@ -106,6 +110,7 @@ add_executable(${PROJECT_NAME}_estimate # manage
 )
 
 add_executable(${PROJECT_NAME}_pp
+  src/PathPlanning/callback.cpp
   src/PathPlanning/constructor.cpp
   src/PathPlanning/methods.cpp
   src/PathPlanning/debug_main.cpp
@@ -152,6 +157,8 @@ add_dependencies(${PROJECT_NAME}_te ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_rv ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_lo ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_co ${PROJECT_NAME}_generate_messages_cpp)
+
+add_dependencies(${PROJECT_NAME}_pp ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(${PROJECT_NAME}_cc ${catkin_LIBRARIES}) # classification
 target_link_libraries(${PROJECT_NAME}_sc ${catkin_LIBRARIES}) # stereo camera

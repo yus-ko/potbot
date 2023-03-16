@@ -104,6 +104,9 @@ PathPlanningClass::PathPlanningClass()
 		publishPathPlan();
 	}
 
+	f_ = boost::bind(&PathPlanningClass::__param_callback, this, _1, _2);
+	server_.setCallback(f_);
+
 
 }
 PathPlanningClass::~PathPlanningClass(){
