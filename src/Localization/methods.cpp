@@ -29,6 +29,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
     scan_ = msg;
 
     local_map_.header = header_;
+    local_map_.header.frame_id = "/lidar";
     local_map_.info = world_map_.info;
     local_map_.info.map_load_time = header_.stamp;
     local_map_.info.width = 240;
@@ -37,8 +38,10 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
     //ROS_INFO("maximum likefood particle:%d",maximum_likefood_particle_id_);
     geometry_msgs::Pose origin;
-    origin.position.x = -(local_map_.info.width*local_map_.info.resolution/2) + odom_.pose.pose.position.x;
-    origin.position.y = -(local_map_.info.height*local_map_.info.resolution/2) + odom_.pose.pose.position.y;
+    // origin.position.x = -(local_map_.info.width*local_map_.info.resolution/2) + odom_.pose.pose.position.x;
+    // origin.position.y = -(local_map_.info.height*local_map_.info.resolution/2) + odom_.pose.pose.position.y;
+    origin.position.x = -(local_map_.info.width*local_map_.info.resolution/2);
+    origin.position.y = -(local_map_.info.height*local_map_.info.resolution/2);
     local_map_.info.origin = origin;
     
     int mapsize = local_map_.info.width*local_map_.info.height;
@@ -56,10 +59,13 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
     {
         if (!isinf(scan_.ranges[i]) && !isnan(scan_.ranges[i]))
         {
-            double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
+            // double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
+            double angle = i * scan_.angle_increment + scan_.angle_min;
             double distance = scan_.ranges[i] + scan_.range_min;
-            double x = distance * cos(angle) + odom_.pose.pose.position.x;
-            double y = distance * sin(angle) + odom_.pose.pose.position.y;
+            // double x = distance * cos(angle) + odom_.pose.pose.position.x;
+            // double y = distance * sin(angle) + odom_.pose.pose.position.y;
+            double x = distance * cos(angle);
+            double y = distance * sin(angle);
             //ROS_INFO("%f, %f, %f, %f, %d",x,y,local_map_.info.origin.position.x,local_map_.info.origin.position.y, get_index(x,y,local_map_.info));
             local_map_.data[get_index(x,y,local_map_.info)] = 100;
         }
@@ -80,7 +86,7 @@ void LocalizationClass::inipose_callback(const geometry_msgs::PoseWithCovariance
 
     if (localization_method_id_ == PARTICLE_FILTER) set_pose(initial_pose_);
 
-    pub_odom_.publish(odom_);
+    puclish_odom();
 }
 
 void LocalizationClass::goal_callback(const geometry_msgs::PoseStamped& msg)
@@ -252,7 +258,7 @@ void LocalizationClass::manage()
             if (robot_id_ == MEGAROVER && !IS_SIMULATOR) odometry();
         }
         
-        pub_odom_.publish(odom_);
+        puclish_odom();
         
     }
     else
@@ -260,6 +266,7 @@ void LocalizationClass::manage()
         encoder_first_ = true;
     }
     header_pre_ = header_;
+    tf_broadcast();
 
 }
 
@@ -430,4 +437,53 @@ void LocalizationClass::resampling()
         }
     }
     particles_ = particles_new;
+}
+
+void LocalizationClass::puclish_odom()
+{
+    pub_odom_.publish(odom_);
+    tf_broadcast();
+}
+
+void LocalizationClass::tf_broadcast()
+{
+    geometry_msgs::TransformStamped tf_map2robot;
+    tf_map2robot.header = odom_.header;
+    tf_map2robot.child_frame_id = "/robot";
+    tf_map2robot.transform.translation.x = odom_.pose.pose.position.x;
+    tf_map2robot.transform.translation.y = odom_.pose.pose.position.y;
+    tf_map2robot.transform.translation.z = odom_.pose.pose.position.z;
+    tf_map2robot.transform.rotation = odom_.pose.pose.orientation;
+    broadcaster_.sendTransform(tf_map2robot);
+
+    static tf2_ros::StaticTransformBroadcaster static_broadcaster;
+
+    geometry_msgs::TransformStamped tf_robot2lidar;
+    tf_robot2lidar.header = odom_.header;
+    tf_robot2lidar.header.frame_id = "/robot";
+    tf_robot2lidar.child_frame_id = "/lidar";
+    tf_robot2lidar.transform.translation.x = 0.1;
+    tf_robot2lidar.transform.translation.y = 0.0;
+    tf_robot2lidar.transform.translation.z = 0.1;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, 0);
+    tf_robot2lidar.transform.rotation.x = q.x();
+    tf_robot2lidar.transform.rotation.y = q.y();
+    tf_robot2lidar.transform.rotation.z = q.z();
+    tf_robot2lidar.transform.rotation.w = q.w();
+    static_broadcaster.sendTransform(tf_robot2lidar);
+
+    geometry_msgs::TransformStamped tf_robot2stereo_camera;
+    tf_robot2stereo_camera.header = odom_.header;
+    tf_robot2stereo_camera.header.frame_id = "/robot";
+    tf_robot2stereo_camera.child_frame_id = "/stereo_camera";
+    tf_robot2stereo_camera.transform.translation.x = 0.1;
+    tf_robot2stereo_camera.transform.translation.y = 0.0;
+    tf_robot2stereo_camera.transform.translation.z = 0.3;
+    q.setRPY(0, 0, 0);
+    tf_robot2stereo_camera.transform.rotation.x = q.x();
+    tf_robot2stereo_camera.transform.rotation.y = q.y();
+    tf_robot2stereo_camera.transform.rotation.z = q.z();
+    tf_robot2stereo_camera.transform.rotation.w = q.w();
+    static_broadcaster.sendTransform(tf_robot2stereo_camera);
 }

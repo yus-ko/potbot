@@ -59,10 +59,12 @@ PathPlanningClass::PathPlanningClass()
 
 	sub_cluster = nhSub.subscribe("classificationDataEstimateVelocity", 1, &PathPlanningClass::cluster_callback, this);
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PathPlanningClass::coefficient_callback, this);
+	sub_local_map_ = nhSub.subscribe("/potbot/Localmap", 1, &PathPlanningClass::local_map_callback, this);
 	
 	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("/potbot/ShortestDistance", 1);
 	pub_PV = nhPub.advertise<potbot::PotentialValue>("/potbot/PotentialValue", 1);
+	pub_pf_ = nhPub.advertise<nav_msgs::GridCells>("/potbot/pot", 1);
 	pub_PP = nhPub.advertise<nav_msgs::Path>("/potbot/Path", 1);
 
 	if (path_planning_id == CSV_PATH)

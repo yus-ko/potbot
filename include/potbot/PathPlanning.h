@@ -7,12 +7,17 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/GridCells.h>
 #include <sensor_msgs/LaserScan.h>
 #include <potbot/PotentialValue.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <std_msgs/Float32.h>
 #include <potbot/ClassificationVelocityData.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 //クラスの定義
 class PathPlanningClass{
@@ -24,21 +29,24 @@ class PathPlanningClass{
         tf::TransformBroadcaster obstacle_broadcaster;
 
         tf::TransformListener tflistener;
+        tf2_ros::Buffer tf_buffer_;
         
         //センサーデータ
 		ros::NodeHandle nhSub;
-		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_;
+		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_, sub_local_map_;
         //送信データ
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP, pub_goal_;
+        ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP, pub_goal_, pub_pf_;
 
         std_msgs::Header header_;
 
         geometry_msgs::PoseStamped goal_;
 
+        nav_msgs::OccupancyGrid local_map_;
+
         ros::Time encoder_time_pre, potential_time_pre, manage_time, manage_time_pre;
         geometry_msgs::Twist encoder_value, cmd;
-        nav_msgs::Odometry odom, odom_pre, odom_msg;
+        nav_msgs::Odometry odom, odom_pre, odom_msg, odom_;
         double bottom_v = 0,bottom_omega = 0;
         bool odometry_firsttime = true;
         sensor_msgs::LaserScan scan, scan_msg;
@@ -92,6 +100,13 @@ class PathPlanningClass{
         double TARGET_POSITION_MARGIN, PATH_CREATE_PERIOD, POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
         double POTENTIAL_BIAS_COEFFICIENT_0, POTENTIAL_BIAS_COEFFICIENT_1, AHEAD_PATH, EXCLUDE_LRF;
         bool CALCULATE_BIAS;
+        
+        void __print_Pose(geometry_msgs::Pose pose);
+        geometry_msgs::PoseStamped __get_WorldCoordinate(std::string target_frame, ros::Time time);
+        std::vector<geometry_msgs::Vector3> __get_ObstacleList(nav_msgs::OccupancyGrid map);
+        double __get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> obstacles);
+        void __create_PotentialField();
+        
 
     public:
         //in constracter.cpp
@@ -112,8 +127,9 @@ class PathPlanningClass{
         void coefficient_callback(const std_msgs::Float32& msg);
         void cluster_callback(const potbot::ClassificationVelocityData& msg);
         void goal_callback(const geometry_msgs::PoseStamped& msg);
-        void get_topic();
-
+        void local_map_callback(const nav_msgs::OccupancyGrid& msg);
+        
+        void run();
         void manage();
 
         void transform_obstacle_pos();
@@ -131,9 +147,6 @@ class PathPlanningClass{
         void create_exploration_idx(int width);
         void path_planning();
         void line_following();
-
-        void cont_vel(double vel_x, double vel_y);
-        void cont_pos(double goal_x, double goal_y);
 
         void publishShortestDistance();
         void publishPotentialValue();

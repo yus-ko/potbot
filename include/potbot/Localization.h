@@ -14,6 +14,9 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <potbot/ClassificationVelocityData.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
 
 //クラスの定義
 class LocalizationClass{
@@ -26,6 +29,8 @@ class LocalizationClass{
         //送信データ
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_particle_, pub_localmap_, pub_odom_;
+
+        tf2_ros::TransformBroadcaster broadcaster_;
 
         nav_msgs::OccupancyGrid world_map_, local_map_;
 
@@ -90,6 +95,8 @@ class LocalizationClass{
         void reset_particle();
         void create_particle();
         void resampling();
+        void puclish_odom();
+        void tf_broadcast();
 
         
 };

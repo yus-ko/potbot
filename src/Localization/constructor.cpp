@@ -29,7 +29,6 @@ LocalizationClass::LocalizationClass()
 	sub_goal_=nhSub_.subscribe("/move_base_simple/goal",1,&LocalizationClass::goal_callback,this);
 	sub_point_=nhSub_.subscribe("/clicked_point",1,&LocalizationClass::point_callback,this);
 	sub_cluster_ = nhSub_.subscribe("/classificationDataEstimateVelocity", 1, &LocalizationClass::cluster_callback, this);
-	ROS_INFO("constructor");
 
 	if (robot_id_ == MEGAROVER)
 	{

@@ -6,7 +6,6 @@ void PathPlanningClass::encoder_callback(const geometry_msgs::Twist& msg)
 {
     encoder_value = msg;
     encoder_first = true;
-    manage();
 }
 
 void PathPlanningClass::pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg)
@@ -27,24 +26,24 @@ void PathPlanningClass::pwcs_callback(const geometry_msgs::PoseWithCovarianceSta
     // std::cout<< "pwcs_callback = "<<std::endl;
     // std::cout<< odom.pose.pose <<std::endl;
     encoder_first = true;
-    manage();
 }
 
 void PathPlanningClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
 {
+    return;
     header_ = msg.header;
     odom_msg = msg;
     odom = msg;
+    //odom_ = msg;
+    //ROS_INFO("%s",odom_.header.frame_id.c_str());
     encoder_value = msg.twist.twist;
     encoder_first = true;
-    manage();
 }
 
 void PathPlanningClass::scan_callback(const sensor_msgs::LaserScan& msg)
 {
     scan = msg;
     scan_first = true;
-    manage();
 }
 
 void PathPlanningClass::coefficient_callback(const std_msgs::Float32& msg)
@@ -65,113 +64,221 @@ void PathPlanningClass::goal_callback(const geometry_msgs::PoseStamped& msg)
     pub_goal_.publish(goal_);
 }
 
-void PathPlanningClass::get_topic()
+void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
 {
-    //時間
-    manage_time_pre = manage_time;
-    manage_time = ros::Time::now();
+    local_map_ = msg;
+    ROS_INFO("subscribe local map");
+    static int cnt = -1;
+    static ros::Time transform_time;
+    if (cnt == -1)
+    {
+        transform_time = local_map_.header.stamp;
+    }
+    if (cnt++ > 10)
+    {
+        cnt = 0;
+        tf2_ros::TransformListener tf_listener(tf_buffer_);
 
-	geometry_msgs::TransformStamped state;
+        std::string target_frame = "lidar";
+        std::string source_frame = "robot";
 
-    //ロボット位置
-	state.header.stamp = manage_time;
+        geometry_msgs::TransformStamped transformStamped;
+        try{
+            transformStamped = tf_buffer_.lookupTransform(target_frame, source_frame, transform_time);
+        }
+        catch (tf2::TransformException &ex) {
+            ROS_WARN_STREAM("TF2 exception: " << ex.what());
+            return;
+        }
 
-	state.header.frame_id = "world";
-	state.child_frame_id  = "robot";
+        // 変換する座標
+        geometry_msgs::PoseStamped pose_in, pose_out;
+        pose_in.header.frame_id = source_frame;
+        pose_in.header.stamp = transform_time;
+        local_map_.info.origin;
+        pose_in.pose = local_map_.info.origin;
 
-    state.transform.translation.x = pwcs_msg.pose.pose.position.x;
-    state.transform.translation.y = pwcs_msg.pose.pose.position.y;
-    state.transform.translation.z = pwcs_msg.pose.pose.position.z;
-    state.transform.rotation = pwcs_msg.pose.pose.orientation;
+        tf2::doTransform(pose_in, pose_out, transformStamped);
 
-	robotState_broadcaster.sendTransform(state);
-    
-    //レーザーレンジファインダー位置
-    state.header.frame_id = "robot";
-	state.child_frame_id  = "LRF";
+        // 変換後の座標を表示
+        // ROS_INFO("Transformed point: (%f, %f, %f) in frame %s at time %f", 
+        //         pose_out.pose.position.x, pose_out.pose.position.y, pose_out.pose.position.z,
+        //         pose_out.header.frame_id.c_str(), pose_out.header.stamp.toSec());
+    }
+}
 
-	state.transform.translation.x = 0.0;
-	state.transform.translation.y = 0.0;
-	state.transform.translation.z = 0.0;
+void PathPlanningClass::__print_Pose(geometry_msgs::Pose pose)
+{
+    ROS_INFO("(x,y,z) = (%f, %f, %f)", 
+                pose.position.x, pose.position.y, pose.position.z);
+}
 
-    geometry_msgs::Quaternion quat = tf::createQuaternionMsgFromYaw(0);
-	state.transform.rotation = quat;
+geometry_msgs::PoseStamped PathPlanningClass::__get_WorldCoordinate(std::string target_frame, ros::Time time)
+{
+    geometry_msgs::PoseStamped Wcood;
+    tf2_ros::TransformListener tf_listener(tf_buffer_);
 
-    LRF_broadcaster.sendTransform(state);
+    geometry_msgs::TransformStamped transformStamped;
+    try{
+        transformStamped = tf_buffer_.lookupTransform("map", target_frame, time);
+    }
+    catch (tf2::TransformException &ex) {
+        ROS_WARN_STREAM("TF2 exception: " << ex.what());
+    }
+    // ROS_INFO("x: %f, y: %f, z: %f", transformStamped.transform.translation.x, transformStamped.transform.translation.y, transformStamped.transform.translation.z);
+    Wcood.header = transformStamped.header;
+    Wcood.pose.position.x = transformStamped.transform.translation.x;
+    Wcood.pose.position.y = transformStamped.transform.translation.y;
+    Wcood.pose.position.z = transformStamped.transform.translation.z;
+    Wcood.pose.orientation.x = transformStamped.transform.rotation.x;
+    Wcood.pose.orientation.y = transformStamped.transform.rotation.y;
+    Wcood.pose.orientation.z = transformStamped.transform.rotation.z;
+    Wcood.pose.orientation.w = transformStamped.transform.rotation.w;
+    return Wcood;
+}
 
-    //ステレオカメラ位置
-    state.header.frame_id = "robot";
-	state.child_frame_id  = "StereoCamera";
+void PathPlanningClass::run()
+{
+    ros::Rate loop_rate(50);
+	while (ros::ok())
+	{
+        geometry_msgs::PoseStamped robot_pose = __get_WorldCoordinate("robot", ros::Time(0));
+        header_ = robot_pose.header;
+        odom_.header = header_;
+        odom_.pose.pose = robot_pose.pose;
+        // __print_Pose(odom_.pose.pose);
 
-	state.transform.translation.x = 0.0;
-	state.transform.translation.y = 0.0;
-	state.transform.translation.z = 0.0;
+        // geometry_msgs::PoseStamped pose_in, pose_out;
+        // pose_in.header.frame_id = source_frame;
+        // pose_in.header.stamp = transform_time;
+        // local_map_.info.origin;
+        // pose_in.pose = local_map_.info.origin;
 
-    quat = tf::createQuaternionMsgFromYaw(0);
-	state.transform.rotation = quat;
+        // tf2::doTransform(pose_in, pose_out, transformStamped);
 
-    StereoCamera_broadcaster.sendTransform(state);
+        // manage();
 
-    //レーザーレンジファインダーデータ
-    int size = scan_msg.ranges.size();
-    sensor_msgs::PointCloud laserPoints_local;
-    sensor_msgs::PointCloud laserPoints_world;
-    
-    laserPoints_local.header.stamp = manage_time;
-	laserPoints_local.header.frame_id = "LRF";
+        __create_PotentialField();
 
-    laserPoints_local.points.resize(size);
-    
+		ros::spinOnce();
+		loop_rate.sleep();
+	}
+}
+
+std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_msgs::OccupancyGrid map)
+{
+    int map_size = map.data.size();
+    int map_cols = map.info.width;
+    int map_rows = map.info.height;
+    double map_ori_x = local_map_.info.origin.position.x;
+    double map_ori_y = local_map_.info.origin.position.y;
+    double map_res = map.info.resolution;
+
+    std::vector<geometry_msgs::Vector3> obstacle_arr(map_size);
+    int obs_idx = 0;
+    for (int i = 0; i < map_size; i++)
+    {
+        if (map.data[i])
+        {
+            obstacle_arr[obs_idx].x = int(i%map_cols)*map_res + map_ori_x;
+            obstacle_arr[obs_idx].y = int(i/map_cols)*map_res + map_ori_y;
+            obs_idx++;
+        }
+    }
+    obstacle_arr.resize(obs_idx);
+    return obstacle_arr;
+}
+
+double PathPlanningClass::__get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> obstacles)
+{
+    int size = obstacles.size();
+    double shortest_distance = std::numeric_limits<double>::infinity();
     for (int i = 0; i < size; i++)
     {
-        
-        double theta = i * scan_msg.angle_increment + scan_msg.angle_min;
-        
-        laserPoints_local.points[i].x = -sin(theta) * scan_msg.ranges[i];
-        laserPoints_local.points[i].y = cos(theta) * scan_msg.ranges[i];
-        laserPoints_local.points[i].z = 0;
+        double ox = obstacles[i].x;
+        double oy = obstacles[i].y;
+        double distance = sqrt(pow(x-ox,2) + pow(y-oy,2));
+        if (distance < shortest_distance)
+        {
+            shortest_distance = distance;
+        }
+    }
+    return shortest_distance;
+}
+
+void PathPlanningClass::__create_PotentialField()
+{
+
+    // geometry_msgs::PoseStamped robot_pose = __get_WorldCoordinate("robot",local_map_.header.stamp);
+    // // __print_Pose(lidar_pose.pose);
+    // double robot_x = robot_pose.pose.position.x;
+    // double robot_y = robot_pose.pose.position.y;
+
+    double robot_x = odom_.pose.pose.position.x;
+    double robot_y = odom_.pose.pose.position.y;
+
+    int map_size = local_map_.data.size();
+    int map_cols = local_map_.info.width;
+    int map_rows = local_map_.info.height;
+    double map_ori_x = local_map_.info.origin.position.x;
+    double map_ori_y = local_map_.info.origin.position.y;
+    double map_res = local_map_.info.resolution;
+
+    std::vector<geometry_msgs::Vector3> obstacles = __get_ObstacleList(local_map_);
+    int obs_size = obstacles.size();
+
+    double rho_zero = 0.3;
+    double eta = 0.001;
+    double k_p = 0.1;
+
+    nav_msgs::GridCells potential_field;
+    potential_field.header = header_;
+    potential_field.header.frame_id = "/robot";
+    potential_field.cell_width = 0.1;
+    potential_field.cell_height = 0.1;
+    potential_field.cells.resize(map_size);
+
+    for (int i = 0; i < map_size; i++)
+    {
+        double x = int(i%map_cols)*map_res + map_ori_x;
+        double y = int(i/map_cols)*map_res + map_ori_y;
+
+        double rho = __get_ShortestDistanceToObstacle(x,y,obstacles) + 0.00000000000001;
+
+        double Uo;
+        if (rho < 0.3)
+        {
+            Uo = 0.5 * eta * pow(1/rho - 1/rho_zero, 2.0);
+        }
+        else
+        {
+            Uo = 0;
+        }
+
+        double distance_to_goal = sqrt(pow(x+robot_x-6,2)+pow(y+robot_y-0,2));
+        double Ud = 0.5 * k_p * pow(distance_to_goal, 2);
+
+        double U = Ud + Uo;
+        // if (isnan(U) || isinf(U))
+        // {
+        //     ROS_INFO("%f, %f, %f, %f",x,y,Ud,Uo);
+        // }
+
+        potential_field.cells[i].x = x;
+        potential_field.cells[i].y = y;
+        potential_field.cells[i].z = U;
 
     }
-
-    // try{
-    //     tf.waitForTransform("/base_link", "/map", ros::Time(0), ros::Duration(3.0));
-    //     tf.lookupTransform("/base_link", "/map", ros::Time(0), transform);
-    //     std::cout << "transform exist\n";
-    // }
-
-    
-    std::cout<< "111111111111111111111111111111111111111111" <<std::endl;
-    //ros::Duration(5).sleep();
-    tflistener.waitForTransform("LRF", "world", manage_time, ros::Duration(3.0));
-    tflistener.transformPointCloud("LRF",manage_time,laserPoints_local,"world",laserPoints_world);
-    //std::cout<< laserPoints_world.points[540] <<std::endl;
-
-    odom.header.stamp = manage_time;
-	odom.header.frame_id = "world";
-    odom.pose.pose = pwcs_msg.pose.pose;
-
-    Eigen::Quaternionf quat1(pwcs_msg.pose.pose.orientation.x, pwcs_msg.pose.pose.orientation.y, pwcs_msg.pose.pose.orientation.z, pwcs_msg.pose.pose.orientation.w);
-
-    Eigen::Matrix3f m2=quat1.toRotationMatrix();
-	Eigen::Vector3f ea = m2.eulerAngles(1, 2, 0); 
-	std::cout<<ea(0)*180.0/M_PI<<",";//roll
-	std::cout<<ea(1)*180.0/M_PI<<",";//pitch
-	std::cout<<ea(2)*180.0/M_PI<<std::endl;//yaw
-
-    //odom.pose.pose.orientation.z = ea(2);
-
-    // state.transform.translation.y = pwcs_msg.pose.pose.position.y;
-    // state.transform.translation.z = pwcs_msg.pose.pose.position.z;
-    // state.transform.rotation = pwcs_msg.pose.pose.orientation;
-    pub_odom.publish(odom);
-
+    pub_pf_.publish(potential_field);
 }
 
 void PathPlanningClass::manage()
 {
     //std::cout<< "----------------------------------------" <<std::endl;
     //get_topic();
-    
+    ROS_INFO("pose: (%f, %f, %f)", 
+                odom_.pose.pose.position.x, odom_.pose.pose.position.y, odom_.pose.pose.position.z);
+    return;
     if (encoder_first && scan_first)
     {
         transform_obstacle_pos();
@@ -187,76 +294,6 @@ void PathPlanningClass::manage()
         
     }
     odom_pre = odom;
-}
-
-void PathPlanningClass::cont_vel(double vel_x, double vel_y)
-{
-    double vel = sqrt(pow(vel_x,2) + pow(vel_y,2));
-    if (distance_to_obstacle <= 0.5) vel = 0;
-    if (vel > 0.2) vel = 0.2;
-    double ang = atan2(vel_x, vel_y);
-
-    cmd.linear.x = cmd.linear.y = cmd.linear.z = 0.0;
-    cmd.angular.x = cmd.angular.y = cmd.angular.z = 0.0;
-    
-    cmd.linear.x = vel;
-    cmd.angular.z = ang;
-
-    std::cout<< "vel,ang = " << cmd.linear.x << "," << cmd.angular.z / M_PI * 180 <<std::endl;
-
-}
-
-void PathPlanningClass::cont_pos(double goal_x, double goal_y)
-{
-    //return;
-    
-    if (done_cont_pos)
-    {
-        done_cont_pos = false;
-        sub_goal_x = goal_x;
-        sub_goal_y = goal_y;
-    }
-
-    double odom_x = odom.pose.pose.position.x;
-    double odom_y = odom.pose.pose.position.y;
-    double odom_theta = odom.pose.pose.orientation.z - int(odom.pose.pose.orientation.z/(2*M_PI));
-    if (odom_theta > M_PI) odom_theta -= 2*M_PI;
-
-    start_x = odom_x;
-    start_y = odom_y;
-    start_theta = odom_theta;
-    target_distance = sqrt(pow(sub_goal_x - start_x,2) + pow(sub_goal_y - start_y,2));
-    target_angle = atan2(sub_goal_y - start_y, sub_goal_x - start_x);
-
-    std::cout<< "target_distance = " << target_distance <<std::endl;
-    std::cout<< "target_angle = " << target_angle /M_PI*180 <<std::endl;
-    std::cout<< "odom_x = " << odom_x <<std::endl;
-    std::cout<< "odom_y = " << odom_y <<std::endl;
-    std::cout<< "odom_theta = " << odom_theta /M_PI*180 <<std::endl;
-
-    cmd.linear.x = cmd.linear.y = cmd.linear.z = 0.0;
-    cmd.angular.x = cmd.angular.y = cmd.angular.z = 0.0;
-    
-    //cmd.linear.x = 0.2;
-    cmd.linear.x = sub_goal_x - start_x;
-    //cmd.linear.x = target_distance - sqrt(pow(start_x,2) + pow(start_y,2));
-
-    double theta_error = target_angle - odom_theta;
-
-    double cont_pos_time_now = ros::Time::now().toSec();
-    if (cont_pos_time_pre > 0) integral_theta_error += integral_theta_error * (cont_pos_time_now - cont_pos_time_pre);
-    cont_pos_time_pre = cont_pos_time_now;
-
-    cmd.angular.z = theta_error;
-    if (abs(theta_error) > M_PI_4) cmd.linear.x = 0;
-    std::cout<< "vel,ang = " << cmd.linear.x << "," << cmd.angular.z / M_PI * 180 <<std::endl;
-
-    //if (!done_cont_pos && odom_x >= sub_goal_x*0.8 && odom_x <= sub_goal_x*1.2 && odom_y >= sub_goal_y*0.8 && odom_y <= sub_goal_y*1.2)
-    if (!done_cont_pos && abs(odom_x) >= abs(sub_goal_x)*0.8 && abs(odom_y) >= abs(sub_goal_y)*0.8)
-    {
-        done_cont_pos = true;
-    }
-
 }
 
 geometry_msgs::Vector3 PathPlanningClass::F_xd()
@@ -1096,10 +1133,6 @@ void PathPlanningClass::potential()
                 publishPathPlan();
         }
         
-    }
-    else
-    {
-        cont_pos(0, 0);
     }
 
     //std::cout<< "vel, ang = " << cmd.linear.x << "," << cmd.angular.z/M_PI*180.0 <<std::endl;
