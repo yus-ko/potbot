@@ -5,6 +5,8 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
+#include <tf/transform_listener.h>
+#include <tf2_ros/buffer.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 //クラスの定義
@@ -19,18 +21,24 @@ class ControllerClass{
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_cmd_;
 
+        tf::TransformListener tflistener;
+        tf2_ros::Buffer tf_buffer_;
+
         int robot_id_ = MEGAROVER;
         
         geometry_msgs::Twist cmd_;
         double robot_pose_x_ = 0, robot_pose_y_ = 0, robot_pose_theta_ = 0;
 
+        nav_msgs::Odometry line_following_start_;
         nav_msgs::Path robot_path_;
 
         int robot_path_index_ = 0;
-        nav_msgs::Odometry robot_;
+        nav_msgs::Odometry robot_, odom_;
         std::string ROBOT_NAME;
         bool IS_SIMULATOR, PUBLISH_COMMAND;
         double PATH_TRACKING_MARGIN;
+
+        void __odom_callback(const nav_msgs::Odometry& msg);
 
     public:
         //in constracter.cpp
@@ -44,9 +52,10 @@ class ControllerClass{
         void setLaunchParam();//launchファイルから書き込み
         //in methods.cpp
         //--センサーデータ受信
-        void odom_callback(const nav_msgs::Odometry& msg);
         void path_callback(const nav_msgs::Path& msg);
         
+        void mainloop();
+
         void manage();
         void controller();
         void line_following();

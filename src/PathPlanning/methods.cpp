@@ -1,70 +1,39 @@
 #include<potbot/PathPlanning.h>
 
-void PathPlanningClass::__print_Pose(geometry_msgs::Pose pose)
-{
-    ROS_INFO("(x,y,z) = (%f, %f, %f)", 
-                pose.position.x, pose.position.y, pose.position.z);
-}
 
-geometry_msgs::PoseStamped PathPlanningClass::__get_WorldCoordinate(std::string target_frame, ros::Time time)
-{
-    geometry_msgs::PoseStamped Wcood;
-    tf2_ros::TransformListener tf_listener(tf_buffer_);
 
-    geometry_msgs::TransformStamped transformStamped;
-    try{
-        transformStamped = tf_buffer_.lookupTransform("map", target_frame, time);
-    }
-    catch (tf2::TransformException &ex) {
-        ROS_WARN_STREAM("TF2 exception: " << ex.what());
-    }
-    // ROS_INFO("x: %f, y: %f, z: %f", transformStamped.transform.translation.x, transformStamped.transform.translation.y, transformStamped.transform.translation.z);
-    Wcood.header = transformStamped.header;
-    Wcood.pose.position.x = transformStamped.transform.translation.x;
-    Wcood.pose.position.y = transformStamped.transform.translation.y;
-    Wcood.pose.position.z = transformStamped.transform.translation.z;
-    Wcood.pose.orientation.x = transformStamped.transform.rotation.x;
-    Wcood.pose.orientation.y = transformStamped.transform.rotation.y;
-    Wcood.pose.orientation.z = transformStamped.transform.rotation.z;
-    Wcood.pose.orientation.w = transformStamped.transform.rotation.w;
-    return Wcood;
+void PathPlanningClass::mainloop()
+{
+    ros::Rate loop_rate(10);
+	while (ros::ok())
+	{
+        
+        run();
+        loop_rate.sleep();
+		ros::spinOnce();
+	}
 }
 
 void PathPlanningClass::run()
 {
-    ros::Rate loop_rate(50);
-	while (ros::ok())
-	{
-        geometry_msgs::PoseStamped robot_pose = __get_WorldCoordinate("robot", ros::Time(0));
-        header_ = robot_pose.header;
-        odom_.header = header_;
-        odom_.pose.pose = robot_pose.pose;
-        // __print_Pose(odom_.pose.pose);
+    // geometry_msgs::PoseStamped robot_pose;
+    // while (!get_WorldCoordinate("robot", ros::Time(0), robot_pose, tf_buffer_)){}
+    // header_ = robot_pose.header;
+    // odom_.header = header_;
+    // odom_.pose.pose = robot_pose.pose;
 
-        // geometry_msgs::PoseStamped pose_in, pose_out;
-        // pose_in.header.frame_id = source_frame;
-        // pose_in.header.stamp = transform_time;
-        // local_map_.info.origin;
-        // pose_in.pose = local_map_.info.origin;
-
-        // tf2::doTransform(pose_in, pose_out, transformStamped);
-
-        // manage();
-
-        __create_PotentialField();
-
-		ros::spinOnce();
-		loop_rate.sleep();
-	}
+    __create_PotentialField();
+    __create_Path();
+    publishPathPlan();
 }
 
-std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_msgs::OccupancyGrid map)
+std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_msgs::OccupancyGrid &map)
 {
     int map_size = map.data.size();
     int map_cols = map.info.width;
     int map_rows = map.info.height;
-    double map_ori_x = local_map_.info.origin.position.x;
-    double map_ori_y = local_map_.info.origin.position.y;
+    double map_ori_x = map.info.origin.position.x;
+    double map_ori_y = map.info.origin.position.y;
     double map_res = map.info.resolution;
 
     std::vector<geometry_msgs::Vector3> obstacle_arr(map_size);
@@ -82,7 +51,7 @@ std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_ms
     return obstacle_arr;
 }
 
-double PathPlanningClass::__get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> obstacles)
+double PathPlanningClass::__get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> &obstacles)
 {
     int size = obstacles.size();
     double shortest_distance = std::numeric_limits<double>::infinity();
@@ -99,7 +68,7 @@ double PathPlanningClass::__get_ShortestDistanceToObstacle(double x, double y, s
     return shortest_distance;
 }
 
-void PathPlanningClass::__create_PotentialField()
+int PathPlanningClass::__create_PotentialField()
 {
 
     // geometry_msgs::PoseStamped robot_pose = __get_WorldCoordinate("robot",local_map_.header.stamp);
@@ -120,12 +89,21 @@ void PathPlanningClass::__create_PotentialField()
     std::vector<geometry_msgs::Vector3> obstacles = __get_ObstacleList(local_map_);
     int obs_size = obstacles.size();
 
-    nav_msgs::GridCells potential_field;
-    potential_field.header = header_;
-    potential_field.header.frame_id = "/robot";
-    potential_field.cell_width = 0.1;
-    potential_field.cell_height = 0.1;
-    potential_field.cells.resize(map_size);
+    potential_field_.header = header_;
+    potential_field_.header.frame_id = "/robot";
+    potential_field_.cell_width = map_res;
+    potential_field_.cell_height = map_res;
+    potential_field_.cells.resize(map_size);
+
+    // 変換する座標
+    geometry_msgs::PoseStamped world_goal, robot_goal;
+    world_goal.header.frame_id = "map";
+    world_goal.header.stamp = ros::Time(0);
+    world_goal.pose = goal_.pose;
+
+    robot_goal.header.frame_id = "robot";
+
+    while(!get_tf(world_goal ,robot_goal, tf_buffer_)){}
 
     for (int i = 0; i < map_size; i++)
     {
@@ -144,7 +122,7 @@ void PathPlanningClass::__create_PotentialField()
             Uo = 0;
         }
 
-        double distance_to_goal = sqrt(pow(x+robot_x-6,2)+pow(y+robot_y-0,2));
+        double distance_to_goal = sqrt(pow(x - robot_goal.pose.position.x,2)+pow(y - robot_goal.pose.position.y,2));
         double Ud = 0.5 * kp_ * pow(distance_to_goal, 2);
 
         double U = Ud + Uo;
@@ -153,20 +131,198 @@ void PathPlanningClass::__create_PotentialField()
         //     ROS_INFO("%f, %f, %f, %f",x,y,Ud,Uo);
         // }
 
-        potential_field.cells[i].x = x;
-        potential_field.cells[i].y = y;
-        potential_field.cells[i].z = U;
+        potential_field_.cells[i].x = x;
+        potential_field_.cells[i].y = y;
+        potential_field_.cells[i].z = U;
 
     }
-    pub_pf_.publish(potential_field);
+    pub_pf_.publish(potential_field_);
+    return SUCCESS;
+}
+
+double PathPlanningClass::__get_PotentialValue(double x, double y)
+{
+    int map_size = local_map_.data.size();
+    int map_cols = local_map_.info.width;
+    int map_rows = local_map_.info.height;
+    double map_ori_x = local_map_.info.origin.position.x;
+    double map_ori_y = local_map_.info.origin.position.y;
+    double map_res = local_map_.info.resolution;
+    if (map_res <= 0) return -1;
+
+    double px = x - map_ori_x;
+    double py = y - map_ori_y;
+    int col = px/map_res;
+    int row = py/map_res;
+    if (col > map_cols || row > map_rows) return -1;
+    int index = col + map_cols*row;
+    if (index > map_size || index < 0) return -1;
+    return potential_field_.cells[index].z;
+}
+
+void PathPlanningClass::__create_Path()
+{
+    nav_msgs::Path robot_path;
+    robot_path.header = header_;
+    robot_path.header.frame_id = "robot";
+
+    double center_x = 0;
+    double center_y = 0;
+    geometry_msgs::Quaternion non_angle;
+    getQuat(0,0,0,non_angle);
+    int index = -1;
+    while (true)
+    {
+        geometry_msgs::PoseStamped robot_pose;
+        robot_pose.header = header_;
+        robot_pose.header.frame_id = "robot";
+        double J_min = std::numeric_limits<double>::infinity();
+        double x,y;
+        double breakflag = false;
+        for (x = -0.1 + center_x; x <= 0.1 + center_x; x+=0.05)
+        {
+            for (y = -0.1 + center_y; y <= 0.1 + center_y; y+=0.05)
+            {
+                double PotentialValue = __get_PotentialValue(x,y);
+                double posediff;
+                if (index > -1)
+                {
+                    double x_pre = robot_path.poses[index].pose.position.x;
+                    double y_pre = robot_path.poses[index].pose.position.y;
+                    double theta = get_Yaw(robot_path.poses[index].pose.orientation);
+                    posediff = abs(atan2(y-y_pre,x-x_pre) - theta);
+                }
+                else
+                {
+                    posediff = abs(atan2(y,x));
+                }
+
+                if (index > max_path_index_ || PotentialValue <= 0 || isnan(posediff))
+                {
+                    breakflag = true;
+                    break;
+                }
+
+                double J = wu_*PotentialValue + w_theta_*posediff;
+
+                if (J < J_min) 
+                {
+                    robot_pose.pose.position.x = x;
+                    robot_pose.pose.position.y = y;
+                    J_min = J;
+                }
+            }
+            if (breakflag) break;
+        }
+
+        if (index > -1)
+        {
+            geometry_msgs::PoseStamped &pre = robot_path.poses.back();
+            if (breakflag || 
+                robot_pose.pose.position.x >= pre.pose.position.x-0.01 && 
+                robot_pose.pose.position.x <= pre.pose.position.x+0.01 &&
+                robot_pose.pose.position.y >= pre.pose.position.y-0.01 && 
+                robot_pose.pose.position.y <= pre.pose.position.y+0.01) break;
+            getQuat(0,0,atan2(robot_pose.pose.position.y-pre.pose.position.y,robot_pose.pose.position.x-pre.pose.position.x),robot_pose.pose.orientation);
+        }
+        else
+        {
+            robot_pose.pose.orientation = non_angle;
+        }
+        robot_path.poses.push_back(robot_pose);
+        index++;
+        center_x = robot_pose.pose.position.x;
+        center_y = robot_pose.pose.position.y;
+    }
+
+    if (index > -1)
+    {
+        nav_msgs::Path world_path;
+        world_path.header = header_;
+        world_path.header.frame_id = "map";
+        for (int i = 0; i <= index; i++)
+        {
+            geometry_msgs::PoseStamped world_pose;
+            world_pose.header = world_path.header;
+            while(!get_tf(robot_path.poses[i] ,world_pose, tf_buffer_)){}
+            if (get_Distance(world_pose.pose.position,goal_.pose.position) > 0.06)
+            {
+                world_path.poses.push_back(world_pose);
+            }
+            else
+            {
+                break;
+            }
+        }
+        __bezier(world_path);
+        robot_path_ = world_path;
+    }
+    
+}
+
+void PathPlanningClass::__bezier(nav_msgs::Path& points)
+{
+    // https://www.f.waseda.jp/moriya/PUBLIC_HTML/education/classes/infomath6/applet/fractal/spline/
+
+    // std::cout<< "plot([";
+    // for(int i = 0; i < points.poses.size(); i++)
+    // {
+    //     std::cout<< points.poses[i].pose.position.x << " ";
+    // }
+    // std::cout<<"],";
+    // std::cout<< "[";
+    // for(int i = 0; i < points.poses.size(); i++)
+    // {
+    //     std::cout<< points.poses[i].pose.position.y << " ";
+    // }
+    // std::cout<<"])"<< std::endl;
+
+    nav_msgs::Path points_original = points;
+    int n = points_original.poses.size();
+
+    for (int i = 0; i < n; i++)
+    {
+        points.poses[i].pose.position.x = points.poses[i].pose.position.y = 0.0;
+    }
+
+    int bezier_idx = 0;
+    double inc = 1.0/double(n*10);
+    for (double t = 0.0; t <= 1.0; t += inc)
+    {
+        points.poses.resize(bezier_idx+1);
+        for (double i = 0.0; i <= n-1.0; i++)
+        {
+            
+            points.poses[bezier_idx].pose.position.x += __nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original.poses[int(i)].pose.position.x;
+            points.poses[bezier_idx].pose.position.y += __nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original.poses[int(i)].pose.position.y;
+        }
+        //std::cout<< bezier_idx << " bezier = (" << points[bezier_idx].x << ", " << points[bezier_idx].y << ")" <<std::endl;
+        bezier_idx++;
+    }
+}
+
+double PathPlanningClass::__nCr(double n, double r)
+{
+    double top = 1.0;
+    double bottom = 1.0;
+
+    for(double i = 0.0; i < r; i++)
+    {
+        top *= n-i;
+    }
+
+    for(double i = 0.0; i < r; i++)
+    {
+        bottom *= i+1.0;
+    }
+    
+    return top/bottom;
 }
 
 void PathPlanningClass::manage()
 {
     //std::cout<< "----------------------------------------" <<std::endl;
     //get_topic();
-    ROS_INFO("pose: (%f, %f, %f)", 
-                odom_.pose.pose.position.x, odom_.pose.pose.position.y, odom_.pose.pose.position.z);
     return;
     if (encoder_first && scan_first)
     {
@@ -491,17 +647,6 @@ geometry_msgs::Vector3 PathPlanningClass::F()
     return ans;
 }
 
-// void PathPlanningClass::path_planning()
-// {
-//     robot_path.resize(1);
-//     robot_path[0].x = PV.min_potential_position/PV.cols * PV.x_increment + PV.x_min;
-//     robot_path[0].y = PV.min_potential_position%PV.cols * PV.y_increment + PV.y_min;
-
-//     PP.data.resize(robot_path.size());
-//     PP.data = robot_path;
-    
-// }
-
 void PathPlanningClass::create_exploration_idx(int width)
 {
     int idx = 0;
@@ -546,65 +691,6 @@ bool in(int num,std::vector<int> vec)
         if (vec[i] == num) return true;
     }
     return false;
-}
-
-double nCr(double n, double r)
-{
-    double top = 1.0;
-    double bottom = 1.0;
-
-    for(double i = 0.0; i < r; i++)
-    {
-        top *= n-i;
-    }
-
-    for(double i = 0.0; i < r; i++)
-    {
-        bottom *= i+1.0;
-    }
-    
-    return top/bottom;
-}
-
-void bezier(nav_msgs::Path& points)
-{
-    // https://www.f.waseda.jp/moriya/PUBLIC_HTML/education/classes/infomath6/applet/fractal/spline/
-
-    std::cout<< "plot([";
-    for(int i = 0; i < points.poses.size(); i++)
-    {
-        std::cout<< points.poses[i].pose.position.x << " ";
-    }
-    std::cout<<"],";
-    std::cout<< "[";
-    for(int i = 0; i < points.poses.size(); i++)
-    {
-        std::cout<< points.poses[i].pose.position.y << " ";
-    }
-    std::cout<<"])"<< std::endl;
-
-
-    nav_msgs::Path points_original = points;
-    int n = points_original.poses.size();
-
-    for (int i = 0; i < n; i++)
-    {
-        points.poses[i].pose.position.x = points.poses[i].pose.position.y = 0.0;
-    }
-
-    int bezier_idx = 0;
-    for (double t = 0.0; t <= 1.0; t += 0.01)
-    {
-        points.poses.resize(bezier_idx+1);
-        for (double i = 0.0; i <= n-1.0; i++)
-        {
-            
-            points.poses[bezier_idx].pose.position.x += nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original.poses[int(i)].pose.position.x;
-            points.poses[bezier_idx].pose.position.y += nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original.poses[int(i)].pose.position.y;
-        }
-        //std::cout<< bezier_idx << " bezier = (" << points[bezier_idx].x << ", " << points[bezier_idx].y << ")" <<std::endl;
-        bezier_idx++;
-    }
 }
 
 void spline(std::vector<geometry_msgs::Vector3>& points)
@@ -957,7 +1043,7 @@ void PathPlanningClass::path_planning()
     // }
     
     //if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
-    bezier(robot_path);
+    __bezier(robot_path);
 
     // bool use_spline = true;
     // for(int i = 1; i < robot_path.size(); i++)
@@ -1038,5 +1124,5 @@ void PathPlanningClass::publishPotentialValue()
 }
 void PathPlanningClass::publishPathPlan()
 {
-    pub_PP.publish(robot_path);
+    pub_PP.publish(robot_path_);
 }

@@ -53,6 +53,9 @@ LocalizationClass::LocalizationClass()
 
 	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("/potbot/Localmap", 1);
 	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
+	pub_scan0_ = nhPub_.advertise<sensor_msgs::LaserScan>("/potbot/scan0", 1);
+	pub_scan1_ = nhPub_.advertise<sensor_msgs::LaserScan>("/potbot/scan1", 1);
+	pub_segment_ = nhPub_.advertise<visualization_msgs::MarkerArray>("/potbot/segment", 1);
 
 	particles_.markers.resize(particle_num_);
 	weights_.resize(particle_num_);

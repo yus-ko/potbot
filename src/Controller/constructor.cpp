@@ -15,7 +15,7 @@ ControllerClass::ControllerClass()
 		robot_id_ = TURTLEBOT3;
 	}
 
-	sub_odom_ = nhSub_.subscribe("/potbot/odom",1,&ControllerClass::odom_callback,this);
+	sub_odom_ = nhSub_.subscribe("/potbot/odom",1,&ControllerClass::__odom_callback,this);
 	sub_path_ = nhSub_.subscribe("/potbot/Path",1,&ControllerClass::path_callback,this);
 
 	if(PUBLISH_COMMAND)

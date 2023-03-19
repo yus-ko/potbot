@@ -41,7 +41,7 @@ PathPlanningClass::PathPlanningClass()
 
 	sub_scan=nhSub.subscribe("/scan",1,&PathPlanningClass::scan_callback,this);
 
-	sub_encoder = nhSub.subscribe("/potbot/odom", 1, &PathPlanningClass::encoder_callback_sim, this);
+	// sub_encoder = nhSub.subscribe("/potbot/odom", 1, &PathPlanningClass::encoder_callback_sim, this);
 
 	if (USE_AMCL) sub_encoder = nhSub.subscribe("/amcl_pose", 1, &PathPlanningClass::pwcs_callback, this);
 
@@ -57,6 +57,7 @@ PathPlanningClass::PathPlanningClass()
 		pub_goal_.publish(goal_);
 	}
 
+	sub_odom_ = nhSub.subscribe("/potbot/odom",1,&PathPlanningClass::__odom_callback,this);
 	sub_cluster = nhSub.subscribe("classificationDataEstimateVelocity", 1, &PathPlanningClass::cluster_callback, this);
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PathPlanningClass::coefficient_callback, this);
 	sub_local_map_ = nhSub.subscribe("/potbot/Localmap", 1, &PathPlanningClass::local_map_callback, this);
@@ -106,7 +107,6 @@ PathPlanningClass::PathPlanningClass()
 
 	f_ = boost::bind(&PathPlanningClass::__param_callback, this, _1, _2);
 	server_.setCallback(f_);
-
 
 }
 PathPlanningClass::~PathPlanningClass(){

@@ -2,146 +2,165 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-void LocalizationClass::encoder_callback(const geometry_msgs::Twist& msg)
+double LocalizationClass::__Median(std::vector<double> v)
 {
-    header_.frame_id = "/map";
-    header_.stamp = ros::Time::now();
-    encoder_value_ = msg;
-    manage();
+    size_t n = v.size() / 2;
+    std::nth_element(v.begin(), v.begin() + n, v.end());
+    if (v.size() % 2 == 1) 
+    {
+        return v[n];
+    } else 
+    {
+        std::nth_element(v.begin(), v.begin() + n - 1, v.end());
+        return (v[n - 1] + v[n]) / 2.0;
+    }
 }
 
-void LocalizationClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
+void LocalizationClass::__MedianFilter(sensor_msgs::LaserScan &scan)
 {
-    //encoder_value.header = msg.header;
-    odom_.pose = msg.pose;
-    odom_.twist = msg.twist;
-    encoder_value_ = msg.twist.twist;
-    header_ = msg.header;
-    header_.frame_id = "/map";
-    //std::cout<<msg.header<<std::endl;
-    manage();
+    int window_num = 3;
+    scans_.push_back(scan);
+    int scans_size = scans_.size();
+    if (scans_size >= window_num)
+    {
+        int scan_size = scan.ranges.size();
+        for (int i = 1; i < scan_size-1; i++)
+        {
+            std::vector<double> scan_data;
+            for (int t = scans_size - window_num; t < scans_size; t++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    double data = scans_[t].ranges[i+j];
+                    if (isinf(data) || isnan(data))
+                    {
+                        data = std::numeric_limits<double>::infinity();
+                    }
+                    scan_data.push_back(data);
+                }
+            }
+            scan.ranges[i] = __Median(scan_data);
+        }
+        scans_.erase(scans_.begin());
+    }
 }
 
-void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
+void LocalizationClass::__Segmentation(sensor_msgs::LaserScan &scan, std::vector<SEGMENT> &segments)
 {
-    //ROS_INFO("scan callback");
-
-    scan_ = msg;
-
-    local_map_.header = header_;
-    local_map_.header.frame_id = "/lidar";
-    local_map_.info = world_map_.info;
-    local_map_.info.map_load_time = header_.stamp;
-    local_map_.info.width = 240;
-    local_map_.info.height = 240;
-    local_map_.info.resolution = 0.05;
-
-    //ROS_INFO("maximum likefood particle:%d",maximum_likefood_particle_id_);
-    geometry_msgs::Pose origin;
-    // origin.position.x = -(local_map_.info.width*local_map_.info.resolution/2) + odom_.pose.pose.position.x;
-    // origin.position.y = -(local_map_.info.height*local_map_.info.resolution/2) + odom_.pose.pose.position.y;
-    origin.position.x = -(local_map_.info.width*local_map_.info.resolution/2);
-    origin.position.y = -(local_map_.info.height*local_map_.info.resolution/2);
-    local_map_.info.origin = origin;
-    
-    int mapsize = local_map_.info.width*local_map_.info.height;
-
-    local_map_.data.resize(0);
-    local_map_.data.resize(mapsize);
-
-    double roll, pitch, yaw;
-    tf2::Quaternion quat;
-    tf2::convert(odom_.pose.pose.orientation, quat);
-    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-
-    int size = scan_.ranges.size();
+    int size = scan.ranges.size();
+    bool start = false;
+    SEGMENT seg;
     for (int i = 0; i < size; i++)
     {
-        if (!isinf(scan_.ranges[i]) && !isnan(scan_.ranges[i]))
+        
+        double data = scan.ranges[i];
+        if (!isinf(data) && !isnan(data))
         {
-            // double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
-            double angle = i * scan_.angle_increment + scan_.angle_min;
-            double distance = scan_.ranges[i] + scan_.range_min;
-            // double x = distance * cos(angle) + odom_.pose.pose.position.x;
-            // double y = distance * sin(angle) + odom_.pose.pose.position.y;
-            double x = distance * cos(angle);
-            double y = distance * sin(angle);
-            //ROS_INFO("%f, %f, %f, %f, %d",x,y,local_map_.info.origin.position.x,local_map_.info.origin.position.y, get_index(x,y,local_map_.info));
-            local_map_.data[get_index(x,y,local_map_.info)] = 100;
+            if(!start)
+            {
+                start = true;
+                seg.points.resize(0);
+            }
+            POINT p;
+            p.index = i;
+            p.theta = p.index * scan_.angle_increment + scan_.angle_min;
+            p.r = scan_.ranges[i] + scan_.range_min;
+            p.x = p.r * cos(p.theta);
+            p.y = p.r * sin(p.theta);
+            seg.points.push_back(p);
+            if (i == size - 1 && start)
+            {
+                segments.push_back(seg);
+            }
+        }
+        else if(start)
+        {
+            start = false;
+            segments.push_back(seg);
         }
     }
-
-    pub_localmap_.publish(local_map_);
-
 }
 
-void LocalizationClass::inipose_callback(const geometry_msgs::PoseWithCovarianceStamped& msg)
+double LocalizationClass::__distanceToLineSegment(POINT o, POINT p, POINT q)
 {
-    initial_pose_ = msg;
-    ROS_INFO("subscribe initial pose");
-    //std::cout<< initial_pose_ <<std::endl;
-
-    odom_.header = initial_pose_.header;
-    odom_.pose = initial_pose_.pose;
-
-    if (localization_method_id_ == PARTICLE_FILTER) set_pose(initial_pose_);
-
-    puclish_odom();
+    double ABx = q.x - p.x;
+    double ABy = q.y - p.y;
+    double ABlength = sqrt(pow(ABx, 2) + pow(ABy, 2));
+    double ABx_norm = ABx / ABlength;
+    double ABy_norm = ABy / ABlength;
+    double APx = o.x - p.x;
+    double APy = o.y - p.y;
+    double APdistance = sqrt(pow(APx, 2) + pow(APy, 2));
+    double dotProduct = APx * ABx_norm + APy * ABy_norm;
+    double xd = p.x + dotProduct * ABx_norm;
+    double yd = p.y + dotProduct * ABy_norm;
+    double distance = sqrt(pow(o.x - xd, 2) + pow(o.y - yd, 2));
+    return distance;
 }
 
-void LocalizationClass::goal_callback(const geometry_msgs::PoseStamped& msg)
+void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
 {
-    goal_ = msg;
-    ROS_INFO("subscribe goal");
-    //std::cout<< goal_ <<std::endl;
-}
+    segments_original = segments;   //Vc
+    segments.resize(0); //Vresult
 
-void LocalizationClass::point_callback(const geometry_msgs::PointStamped& msg)
-{
-    point_ = msg;
-    ROS_INFO("subscribe point");
-    //std::cout<< point_ <<std::endl;
-}
+    int Tn = 10;
 
-void LocalizationClass::map_callback(const nav_msgs::OccupancyGrid& msg)
-{
-    world_map_ = msg;
-    //std::cout<< world_map_.info <<std::endl;
-    //std::cout<< world_map_.data.size() <<std::endl;
-    //ROS_INFO("%d",world_map_.data[10000]);
+    while(segments_original.size() != 0)
+    {
+        int Nc0 = segments_original[0].points.size();
+        if (Nc0 > Tn)
+        {
+            //Calculate Dm of Vc[0] nad get pk that corresponds to Dm
+            POINT p = segments_original[0].points.begin();
+            POINT q = segments_original[0].points.end();
+            std::vector<double> distance;
+            for (int i = 1; i < Nc0-1; i++)
+            {
+                double d = __distanceToLineSegment(segments_original[0].points[i], p, q);
+                distance.push_back(d);
+            }
+            std::vector<double>::iterator max_itr = std::max_element(distance.begin(), distance.end());
+            double Dm = *max_itr;
+            int k = std::distance(distance.begin(), max_itr) + 1;
+            double S = sqrt(pow(q.x - p.x,2) + pow(q.y - p.y,2));
 
-    // bool print = false;
-    // for (int i = 0;i < world_map_.data.size(); i++)
-    // {
-    //     if(!print && world_map_.data[i] == 100)
-    //     {
-    //         //std::cout<< i << ",";
-    //         //printf("(%f, %f)",(i%608)*0.05 + 5.2,(i/608)*0.05 - 3);
-    //         geometry_msgs::Point p = get_coordinate(i);
-    //         printf("(%f, %f)",p.x,p.y);
-    //         printf("(%d,%d)",i,get_index(p.x,p.y));
-    //         print = true;
-    //     }
-    //     //if(i%608 == 0) std::cout<<std::endl;
-    // }
+            if (Dm > 0.2*S)
+            {
+                std::vector<SEGMENT> B1(segments_original[0].points.begin(), segments_original[0].points.begin() + k);
+                std::vector<SEGMENT> B2(segments_original[0].points.begin() + k, segments_original[0].points.end());
 
-    // for (double i = -2; i <= 2; i+=0.05)
-    // {
-    //     for (double j = -2; j <= 2; j+=0.05) 
-    //     {
-    //         double x = -9.5 + j;
-    //         double y = -0.5 + i ;
-    //         int data = world_map_.data[get_index(x,y)];
-    //         if (data == 100) ROS_INFO("(%f, %f): %d",x,y,data);
-    //     }
-    // }
+                if (k > Tn)
+                {
+                    segments_original.push_back(B1);
+                }
+                else
+                {
+                    segments.push_back(B1);
+                }
 
-}
+                if ()
+                {
+                    segments_original.push_back(B2);
+                }
+                else
+                {
+                    segments.push_back(B2);
+                }
+                segments_original.erace(segments_original.begin());
+            }
+            else
+            {
+                segments_original.erace(segments_original.begin());
+            }
+        }
+        else
+        {
+            segments.push_back(segments_original[0].points);
+            segments_original.erace(segments_original.begin());
+        }
 
-void LocalizationClass::cluster_callback(const potbot::ClassificationVelocityData& msg)
-{
-    pcl_cluster_ = msg;
-    ROS_INFO("cluster");
+
+    }
 }
 
 void LocalizationClass::set_pose(geometry_msgs::PoseWithCovarianceStamped pose)

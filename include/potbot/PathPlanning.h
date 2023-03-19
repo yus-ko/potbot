@@ -13,7 +13,6 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/GridCells.h>
 #include <sensor_msgs/LaserScan.h>
-#include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -27,17 +26,13 @@
 class PathPlanningClass{
 
     private:
-        tf::TransformBroadcaster robotState_broadcaster;
-        tf::TransformBroadcaster LRF_broadcaster;
-        tf::TransformBroadcaster StereoCamera_broadcaster;
-        tf::TransformBroadcaster obstacle_broadcaster;
 
         tf::TransformListener tflistener;
         tf2_ros::Buffer tf_buffer_;
         
         //センサーデータ
 		ros::NodeHandle nhSub;
-		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_, sub_local_map_;
+		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_, sub_local_map_, sub_odom_;
         //送信データ
 		ros::NodeHandle nhPub;
         ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP, pub_goal_, pub_pf_;
@@ -83,7 +78,7 @@ class PathPlanningClass{
 
         std::vector<int> exploration_arr;
         //std::vector<geometry_msgs::Vector3> robot_path;
-        nav_msgs::Path robot_path;
+        nav_msgs::Path robot_path, robot_path_;
         std::vector<int> centered;
         geometry_msgs::Vector3 sub_start;
         int robot_path_index = 0, robot_path_index_pre = 0;
@@ -98,6 +93,10 @@ class PathPlanningClass{
         potbot::ClassificationVelocityData pcl_cluster;
 
         double rho_zero_=0.3, eta_=0.02, kp_=0.1;
+        nav_msgs::GridCells potential_field_;
+
+        int max_path_index_ = 50;
+        double wu_=1, w_theta_=0;
 
         dynamic_reconfigure::Server<potbot::PathPlanningConfig> server_;
   	    dynamic_reconfigure::Server<potbot::PathPlanningConfig>::CallbackType f_;
@@ -110,15 +109,20 @@ class PathPlanningClass{
         double POTENTIAL_BIAS_COEFFICIENT_0, POTENTIAL_BIAS_COEFFICIENT_1, AHEAD_PATH, EXCLUDE_LRF;
         bool CALCULATE_BIAS;
         
+        void __odom_callback(const nav_msgs::Odometry& msg);
         void __param_callback(const potbot::PathPlanningConfig& param, uint32_t level);
 
-        void __print_Pose(geometry_msgs::Pose pose);
-        geometry_msgs::PoseStamped __get_WorldCoordinate(std::string target_frame, ros::Time time);
-        std::vector<geometry_msgs::Vector3> __get_ObstacleList(nav_msgs::OccupancyGrid map);
-        double __get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> obstacles);
-        void __create_PotentialField();
-        
+        double __nCr(double n, double r);
+        void __bezier(nav_msgs::Path& points);
 
+        std::vector<geometry_msgs::Vector3> __get_ObstacleList(nav_msgs::OccupancyGrid &map);
+        double __get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> &obstacles);
+        double __get_PotentialValue(double x, double y);
+        int __create_PotentialField();
+        void __create_Path();
+
+        void run();
+        
     public:
         //in constracter.cpp
         //コンストラクタ：クラス定義に呼び出されるメソッド
@@ -141,7 +145,7 @@ class PathPlanningClass{
         void local_map_callback(const nav_msgs::OccupancyGrid& msg);
         
         
-        void run();
+        void mainloop();
         void manage();
 
         void transform_obstacle_pos();

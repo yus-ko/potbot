@@ -6,17 +6,31 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/LaserScan.h>
-#include <tf/transform_broadcaster.h>
-#include <tf/transform_listener.h>
 #include <std_msgs/Float32.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
 #include <random>
+#include <algorithm>
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <potbot/ClassificationVelocityData.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
+
+#define NO_SEGMENT -1
+
+typedef struct {
+                int index=0;
+                double x=0;
+                double y=0;
+                double r=0;
+                double theta=0;
+               } POINT;
+
+typedef struct {
+                std::vector<POINT> points;
+               } SEGMENT;
 
 //クラスの定義
 class LocalizationClass{
@@ -28,7 +42,7 @@ class LocalizationClass{
 		ros::Subscriber sub_encoder_, sub_scan_, sub_map_, sub_inipose_, sub_goal_, sub_point_, sub_cluster_;
         //送信データ
         ros::NodeHandle nhPub_;
-		ros::Publisher pub_particle_, pub_localmap_, pub_odom_;
+		ros::Publisher pub_particle_, pub_localmap_, pub_odom_, pub_scan0_, pub_scan1_, pub_segment_;
 
         tf2_ros::TransformBroadcaster broadcaster_;
 
@@ -46,6 +60,7 @@ class LocalizationClass{
         geometry_msgs::Twist encoder_value_;
         nav_msgs::Odometry odom_;
         sensor_msgs::LaserScan scan_;
+        std::vector<sensor_msgs::LaserScan> scans_;
         
         visualization_msgs::MarkerArray particles_;
         std::vector<double> weights_;
@@ -61,6 +76,10 @@ class LocalizationClass{
         std::string ROBOT_NAME, LOCALIZATION_METHOD;
         bool IS_SIMULATOR, USE_RVIZ;
         double COVARIANCE_VV, COVARIANCE_VOMEGA, COVARIANCE_OMEGAOMEGA, INITIAL_POSE_X, INITIAL_POSE_Y, INITIAL_POSE_THETA;
+
+        double __Median(std::vector<double> v);
+        void __MedianFilter(sensor_msgs::LaserScan &scan);
+        void __Segmentation(sensor_msgs::LaserScan &scan, std::vector<SEGMENT> &segments);
 
     public:
         //in constracter.cpp

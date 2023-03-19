@@ -132,6 +132,7 @@ add_executable(${PROJECT_NAME}_rv
 )
 
 add_executable(${PROJECT_NAME}_lo
+  src/Localization/callback.cpp
   src/Localization/constructor.cpp
   src/Localization/methods.cpp
   src/Localization/debug_main.cpp
