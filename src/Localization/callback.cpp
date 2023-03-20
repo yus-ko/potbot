@@ -41,6 +41,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
     pub_scan1_.publish(scan_);
     std::vector<SEGMENT> segments;
     __Segmentation(scan_, segments);
+    __SplitSegments(segments);
     
 
     visualization_msgs::MarkerArray seg;

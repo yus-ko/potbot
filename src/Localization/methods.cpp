@@ -100,7 +100,7 @@ double LocalizationClass::__distanceToLineSegment(POINT o, POINT p, POINT q)
 
 void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
 {
-    segments_original = segments;   //Vc
+    std::vector<SEGMENT> segments_original = segments;   //Vc
     segments.resize(0); //Vresult
 
     int Tn = 10;
@@ -111,8 +111,8 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
         if (Nc0 > Tn)
         {
             //Calculate Dm of Vc[0] nad get pk that corresponds to Dm
-            POINT p = segments_original[0].points.begin();
-            POINT q = segments_original[0].points.end();
+            POINT p = *segments_original[0].points.begin();
+            POINT q = *segments_original[0].points.end();
             std::vector<double> distance;
             for (int i = 1; i < Nc0-1; i++)
             {
@@ -122,12 +122,16 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
             std::vector<double>::iterator max_itr = std::max_element(distance.begin(), distance.end());
             double Dm = *max_itr;
             int k = std::distance(distance.begin(), max_itr) + 1;
+            int n = distance.size();
             double S = sqrt(pow(q.x - p.x,2) + pow(q.y - p.y,2));
 
-            if (Dm > 0.2*S)
+            if (Dm > 0.1*S)
             {
-                std::vector<SEGMENT> B1(segments_original[0].points.begin(), segments_original[0].points.begin() + k);
-                std::vector<SEGMENT> B2(segments_original[0].points.begin() + k, segments_original[0].points.end());
+                SEGMENT B1,B2;
+                std::vector<POINT> b1(segments_original[0].points.begin(), segments_original[0].points.begin() + k);
+                std::vector<POINT> b2(segments_original[0].points.begin() + k, segments_original[0].points.end());
+                B1.points = b1;
+                B2.points = b2;
 
                 if (k > Tn)
                 {
@@ -138,7 +142,7 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
                     segments.push_back(B1);
                 }
 
-                if ()
+                if (n - k > Tn)
                 {
                     segments_original.push_back(B2);
                 }
@@ -146,17 +150,17 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
                 {
                     segments.push_back(B2);
                 }
-                segments_original.erace(segments_original.begin());
+                segments_original.erase(segments_original.begin());
             }
             else
             {
-                segments_original.erace(segments_original.begin());
+                segments_original.erase(segments_original.begin());
             }
         }
         else
         {
-            segments.push_back(segments_original[0].points);
-            segments_original.erace(segments_original.begin());
+            segments.push_back(segments_original[0]);
+            segments_original.erase(segments_original.begin());
         }
 
 

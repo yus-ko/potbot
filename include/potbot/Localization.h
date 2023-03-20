@@ -80,6 +80,8 @@ class LocalizationClass{
         double __Median(std::vector<double> v);
         void __MedianFilter(sensor_msgs::LaserScan &scan);
         void __Segmentation(sensor_msgs::LaserScan &scan, std::vector<SEGMENT> &segments);
+        double __distanceToLineSegment(POINT o, POINT p, POINT q);
+        void __SplitSegments(std::vector<SEGMENT> &segments);
 
     public:
         //in constracter.cpp
