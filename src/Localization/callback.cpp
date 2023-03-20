@@ -48,40 +48,82 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
     int id = 0;
     for (int i = 0; i < segments.size(); i++)
     {
+
+        visualization_msgs::Marker segment;
+        segment.header = scan_.header;
+        segment.header.frame_id = "lidar";
+
+        segment.ns = "segments_display";
+        segment.id = id++;
+        segment.lifetime = ros::Duration();
+
+        segment.type = segments[i].type;
+        segment.action = visualization_msgs::Marker::ADD;
+
+        
+        segment.pose.position.x = segments[i].x;
+        segment.pose.position.y = segments[i].y;
+        segment.pose.position.z = 0;
+
+        segment.pose.orientation.x = 0;
+        segment.pose.orientation.y = 0;
+        segment.pose.orientation.z = 0;
+        segment.pose.orientation.w = 1;
+
+        if (segment.type == visualization_msgs::Marker::SPHERE)
+        {
+            segment.scale.x = segments[i].radius*2;
+            segment.scale.y = segments[i].radius*2;
+        }
+        else if (segment.type == visualization_msgs::Marker::CUBE)
+        {
+            segment.scale.x = segments[i].width;
+            segment.scale.y = segments[i].height;
+        }
+
+        segment.scale.z = 0.001;
+
+        segment.color.a = 1;
+
+        segment.color.r = color[i%color.size()][0];
+        segment.color.g = color[i%color.size()][1];
+        segment.color.b = color[i%color.size()][2];
+        
+        seg.markers.push_back(segment);
+
         for (int j = 0; j < segments[i].points.size(); j++)
         {
-            visualization_msgs::Marker marker;
-            marker.header = scan_.header;
-            marker.header.frame_id = "map";
+            visualization_msgs::Marker point;
+            point.header = segment.header;
 
-            marker.ns = "segments_display";
-            marker.id = id++;
-            marker.lifetime = ros::Duration();
+            point.ns = "points_display";
+            point.id = id++;
+            point.lifetime = ros::Duration();
 
-            marker.type = segments[i].type;
-            marker.action = visualization_msgs::Marker::ADD;
+            point.type = segment.type;
+            point.action = visualization_msgs::Marker::ADD;
 
             
-            marker.pose.position.x = segments[i].points[j].x;
-            marker.pose.position.y = segments[i].points[j].y;
-            marker.pose.position.z = 0;
+            point.pose.position.x = segments[i].points[j].x;
+            point.pose.position.y = segments[i].points[j].y;
+            point.pose.position.z = 0;
 
-            marker.pose.orientation.x = 0;
-            marker.pose.orientation.y = 0;
-            marker.pose.orientation.z = 0;
-            marker.pose.orientation.w = 1;
+            point.pose.orientation.x = 0;
+            point.pose.orientation.y = 0;
+            point.pose.orientation.z = 0;
+            point.pose.orientation.w = 1;
 
-            marker.scale.x = 0.02;
-            marker.scale.y = 0.02;
-            marker.scale.z = 0.001;
+            point.scale.x = 0.02;
+            point.scale.y = 0.02;
+            point.scale.z = 0.001;
 
-            marker.color.a = 1;
+            point.color.a = 1;
 
-            marker.color.r = color[i%color.size()][0];
-            marker.color.g = color[i%color.size()][1];
-            marker.color.b = color[i%color.size()][2];
+            point.color.r = color[i%color.size()][0];
+            point.color.g = color[i%color.size()][1];
+            point.color.b = color[i%color.size()][2];
             
-            seg.markers.push_back(marker);
+            seg.markers.push_back(point);
         }
         
     }

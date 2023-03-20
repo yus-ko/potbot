@@ -6,9 +6,8 @@ Panels:
       Expanded:
         - /TF1/Frames1
         - /Particles1/Status1
-        - /Robot1/Status1
         - /Robot1/Shape1
-        - /PotentialField1/Status1
+        - /Segments1/Namespaces1
       Splitter Ratio: 0.4882352948188782
     Tree Height: 548
   - Class: rviz/Selection
@@ -29,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Scan Raw
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -107,12 +106,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: LocalMap
       Topic: /potbot/Localmap
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /potbot/Particle
@@ -223,6 +222,71 @@ Visualization Manager:
       Name: PotentialField
       Topic: /potbot/pot
       Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: Scan Raw
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /potbot/scan0
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: Scan Median
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /potbot/scan1
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /potbot/segment
+      Name: Segments
+      Namespaces:
+        points_display: true
+        segments_display: false
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -250,27 +314,57 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 13.307995796203613
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0.9178152680397034
-        Y: -1.0833561420440674
-        Z: 3.0418782234191895
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0602033138275146
+      Scale: 108.03849029541016
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 4.022811412811279
-    Saved: ~
+      Value: TopDownOrtho (rviz)
+      X: -0.009366348385810852
+      Y: -0.060074180364608765
+    Saved:
+      - Class: rviz/Orbit
+        Distance: 10.191848754882812
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Focal Point:
+          X: 0.15552784502506256
+          Y: 0.2853023409843445
+          Z: 0.5245283246040344
+        Focal Shape Fixed Size: true
+        Focal Shape Size: 0.05000000074505806
+        Invert Z Axis: false
+        Name: Orbit
+        Near Clip Distance: 0.009999999776482582
+        Pitch: 0.6847966909408569
+        Target Frame: <Fixed Frame>
+        Value: Orbit (rviz)
+        Yaw: 4.273186683654785
+      - Angle: 0
+        Class: rviz/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Invert Z Axis: false
+        Name: TopDownOrtho
+        Near Clip Distance: 0.009999999776482582
+        Scale: 108.03849029541016
+        Target Frame: <Fixed Frame>
+        Value: TopDownOrtho (rviz)
+        X: -0.009366348385810852
+        Y: -0.060074180364608765
 Window Geometry:
   Displays:
     collapsed: false
@@ -287,5 +381,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 113
-  Y: 75
+  X: 132
+  Y: 24

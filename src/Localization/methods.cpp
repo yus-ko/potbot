@@ -174,6 +174,32 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
 
 
     }
+
+    for (int i = 0; i < segments.size(); i++)
+    {
+        if (segments[i].points.size() <= 3)
+        {
+            segments.erase(segments.begin() + i--);
+            continue;
+        }
+
+        POINT p = *segments[i].points.begin();
+        int last_index = segments[i].points.size()-1;
+        POINT q = segments[i].points[last_index];
+        segments[i].x = (p.x + q.x)/2;
+        segments[i].y = (p.y + q.y)/2;
+
+        if (segments[i].type == visualization_msgs::Marker::SPHERE)
+        {
+            segments[i].radius = sqrt(pow(q.x - p.x,2) + pow(q.y - p.y,2))/2;
+        }
+        else if (segments[i].type == visualization_msgs::Marker::CUBE)
+        {
+            segments[i].width = abs(q.x - p.x);
+            segments[i].height = abs(q.y - p.y);
+        }
+    }
+
 }
 
 void LocalizationClass::set_pose(geometry_msgs::PoseWithCovarianceStamped pose)
