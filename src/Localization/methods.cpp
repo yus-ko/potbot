@@ -50,6 +50,7 @@ void LocalizationClass::__Segmentation(sensor_msgs::LaserScan &scan, std::vector
     int size = scan.ranges.size();
     bool start = false;
     SEGMENT seg;
+    seg.type = visualization_msgs::Marker::SPHERE;
     for (int i = 0; i < size; i++)
     {
         
@@ -103,7 +104,8 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
     std::vector<SEGMENT> segments_original = segments;   //Vc
     segments.resize(0); //Vresult
 
-    int Tn = 10;
+    int Tn = 30;
+    double square_width = 0.1;
 
     while(segments_original.size() != 0)
     {
@@ -112,7 +114,8 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
         {
             //Calculate Dm of Vc[0] nad get pk that corresponds to Dm
             POINT p = *segments_original[0].points.begin();
-            POINT q = *segments_original[0].points.end();
+            int last_index = Nc0-1;
+            POINT q = segments_original[0].points[last_index];
             std::vector<double> distance;
             for (int i = 1; i < Nc0-1; i++)
             {
@@ -122,10 +125,10 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
             std::vector<double>::iterator max_itr = std::max_element(distance.begin(), distance.end());
             double Dm = *max_itr;
             int k = std::distance(distance.begin(), max_itr) + 1;
-            int n = distance.size();
+            int n = distance.size() + 2;
             double S = sqrt(pow(q.x - p.x,2) + pow(q.y - p.y,2));
 
-            if (Dm > 0.1*S)
+            if (Dm > square_width*S)
             {
                 SEGMENT B1,B2;
                 std::vector<POINT> b1(segments_original[0].points.begin(), segments_original[0].points.begin() + k);
@@ -135,25 +138,31 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
 
                 if (k > Tn)
                 {
+                    B1.type = visualization_msgs::Marker::CUBE;
                     segments_original.push_back(B1);
                 }
                 else
                 {
+                    B1.type = visualization_msgs::Marker::SPHERE;
                     segments.push_back(B1);
                 }
 
                 if (n - k > Tn)
                 {
+                    B2.type = visualization_msgs::Marker::CUBE;
                     segments_original.push_back(B2);
                 }
                 else
                 {
+                    B2.type = visualization_msgs::Marker::SPHERE;
                     segments.push_back(B2);
                 }
                 segments_original.erase(segments_original.begin());
             }
             else
             {
+                segments_original[0].type = visualization_msgs::Marker::CUBE;
+                segments.push_back(segments_original[0]);
                 segments_original.erase(segments_original.begin());
             }
         }

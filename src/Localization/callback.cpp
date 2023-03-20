@@ -58,7 +58,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
             marker.id = id++;
             marker.lifetime = ros::Duration();
 
-            marker.type = visualization_msgs::Marker::SPHERE;
+            marker.type = segments[i].type;
             marker.action = visualization_msgs::Marker::ADD;
 
             
@@ -73,7 +73,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
             marker.scale.x = 0.02;
             marker.scale.y = 0.02;
-            marker.scale.z = 0.02;
+            marker.scale.z = 0.001;
 
             marker.color.a = 1;
 

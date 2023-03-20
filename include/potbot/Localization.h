@@ -30,6 +30,12 @@ typedef struct {
 
 typedef struct {
                 std::vector<POINT> points;
+                int type=0;
+                double x=0;
+                double y=0;
+                double radius=0;
+                double width=0;
+                double height=0;
                } SEGMENT;
 
 //クラスの定義
