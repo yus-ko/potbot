@@ -68,7 +68,29 @@ void LocalizationClass::__Segmentation(sensor_msgs::LaserScan &scan, std::vector
             p.r = scan_.ranges[i] + scan_.range_min;
             p.x = p.r * cos(p.theta);
             p.y = p.r * sin(p.theta);
-            seg.points.push_back(p);
+
+            if (seg.points.size() > 0)
+            {    
+                POINT &p_pre = seg.points.back();
+
+                double distance = sqrt(pow(p.x - p_pre.x,2) + pow(p.y - p_pre.y,2));
+                if (distance <= 0.3)
+                {
+                    seg.points.push_back(p);
+                }
+                else
+                {
+                    start = false;
+                    segments.push_back(seg);
+                    i--;
+                    continue;
+                }
+            }
+            else
+            {
+                seg.points.push_back(p);
+            }
+
             if (i == size - 1 && start)
             {
                 segments.push_back(seg);
@@ -84,18 +106,29 @@ void LocalizationClass::__Segmentation(sensor_msgs::LaserScan &scan, std::vector
 
 double LocalizationClass::__distanceToLineSegment(POINT o, POINT p, POINT q)
 {
-    double ABx = q.x - p.x;
-    double ABy = q.y - p.y;
-    double ABlength = sqrt(pow(ABx, 2) + pow(ABy, 2));
-    double ABx_norm = ABx / ABlength;
-    double ABy_norm = ABy / ABlength;
-    double APx = o.x - p.x;
-    double APy = o.y - p.y;
-    double APdistance = sqrt(pow(APx, 2) + pow(APy, 2));
-    double dotProduct = APx * ABx_norm + APy * ABy_norm;
-    double xd = p.x + dotProduct * ABx_norm;
-    double yd = p.y + dotProduct * ABy_norm;
-    double distance = sqrt(pow(o.x - xd, 2) + pow(o.y - yd, 2));
+    // double ABx = q.x - p.x;
+    // double ABy = q.y - p.y;
+    // double ABlength = sqrt(pow(ABx, 2) + pow(ABy, 2));
+    // double ABx_norm = ABx / ABlength;
+    // double ABy_norm = ABy / ABlength;
+    // double APx = o.x - p.x;
+    // double APy = o.y - p.y;
+    // double APdistance = sqrt(pow(APx, 2) + pow(APy, 2));
+    // double dotProduct = APx * ABx_norm + APy * ABy_norm;
+    // double xd = p.x + dotProduct * ABx_norm;
+    // double yd = p.y + dotProduct * ABy_norm;
+    // double distance = sqrt(pow(o.x - xd, 2) + pow(o.y - yd, 2));
+
+    // double a = (q.y - p.y)/(q.x - p.x);
+    // double b = 1;
+    // double c = -p.y;
+    // double distance = abs(o.x*a + b*o.y + c) / sqrt(a*a+b*b);
+
+    double theta = atan2(o.y-p.y, o.x-p.x) - atan2(q.y-p.y, q.x-p.x);
+    // double theta = acos((q.x*p.x + q.y*p.y) / (sqrt(q.x*q.x + q.y*q.y) * sqrt(p.x*p.x + p.y*p.y)));
+    double l = sqrt(pow(o.x - p.x, 2) + pow(o.y - p.y, 2));
+    double distance = l*sin(theta);
+
     return distance;
 }
 
@@ -104,18 +137,16 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
     std::vector<SEGMENT> segments_original = segments;   //Vc
     segments.resize(0); //Vresult
 
-    int Tn = 30;
-    double square_width = 0.1;
+    
+    double square_width = square_width_;
 
     while(segments_original.size() != 0)
     {
         int Nc0 = segments_original[0].points.size();
-        if (Nc0 > Tn)
+        if (Nc0 > 2)
         {
-            //Calculate Dm of Vc[0] nad get pk that corresponds to Dm
-            POINT p = *segments_original[0].points.begin();
-            int last_index = Nc0-1;
-            POINT q = segments_original[0].points[last_index];
+            POINT p = segments_original[0].points.front();
+            POINT q = segments_original[0].points.back();
             std::vector<double> distance;
             for (int i = 1; i < Nc0-1; i++)
             {
@@ -124,83 +155,140 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
             }
             std::vector<double>::iterator max_itr = std::max_element(distance.begin(), distance.end());
             double Dm = *max_itr;
-            int k = std::distance(distance.begin(), max_itr) + 1;
-            int n = distance.size() + 2;
             double S = sqrt(pow(q.x - p.x,2) + pow(q.y - p.y,2));
+
+            segments_original[0].x = (p.x + q.x)/2;
+            segments_original[0].y = (p.y + q.y)/2;
 
             if (Dm > square_width*S)
             {
-                SEGMENT B1,B2;
-                std::vector<POINT> b1(segments_original[0].points.begin(), segments_original[0].points.begin() + k);
-                std::vector<POINT> b2(segments_original[0].points.begin() + k, segments_original[0].points.end());
-                B1.points = b1;
-                B2.points = b2;
-
-                if (k > Tn)
-                {
-                    B1.type = visualization_msgs::Marker::CUBE;
-                    segments_original.push_back(B1);
-                }
-                else
-                {
-                    B1.type = visualization_msgs::Marker::SPHERE;
-                    segments.push_back(B1);
-                }
-
-                if (n - k > Tn)
-                {
-                    B2.type = visualization_msgs::Marker::CUBE;
-                    segments_original.push_back(B2);
-                }
-                else
-                {
-                    B2.type = visualization_msgs::Marker::SPHERE;
-                    segments.push_back(B2);
-                }
+                segments_original[0].type = visualization_msgs::Marker::SPHERE;
+                segments_original[0].radius = S/2;
+                segments.push_back(segments_original[0]);
                 segments_original.erase(segments_original.begin());
             }
             else
             {
                 segments_original[0].type = visualization_msgs::Marker::CUBE;
+                segments_original[0].width = abs(q.x - p.x);
+                segments_original[0].height = abs(q.y - p.y);
                 segments.push_back(segments_original[0]);
                 segments_original.erase(segments_original.begin());
             }
         }
         else
         {
-            segments.push_back(segments_original[0]);
             segments_original.erase(segments_original.begin());
         }
 
 
     }
 
-    for (int i = 0; i < segments.size(); i++)
-    {
-        if (segments[i].points.size() <= 3)
-        {
-            segments.erase(segments.begin() + i--);
-            continue;
-        }
-
-        POINT p = *segments[i].points.begin();
-        int last_index = segments[i].points.size()-1;
-        POINT q = segments[i].points[last_index];
-        segments[i].x = (p.x + q.x)/2;
-        segments[i].y = (p.y + q.y)/2;
-
-        if (segments[i].type == visualization_msgs::Marker::SPHERE)
-        {
-            segments[i].radius = sqrt(pow(q.x - p.x,2) + pow(q.y - p.y,2))/2;
-        }
-        else if (segments[i].type == visualization_msgs::Marker::CUBE)
-        {
-            segments[i].width = abs(q.x - p.x);
-            segments[i].height = abs(q.y - p.y);
-        }
-    }
-
 }
+
+// void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
+// {
+//     std::vector<SEGMENT> segments_original = segments;   //Vc
+//     segments.resize(0); //Vresult
+
+    
+//     double square_width = square_width_;
+
+//     while(segments_original.size() != 0)
+//     {
+//         int Nc0 = segments_original[0].points.size();
+//         int Tn = Tn_/segments_original[0].points[0].r;
+//         if (Nc0 > Tn)
+//         {
+//             //Calculate Dm of Vc[0] nad get pk that corresponds to Dm
+//             POINT p = *segments_original[0].points.begin();
+//             int last_index = Nc0-1;
+//             POINT q = segments_original[0].points[last_index];
+//             std::vector<double> distance;
+//             for (int i = 1; i < Nc0-1; i++)
+//             {
+//                 double d = __distanceToLineSegment(segments_original[0].points[i], p, q);
+//                 distance.push_back(d);
+//             }
+//             std::vector<double>::iterator max_itr = std::max_element(distance.begin(), distance.end());
+//             double Dm = *max_itr;
+//             int k = std::distance(distance.begin(), max_itr) + 1;
+//             int n = distance.size() + 2;
+//             double S = sqrt(pow(q.x - p.x,2) + pow(q.y - p.y,2));
+
+//             if (Dm > square_width*S)
+//             {
+//                 SEGMENT B1,B2;
+//                 std::vector<POINT> b1(segments_original[0].points.begin(), segments_original[0].points.begin() + k);
+//                 std::vector<POINT> b2(segments_original[0].points.begin() + k, segments_original[0].points.end());
+//                 B1.points = b1;
+//                 B2.points = b2;
+
+//                 if (k > Tn)
+//                 {
+//                     B1.type = visualization_msgs::Marker::CUBE;
+//                     segments_original.push_back(B1);
+//                 }
+//                 else
+//                 {
+//                     B1.type = visualization_msgs::Marker::SPHERE;
+//                     segments.push_back(B1);
+//                 }
+
+//                 if (n - k > Tn)
+//                 {
+//                     B2.type = visualization_msgs::Marker::CUBE;
+//                     segments_original.push_back(B2);
+//                 }
+//                 else
+//                 {
+//                     B2.type = visualization_msgs::Marker::SPHERE;
+//                     segments.push_back(B2);
+//                 }
+//                 segments_original.erase(segments_original.begin());
+//             }
+//             else
+//             {
+//                 segments_original[0].type = visualization_msgs::Marker::CUBE;
+//                 segments.push_back(segments_original[0]);
+//                 segments_original.erase(segments_original.begin());
+//             }
+//         }
+//         else
+//         {
+//             segments.push_back(segments_original[0]);
+//             segments_original.erase(segments_original.begin());
+//         }
+
+
+//     }
+
+//     for (int i = 0; i < segments.size(); i++)
+//     {
+//         if (segments[i].points.size() <= 3)
+//         {
+//             segments.erase(segments.begin() + i--);
+//             continue;
+//         }
+
+//         POINT p = *segments[i].points.begin();
+//         int last_index = segments[i].points.size()-1;
+//         POINT q = segments[i].points[last_index];
+//         segments[i].x = (p.x + q.x)/2;
+//         segments[i].y = (p.y + q.y)/2;
+
+//         if (segments[i].type == visualization_msgs::Marker::SPHERE)
+//         {
+//             segments[i].radius = sqrt(pow(q.x - p.x,2) + pow(q.y - p.y,2))/2;
+//         }
+//         else if (segments[i].type == visualization_msgs::Marker::CUBE)
+//         {
+//             segments[i].width = abs(q.x - p.x);
+//             segments[i].height = abs(q.y - p.y);
+//         }
+//     }
+
+// }
 
 void LocalizationClass::set_pose(geometry_msgs::PoseWithCovarianceStamped pose)
 {

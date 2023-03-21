@@ -76,8 +76,8 @@ void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)
     odom_ = msg;
 }
 
- void PathPlanningClass::__param_callback(const potbot::PathPlanningConfig& param, uint32_t level)
- {
+void PathPlanningClass::__param_callback(const potbot::PathPlanningConfig& param, uint32_t level)
+{
     // ROS_INFO("%d",level);
     rho_zero_ = param.threshold_create_potential_field;
     eta_ = param.weight_obstacle;
@@ -86,4 +86,4 @@ void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)
     max_path_index_ = param.max_path_length;
     wu_ = param.weight_potential_field;
     w_theta_ = param.weight_angle;
- }
+}

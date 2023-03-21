@@ -71,6 +71,9 @@ LocalizationClass::LocalizationClass()
     odom_.pose = initial_pose_.pose;
     if (localization_method_id_ == PARTICLE_FILTER) set_pose(initial_pose_);
     pub_odom_.publish(odom_);
+
+	f_ = boost::bind(&LocalizationClass::__param_callback, this, _1, _2);
+	server_.setCallback(f_);
 	
 }
 LocalizationClass::~LocalizationClass(){

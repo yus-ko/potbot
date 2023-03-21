@@ -54,11 +54,11 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
         segment.header.frame_id = "lidar";
 
         segment.ns = "segments_display";
-        segment.id = id++;
-        segment.lifetime = ros::Duration();
+        segment.id = i;
+        segment.lifetime = ros::Duration(1);
 
         segment.type = segments[i].type;
-        segment.action = visualization_msgs::Marker::ADD;
+        segment.action = visualization_msgs::Marker::MODIFY;
 
         
         segment.pose.position.x = segments[i].x;
@@ -83,7 +83,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
         segment.scale.z = 0.001;
 
-        segment.color.a = 1;
+        segment.color.a = 0.3;
 
         segment.color.r = color[i%color.size()][0];
         segment.color.g = color[i%color.size()][1];
@@ -98,7 +98,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
             point.ns = "points_display";
             point.id = id++;
-            point.lifetime = ros::Duration();
+            point.lifetime = ros::Duration(1);
 
             point.type = segment.type;
             point.action = visualization_msgs::Marker::ADD;
@@ -108,10 +108,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
             point.pose.position.y = segments[i].points[j].y;
             point.pose.position.z = 0;
 
-            point.pose.orientation.x = 0;
-            point.pose.orientation.y = 0;
-            point.pose.orientation.z = 0;
-            point.pose.orientation.w = 1;
+            point.pose.orientation = segment.pose.orientation;
 
             point.scale.x = 0.02;
             point.scale.y = 0.02;
@@ -119,9 +116,9 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
             point.color.a = 1;
 
-            point.color.r = color[i%color.size()][0];
-            point.color.g = color[i%color.size()][1];
-            point.color.b = color[i%color.size()][2];
+            point.color.r = segment.color.r;
+            point.color.g = segment.color.g;
+            point.color.b = segment.color.b;
             
             seg.markers.push_back(point);
         }
@@ -244,4 +241,11 @@ void LocalizationClass::cluster_callback(const potbot::ClassificationVelocityDat
 {
     pcl_cluster_ = msg;
     ROS_INFO("cluster");
+}
+
+void LocalizationClass::__param_callback(const potbot::LocalizationConfig& param, uint32_t level)
+{
+    // ROS_INFO("%d",level);
+    Tn_ = param.threshold_point_num;
+    square_width_ = param.squre_width;
 }

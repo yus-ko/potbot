@@ -17,6 +17,8 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <dynamic_reconfigure/server.h>
+#include <potbot/LocalizationConfig.h>
 
 #define NO_SEGMENT -1
 
@@ -67,6 +69,8 @@ class LocalizationClass{
         nav_msgs::Odometry odom_;
         sensor_msgs::LaserScan scan_;
         std::vector<sensor_msgs::LaserScan> scans_;
+        int Tn_=30;
+        double square_width_=0.1;
         
         visualization_msgs::MarkerArray particles_;
         std::vector<double> weights_;
@@ -79,9 +83,14 @@ class LocalizationClass{
 
         potbot::ClassificationVelocityData pcl_cluster_;
 
+        dynamic_reconfigure::Server<potbot::LocalizationConfig> server_;
+  	    dynamic_reconfigure::Server<potbot::LocalizationConfig>::CallbackType f_;
+
         std::string ROBOT_NAME, LOCALIZATION_METHOD;
         bool IS_SIMULATOR, USE_RVIZ;
         double COVARIANCE_VV, COVARIANCE_VOMEGA, COVARIANCE_OMEGAOMEGA, INITIAL_POSE_X, INITIAL_POSE_Y, INITIAL_POSE_THETA;
+
+        void __param_callback(const potbot::LocalizationConfig& param, uint32_t level);
 
         double __Median(std::vector<double> v);
         void __MedianFilter(sensor_msgs::LaserScan &scan);

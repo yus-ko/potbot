@@ -42,6 +42,7 @@ generate_messages(
 
 generate_dynamic_reconfigure_options(
   cfg/PathPlanning.cfg
+  cfg/Localization.cfg
 )
 
 catkin_package(
