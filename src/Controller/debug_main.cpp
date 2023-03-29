@@ -5,9 +5,9 @@ int main(int argc,char **argv){
 
     ControllerClass cc;
 
-	std::string s;
-    std::cout << "Press Enter to start:";
-    std::cin >> s;
+	// std::string s;
+    // std::cout << "Press Enter to start:";
+    // std::cin >> s;
 
 	cc.mainloop();
 
