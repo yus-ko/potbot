@@ -42,17 +42,17 @@ void PathPlanningClass::run()
     double gx = 6;
     double gy = 0;
 
-    double Fgx = 1*(gx-rx);
-    double Fgy = 1*(gy-ry);
+    double Fgx = kp_*(gx-rx);
+    double Fgy = kp_*(gy-ry);
 
     double Fox = 0;
     double Foy = 0;
 
-    double rho_s = 0.5;
+    double rho_s = rho_zero_;
     if (distance < rho_s)
     {
-        Fox = 10000*pow((1/(ox-rx))-(1/rho_s),2) * (1/pow((ox-rx),2));
-        Foy = 10000*pow((1/(oy-ry))-(1/rho_s),2) * (1/pow((oy-ry),2));
+        Fox = eta_*pow((1/(ox-rx))-(1/rho_s),2) * (1/pow((ox-rx),2));
+        Foy = eta_*pow((1/(oy-ry))-(1/rho_s),2) * (1/pow((oy-ry),2));
     }
 
     double Ftx = Fgx + Fox;
@@ -66,6 +66,76 @@ void PathPlanningClass::run()
     cmd.angular.z = angular;
     if (cmd.linear.x > 0.2) cmd.linear.x = 0.2;
     pub_cmd_.publish(cmd);
+
+
+    visualization_msgs::MarkerArray seg;
+    for (int i = 0; i < 3; i++)
+    {
+        double vx,vy, r,g,b;
+        if (i == 0)
+        {
+            vx = Fgx;
+            vy = Fgy;
+            r = 0;
+            g = 0;
+            b = 1;
+        }
+        else if(i == 1)
+        {
+            vx = Fox;
+            vy = Foy;
+            r = 1;
+            g = 0;
+            b = 0;
+        }else if(i == 2)
+        {
+            vx = Ftx;
+            vy = Fty;
+            r = 1;
+            g = 0;
+            b = 1;
+        }
+
+        visualization_msgs::Marker segment;
+        segment.header = header_;
+        segment.header.frame_id = "map";
+
+        segment.ns = "potential_display";
+        segment.id = i;
+        segment.lifetime = ros::Duration(1);
+
+        segment.type == visualization_msgs::Marker::ARROW;
+        segment.action = visualization_msgs::Marker::ADD;
+
+        
+        segment.pose.position.x = rx;
+        segment.pose.position.y = ry;
+        segment.pose.position.z = 0;
+
+        geometry_msgs::Quaternion angle;
+        getQuat(0,0,atan2(vy,vx),angle);
+        // angle.x -= odom_.pose.pose.orientation.x;
+        // angle.y -= odom_.pose.pose.orientation.y;
+        // angle.z -= odom_.pose.pose.orientation.z;
+        // angle.w -= odom_.pose.pose.orientation.w;
+        
+        segment.pose.orientation = angle;
+        
+        segment.scale.x = sqrt(vx*vx+vy*vy);
+        segment.scale.y = 0.01;
+
+        segment.scale.z = 0.01;
+
+        segment.color.a = 1;
+
+        segment.color.r = r;
+        segment.color.g = g;
+        segment.color.b = b;
+        
+        seg.markers.push_back(segment);
+        
+    }
+    pub_potential_.publish(seg);
 
 }
 

@@ -68,6 +68,7 @@ PathPlanningClass::PathPlanningClass()
 	pub_pf_ = nhPub.advertise<nav_msgs::GridCells>("/potbot/pot", 1);
 	pub_PP = nhPub.advertise<nav_msgs::Path>("/potbot/Path", 1);
 	pub_cmd_ = nhPub.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+	pub_potential_ = nhPub.advertise<visualization_msgs::MarkerArray>("/potbot/potential", 1);
 
 	if (path_planning_id == CSV_PATH)
 	{

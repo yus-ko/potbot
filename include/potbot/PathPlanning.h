@@ -21,6 +21,8 @@
 #include <Eigen/Geometry>
 #include <dynamic_reconfigure/server.h>
 #include <potbot/PathPlanningConfig.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
 
 //クラスの定義
 class PathPlanningClass{
@@ -35,7 +37,7 @@ class PathPlanningClass{
 		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_, sub_local_map_, sub_odom_;
         //送信データ
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP, pub_goal_, pub_pf_, pub_cmd_;
+        ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP, pub_goal_, pub_pf_, pub_cmd_, pub_potential_;
 
         std_msgs::Header header_;
 
