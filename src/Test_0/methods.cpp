@@ -30,7 +30,8 @@ void PathPlanningClass::run()
             }
         }
     }
-    double angle = idx * scan.angle_increment + scan.angle_min;
+    double yaw = get_Yaw(odom_.pose.pose.orientation);
+    double angle = idx * scan.angle_increment + scan.angle_min + yaw;
     // double x = distance * cos(angle) + odom_.pose.pose.position.x;
     // double y = distance * sin(angle) + odom_.pose.pose.position.y;
     double ox = distance * cos(angle);
@@ -39,8 +40,8 @@ void PathPlanningClass::run()
     double rx = odom_.pose.pose.position.x;
     double ry = odom_.pose.pose.position.y;
 
-    double gx = 6;
-    double gy = 0;
+    double gx = goal_.pose.position.x;
+    double gy = goal_.pose.position.y;
 
     double Fgx = kp_*(gx-rx);
     double Fgy = kp_*(gy-ry);
@@ -51,15 +52,15 @@ void PathPlanningClass::run()
     double rho_s = rho_zero_;
     if (distance < rho_s)
     {
-        Fox = eta_*pow((1/(ox-rx))-(1/rho_s),2) * (1/pow((ox-rx),2));
-        Foy = eta_*pow((1/(oy-ry))-(1/rho_s),2) * (1/pow((oy-ry),2));
+        Fox = -eta_*pow((1/(ox-rx))-(1/rho_s),2) * (1/pow((ox-rx),2));
+        Foy = -eta_*pow((1/(oy-ry))-(1/rho_s),2) * (1/pow((oy-ry),2));
     }
 
     double Ftx = Fgx + Fox;
     double Fty = Fgy + Foy;
 
     double linear = sqrt(Ftx*Ftx+Fty*Fty);
-    double angular = atan2(Fty,Ftx); 
+    double angular = atan2(Fty,Ftx) - yaw; 
 
     geometry_msgs::Twist cmd;
     cmd.linear.x = linear;
