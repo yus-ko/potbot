@@ -3,6 +3,7 @@
 #include <ros/package.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -95,4 +96,41 @@ inline int get_WorldCoordinate(std::string target_frame, ros::Time time, geometr
     Wcood.pose.orientation.z = transformStamped.transform.rotation.z;
     Wcood.pose.orientation.w = transformStamped.transform.rotation.w;
     return SUCCESS;
+}
+
+inline geometry_msgs::Point get_coordinate(int index, nav_msgs::MapMetaData info)
+{
+    geometry_msgs::Point p;
+    p.x = (index % info.width) * info.resolution + info.origin.position.x;
+    p.y = (index / info.width) * info.resolution + info.origin.position.y;
+    return p;
+}
+
+inline int get_index(double x, double y, nav_msgs::MapMetaData info)
+{
+
+    double xmin = info.origin.position.x;
+    double xmax = info.origin.position.x + info.width * info.resolution;
+
+    double ymin = info.origin.position.y;
+    double ymax = info.origin.position.y + info.height * info.resolution;
+
+    if (x < xmin || x > xmax || y < ymin || y > ymax)
+    {
+        return 0;
+    }
+
+    double img_x = x - info.origin.position.x;
+    double img_y = y - info.origin.position.y;
+
+    int index = int(img_y / info.resolution) * info.width + int(img_x / info.resolution);
+
+    if (index < 0)
+    {
+        //ROS_INFO("%f, %f, %f, %f",x,y,info.origin.position.x,info.origin.position.y);
+        index = 0;
+    }
+
+    return index;
+    
 }

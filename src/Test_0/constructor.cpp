@@ -61,6 +61,7 @@ PathPlanningClass::PathPlanningClass()
 	sub_cluster = nhSub.subscribe("classificationDataEstimateVelocity", 1, &PathPlanningClass::cluster_callback, this);
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PathPlanningClass::coefficient_callback, this);
 	sub_local_map_ = nhSub.subscribe("/potbot/Localmap", 1, &PathPlanningClass::local_map_callback, this);
+	sub_obs_ = nhSub.subscribe("/potbot/segment", 1, &PathPlanningClass::__obstacle_callback, this);
 	
 	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("/potbot/ShortestDistance", 1);

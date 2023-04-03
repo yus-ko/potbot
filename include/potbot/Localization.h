@@ -121,8 +121,6 @@ class LocalizationClass{
 
         void set_pose(geometry_msgs::PoseWithCovarianceStamped pose);
         
-        geometry_msgs::Point get_coordinate(int index, nav_msgs::MapMetaData info);
-        int get_index(double x, double y, nav_msgs::MapMetaData info);
         double match_rate(nav_msgs::OccupancyGrid local,nav_msgs::OccupancyGrid world);
         
         void manage();

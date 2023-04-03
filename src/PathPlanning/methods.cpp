@@ -7,8 +7,7 @@ void PathPlanningClass::mainloop()
     ros::Rate loop_rate(10);
 	while (ros::ok())
 	{
-        
-        run();
+        __create_PotentialField();
         loop_rate.sleep();
 		ros::spinOnce();
 	}
@@ -29,25 +28,40 @@ void PathPlanningClass::run()
 
 std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_msgs::OccupancyGrid &map)
 {
-    int map_size = map.data.size();
-    int map_cols = map.info.width;
-    int map_rows = map.info.height;
-    double map_ori_x = map.info.origin.position.x;
-    double map_ori_y = map.info.origin.position.y;
-    double map_res = map.info.resolution;
+    // int map_size = map.data.size();
+    // int map_cols = map.info.width;
+    // int map_rows = map.info.height;
+    // double map_ori_x = map.info.origin.position.x;
+    // double map_ori_y = map.info.origin.position.y;
+    // double map_res = map.info.resolution;
 
-    std::vector<geometry_msgs::Vector3> obstacle_arr(map_size);
-    int obs_idx = 0;
-    for (int i = 0; i < map_size; i++)
+    // std::vector<geometry_msgs::Vector3> obstacle_arr(map_size);
+    // int obs_idx = 0;
+    // for (int i = 0; i < map_size; i++)
+    // {
+    //     if (map.data[i])
+    //     {
+    //         obstacle_arr[obs_idx].x = int(i%map_cols)*map_res + map_ori_x;
+    //         obstacle_arr[obs_idx].y = int(i/map_cols)*map_res + map_ori_y;
+    //         obs_idx++;
+    //     }
+    // }
+    // obstacle_arr.resize(obs_idx);
+    // return obstacle_arr;
+
+    std::vector<geometry_msgs::Vector3> obstacle_arr;
+    int size = obstacles_.markers.size();
+    int obscnt = 0;
+    for (int i = 0; i < size; i++)
     {
-        if (map.data[i])
+        if(obstacles_.markers[i].ns == "segments_display")
         {
-            obstacle_arr[obs_idx].x = int(i%map_cols)*map_res + map_ori_x;
-            obstacle_arr[obs_idx].y = int(i/map_cols)*map_res + map_ori_y;
-            obs_idx++;
+            geometry_msgs::Vector3 pos;
+            pos.x = obstacles_.markers[i].pose.position.x;
+            pos.y = obstacles_.markers[i].pose.position.y;
+            obstacle_arr.push_back(pos);
         }
     }
-    obstacle_arr.resize(obs_idx);
     return obstacle_arr;
 }
 

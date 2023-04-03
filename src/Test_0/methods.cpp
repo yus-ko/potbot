@@ -17,28 +17,61 @@ void PathPlanningClass::mainloop()
 void PathPlanningClass::run()
 {
     int size = scan.ranges.size();
-    int idx;
-    double distance = std::numeric_limits<double>::infinity();
-    for (int i = 0; i < size; i++)
-    {
-        if (!isinf(scan.ranges[i]) && !isnan(scan.ranges[i]))
-        {
-            if (scan.ranges[i] < distance)
-            {
-                distance = scan.ranges[i];
-                idx = i;
-            }
-        }
-    }
-    double yaw = get_Yaw(odom_.pose.pose.orientation);
-    double angle = idx * scan.angle_increment + scan.angle_min + yaw;
-    // double x = distance * cos(angle) + odom_.pose.pose.position.x;
-    // double y = distance * sin(angle) + odom_.pose.pose.position.y;
-    double ox = distance * cos(angle);
-    double oy = distance * sin(angle);
+    // int idx;
+    // double distance = std::numeric_limits<double>::infinity();
+    // for (int i = 0; i < size; i++)
+    // {
+    //     if (!isinf(scan.ranges[i]) && !isnan(scan.ranges[i]))
+    //     {
+    //         if (scan.ranges[i] < distance)
+    //         {
+    //             distance = scan.ranges[i];
+    //             idx = i;
+    //         }
+    //     }
+    // }
 
     double rx = odom_.pose.pose.position.x;
     double ry = odom_.pose.pose.position.y;
+
+    double rho_s = rho_zero_;
+    visualization_msgs::MarkerArray Foi;
+    double Fox = 0;
+    double Foy = 0;
+
+    size = obstacles_.markers.size();
+    int obscnt = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if(obstacles_.markers[i].ns == "segments_display")
+        {
+            double ox = -obstacles_.markers[i].pose.position.x;
+            double oy = -obstacles_.markers[i].pose.position.y;
+            // double distance = sqrt(pow(ox-rx,2)+pow(oy-ry,2));
+            double distance = sqrt(ox*ox+oy*oy);
+            if (distance < rho_s)
+            {
+                // ROS_INFO("obstacle:%d, (%f, %f)",obscnt++, ox, oy);
+                double tmpx = eta_*pow((1/(distance))-(1/rho_s),2) * (1/pow((distance),2)) * (ox/distance);
+                double tmpy = eta_*pow((1/(distance))-(1/rho_s),2) * (1/pow((distance),2)) * (oy/distance);
+                visualization_msgs::Marker Fo;
+                Fo.pose.position.x = tmpx;
+                Fo.pose.position.y = tmpy;
+                Fo.color = obstacles_.markers[i].color;
+                Foi.markers.push_back(Fo);
+                Fox += tmpx;
+                Foy += tmpy;
+            }
+
+        }
+    }
+
+    double yaw = get_Yaw(odom_.pose.pose.orientation);
+    // double angle = idx * scan.angle_increment + scan.angle_min + yaw;
+    // // double x = distance * cos(angle) + odom_.pose.pose.position.x;
+    // // double y = distance * sin(angle) + odom_.pose.pose.position.y;
+    // double ox = distance * cos(angle);
+    // double oy = distance * sin(angle);
 
     double gx = goal_.pose.position.x;
     double gy = goal_.pose.position.y;
@@ -46,56 +79,76 @@ void PathPlanningClass::run()
     double Fgx = kp_*(gx-rx);
     double Fgy = kp_*(gy-ry);
 
-    double Fox = 0;
-    double Foy = 0;
-
-    double rho_s = rho_zero_;
-    if (distance < rho_s)
-    {
-        Fox = -eta_*pow((1/(ox-rx))-(1/rho_s),2) * (1/pow((ox-rx),2));
-        Foy = -eta_*pow((1/(oy-ry))-(1/rho_s),2) * (1/pow((oy-ry),2));
-    }
+    
+    // if (distance < rho_s)
+    // {
+    //     Fox = -eta_*pow((1/(ox-rx))-(1/rho_s),2) * (1/pow((ox-rx),2));
+    //     Foy = -eta_*pow((1/(oy-ry))-(1/rho_s),2) * (1/pow((oy-ry),2));
+    // }
 
     double Ftx = Fgx + Fox;
     double Fty = Fgy + Foy;
 
-    double linear = sqrt(Ftx*Ftx+Fty*Fty);
-    double angular = atan2(Fty,Ftx) - yaw; 
-
     geometry_msgs::Twist cmd;
-    cmd.linear.x = linear;
-    cmd.angular.z = angular;
-    if (cmd.linear.x > 0.2) cmd.linear.x = 0.2;
+    if (sqrt(pow(rx-gx,2)+pow(ry-gy,2)) > 0.1)
+    {
+        double linear = sqrt(Ftx*Ftx+Fty*Fty);
+        double angular = atan2(Fty,Ftx) - yaw; 
+        cmd.linear.x = linear;
+        cmd.angular.z = angular;
+        if (cmd.linear.x > 0.2) cmd.linear.x = 0.2;
+        
+    }
     pub_cmd_.publish(cmd);
 
 
     visualization_msgs::MarkerArray seg;
-    for (int i = 0; i < 3; i++)
+    int i=0;
+    while (true)
     {
-        double vx,vy, r,g,b;
+        double vx,vy, r,g,b,a=1;
         if (i == 0)
         {
             vx = Fgx;
             vy = Fgy;
-            r = 0;
+            r = 1;
             g = 0;
             b = 1;
+            a = 0.75;
         }
         else if(i == 1)
         {
             vx = Fox;
             vy = Foy;
             r = 1;
-            g = 0;
+            g = 0.5;
             b = 0;
+            a = 0.75;
         }else if(i == 2)
         {
             vx = Ftx;
             vy = Fty;
             r = 1;
-            g = 0;
+            g = 1;
             b = 1;
         }
+        else
+        {
+            if (i-3 < Foi.markers.size())
+            {
+                vx = Foi.markers[i-3].pose.position.x;
+                vy = Foi.markers[i-3].pose.position.y;
+                r = Foi.markers[i-3].color.r;
+                g = Foi.markers[i-3].color.g;
+                b = Foi.markers[i-3].color.b;
+                a = 0.5;
+            }
+            else
+            {
+                break;
+            }
+        }
+        
 
         visualization_msgs::Marker segment;
         segment.header = header_;
@@ -123,18 +176,18 @@ void PathPlanningClass::run()
         segment.pose.orientation = angle;
         
         segment.scale.x = sqrt(vx*vx+vy*vy);
-        segment.scale.y = 0.01;
+        segment.scale.y = 0.05;
 
-        segment.scale.z = 0.01;
+        segment.scale.z = 0.05;
 
-        segment.color.a = 1;
+        segment.color.a = a;
 
         segment.color.r = r;
         segment.color.g = g;
         segment.color.b = b;
         
         seg.markers.push_back(segment);
-        
+        i++;
     }
     pub_potential_.publish(seg);
 

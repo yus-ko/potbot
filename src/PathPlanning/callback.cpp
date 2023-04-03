@@ -76,6 +76,16 @@ void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)
     odom_ = msg;
 }
 
+void PathPlanningClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)
+{
+    obstacles_ = msg;
+}
+
+void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)
+{
+    run();
+}
+
 void PathPlanningClass::__param_callback(const potbot::PathPlanningConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);

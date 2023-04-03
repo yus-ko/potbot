@@ -111,16 +111,16 @@ add_executable(${PROJECT_NAME}_estimate # manage
 )
 
 add_executable(${PROJECT_NAME}_pp
-  # src/PathPlanning/callback.cpp
-  # src/PathPlanning/constructor.cpp
-  # src/PathPlanning/methods.cpp
-  # src/PathPlanning/debug_main.cpp
-  # src/PathPlanning/property.cpp
-  src/Test_0/callback.cpp
-  src/Test_0/constructor.cpp
-  src/Test_0/methods.cpp
-  src/Test_0/debug_main.cpp
-  src/Test_0/property.cpp
+  src/PathPlanning/callback.cpp
+  src/PathPlanning/constructor.cpp
+  src/PathPlanning/methods.cpp
+  src/PathPlanning/debug_main.cpp
+  src/PathPlanning/property.cpp
+  # src/Test_0/callback.cpp
+  # src/Test_0/constructor.cpp
+  # src/Test_0/methods.cpp
+  # src/Test_0/debug_main.cpp
+  # src/Test_0/property.cpp
 )
 
 add_executable(${PROJECT_NAME}_te
@@ -146,6 +146,7 @@ add_executable(${PROJECT_NAME}_lo
 )
 
 add_executable(${PROJECT_NAME}_co
+  src/Controller/callback.cpp
   src/Controller/constructor.cpp
   src/Controller/methods.cpp
   src/Controller/debug_main.cpp

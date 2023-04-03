@@ -87,3 +87,8 @@ void PathPlanningClass::__param_callback(const potbot::PathPlanningConfig& param
     wu_ = param.weight_potential_field;
     w_theta_ = param.weight_angle;
 }
+
+void PathPlanningClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)
+{
+    obstacles_ = msg;
+}

@@ -318,43 +318,6 @@ void LocalizationClass::set_pose(geometry_msgs::PoseWithCovarianceStamped pose)
     }
 }
 
-geometry_msgs::Point LocalizationClass::get_coordinate(int index, nav_msgs::MapMetaData info)
-{
-    geometry_msgs::Point p;
-    p.x = (index % info.width) * info.resolution + info.origin.position.x;
-    p.y = (index / info.width) * info.resolution + info.origin.position.y;
-    return p;
-}
-
-int LocalizationClass::get_index(double x, double y, nav_msgs::MapMetaData info)
-{
-
-    double xmin = info.origin.position.x;
-    double xmax = info.origin.position.x + info.width * info.resolution;
-
-    double ymin = info.origin.position.y;
-    double ymax = info.origin.position.y + info.height * info.resolution;
-
-    if (x < xmin || x > xmax || y < ymin || y > ymax)
-    {
-        return 0;
-    }
-
-    double img_x = x - info.origin.position.x;
-    double img_y = y - info.origin.position.y;
-
-    int index = int(img_y / info.resolution) * info.width + int(img_x / info.resolution);
-
-    if (index < 0)
-    {
-        //ROS_INFO("%f, %f, %f, %f",x,y,info.origin.position.x,info.origin.position.y);
-        index = 0;
-    }
-
-    return index;
-    
-}
-
 double LocalizationClass::match_rate(nav_msgs::OccupancyGrid local,nav_msgs::OccupancyGrid world)
 {
     //ROS_INFO("match rate");
@@ -608,7 +571,7 @@ void LocalizationClass::tf_broadcast()
     tf_robot2lidar.header = odom_.header;
     tf_robot2lidar.header.frame_id = "/robot";
     tf_robot2lidar.child_frame_id = "/lidar";
-    tf_robot2lidar.transform.translation.x = 0.1;
+    tf_robot2lidar.transform.translation.x = 0.0;
     tf_robot2lidar.transform.translation.y = 0.0;
     tf_robot2lidar.transform.translation.z = 0.1;
     tf2::Quaternion q;
