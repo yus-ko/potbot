@@ -1,15 +1,11 @@
-#include<potbot/Controller.h>
+#include<potbot/Filter.h>
 
 int main(int argc,char **argv){
-	ros::init(argc,argv,"potbot_co");
+	ros::init(argc,argv,"potbot_fi");
 
-    ControllerClass cc;
+    FilterClass fc;
 
-	// std::string s;
-    // std::cout << "Press Enter to start:";
-    // std::cin >> s;
-
-	cc.mainloop();
+	fc.mainloop();
 
 	return 0;
 }
