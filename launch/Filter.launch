@@ -1,0 +1,4 @@
+<launch>
+ <node pkg="potbot" name="potbot_fi" type="potbot_fi" output="screen">
+ </node>
+</launch>

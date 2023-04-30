@@ -46,9 +46,9 @@ class KalmanFilter{
 			
 		};
 
-		void input_data(double data, double t_now)
+		void input_data(Eigen::MatrixXd data, double t_now)
 		{
-			z(2,0) = data;
+			z = data;
 			static double t_pre;
 			if (dt >= 0)
 			{
@@ -70,7 +70,7 @@ class KalmanFilter{
 			K = Ptilde*((Ptilde+obse_sigma).inverse());
 			xhat = xtilde + K*(z - xtilde);
 			Phat = (I - K)*Ptilde;
-			xtilde = An*xhat;
+			xtilde = xhat;
 		};
 
 		Eigen::MatrixXd get_state()
@@ -91,13 +91,16 @@ int main(int argc,char **argv){
 	
 	KalmanFilter obs0;
 
-	ros::Rate loop_rate(50);
+	ros::Rate loop_rate(10);
+	int cnt = 0;
 	while(ros::ok())
 	{
 		double t = ros::Time::now().toSec();
-		double vx = sin(2.0*M_PI*0.05*t);
-		obs0.input_data(vx,t);
+		Eigen::MatrixXd z(4,1);
+		z(0,0) = sin(2.0*M_PI*0.05*t);
+		obs0.input_data(z,t);
 		obs0.update();
+		//if (cnt++ % 10 == 0) 
 		std::cout<<obs0.get_state().transpose()<<std::endl;
 
 		ros::spinOnce();

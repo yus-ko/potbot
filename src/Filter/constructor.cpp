@@ -16,7 +16,9 @@ FilterClass::FilterClass()
 	}
 
 	sub_odom_ = nhSub_.subscribe("/potbot/odom",1,&FilterClass::__odom_callback,this);
-	sub_obstacle_ = nhSub_.subscribe("/potbot/segments",1,&FilterClass::__obstacle_callback,this);
+	sub_obstacle_ = nhSub_.subscribe("/potbot/segment",1,&FilterClass::__obstacle_callback,this);
+	pub_state_ = nhPub_.advertise<geometry_msgs::Vector3Stamped>("/potbot/state", 1);
+	
 }
 FilterClass::~FilterClass(){
 }

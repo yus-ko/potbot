@@ -11,7 +11,9 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <visualization_msgs/MarkerArray.h>
+#include <geometry_msgs/Vector3Stamped.h>
 
 class KalmanFilter{
 	private:
@@ -52,9 +54,9 @@ class KalmanFilter{
 			
 		};
 
-		inline void input_data(double data, double t_now)
+		inline void input_data(Eigen::MatrixXd data, double t_now)
 		{
-			z(2,0) = data;
+			z = data;
 			static double t_pre;
 			if (dt >= 0)
 			{
@@ -96,7 +98,7 @@ class FilterClass{
 		ros::Subscriber sub_odom_, sub_obstacle_;
         //送信データ
         ros::NodeHandle nhPub_;
-		ros::Publisher pub_cmd_, pub_path_request_;
+		ros::Publisher pub_state_;
 
         visualization_msgs::MarkerArray obstacles_;
         std::vector<KalmanFilter> states_;

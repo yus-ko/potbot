@@ -20,6 +20,6 @@ void FilterClass::manage()
 
 void FilterClass::filter()
 {
-    states_[0].update();
-    std::cout<<states_[0].get_state()<<std::endl;
+    //states_[0].update();
+    //std::cout<<states_[0].get_state()<<std::endl;
 }

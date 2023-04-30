@@ -13,13 +13,15 @@
   </include>
 
   <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
+    <arg name="model" value="waffle_pi"/>
     <!-- <arg name="name" value="robot_0"/> -->
   </include>
 
   <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
     <arg name="name" value="robot_1"/>
-    <arg name="x_pos" value="6.0"/>
-    <arg name="yaw" value="3.14159265"/>
+    <arg name="x_pos" value="2.0"/>
+    <arg name="y_pos" value="-0.75"/>
+    <arg name="yaw" value="1.5708"/>
   </include>
 
 </launch>

@@ -125,9 +125,9 @@ add_executable(${PROJECT_NAME}_pp
 
 add_executable(${PROJECT_NAME}_te
   # src/test/test.cpp
-  src/test/kalman_filter.cpp
+  # src/test/kalman_filter.cpp
   #src/test/spline.cpp
-  #src/test/motor_response.cpp
+  src/test/motor_response.cpp
   #src/test/localization_accuracy.cpp
 )
 
@@ -154,6 +154,14 @@ add_executable(${PROJECT_NAME}_co
   src/Controller/property.cpp
 )
 
+add_executable(${PROJECT_NAME}_fi
+  src/Filter/callback.cpp
+  src/Filter/constructor.cpp
+  src/Filter/methods.cpp
+  src/Filter/debug_main.cpp
+  src/Filter/property.cpp
+)
+
 add_dependencies(${PROJECT_NAME}_cc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_sc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_mv ${PROJECT_NAME}_generate_messages_cpp)
@@ -166,6 +174,7 @@ add_dependencies(${PROJECT_NAME}_te ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_rv ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_lo ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_co ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_fi ${PROJECT_NAME}_generate_messages_cpp)
 
 add_dependencies(${PROJECT_NAME}_pp ${PROJECT_NAME}_gencfg)
 
@@ -181,5 +190,6 @@ target_link_libraries(${PROJECT_NAME}_te ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_rv ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_lo ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_co ${catkin_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME}_fi ${catkin_LIBRARIES} )
 
 add_definitions(-std=c++11)
