@@ -40,16 +40,31 @@ class KalmanFilter{
 			xhat.resize(4,1);
 			xtilde.resize(4,1);
 			z.resize(4,1);
+			xhat<<	0,
+					0,
+					0,
+					0;
+			xtilde = z = xhat;
 
 			Phat.resize(4,4);
-			Phat(0,0) = Phat(1,1) = Phat(2,2) = Phat(3,3) = 10000;
+			Phat<<	10000,0,0,0,
+					0,10000,0,0,
+					0,0,10000,0,
+					0,0,0,10000;
 
 			obse_sigma.resize(4,4);
 			model_sigma.resize(4,4);
-			obse_sigma(0,0) = obse_sigma(1,1) = obse_sigma(2,2) = obse_sigma(3,3) = 0.1;
-			model_sigma(0,0) = model_sigma(1,1) = model_sigma(2,2) = model_sigma(3,3) = 0.01;
+			obse_sigma<<	0.01,0,0,0,
+							0,0.01,0,0,
+							0,0,0.01,0,
+							0,0,0,0.01;
+			model_sigma = obse_sigma;
 
 			K.resize(4,4);
+			K<<	0,0,0,0,
+				0,0,0,0,
+				0,0,0,0,
+				0,0,0,0;
 			I = Eigen::MatrixXd::Identity(4,4);
 			
 		};
@@ -73,11 +88,13 @@ class KalmanFilter{
 
 		inline void update()
 		{
-			Ptilde = An*Phat*(An.transpose()) + model_sigma;
-
-			K = Ptilde*((Ptilde+obse_sigma).inverse());
+			// std::cout<<I<<std::endl;
+			Ptilde = An*Phat*An.transpose() + model_sigma;
+			
+			K = Ptilde*(Ptilde+obse_sigma).inverse();
 			xhat = xtilde + K*(z - xtilde);
 			Phat = (I - K)*Ptilde;
+
 			xtilde = An*xhat;
 		};
 
