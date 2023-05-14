@@ -1,5 +1,6 @@
 <launch>
 	<env name="GAZEBO_MODEL_PATH" value="$(find potbot)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+  <arg name="name" default="/"/>
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="x_pos" default="0.0"/>
   <arg name="y_pos" default="0.0"/>
@@ -19,6 +20,8 @@
   </include>
 
   <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
+    <arg name="name" value="$(arg name)"/>
+    <arg name="model" value="$(arg model)"/>
     <arg name="x_pos" value="$(arg x_pos)"/>
     <arg name="y_pos" value="$(arg y_pos)"/>
     <arg name="z_pos" value="$(arg z_pos)"/>

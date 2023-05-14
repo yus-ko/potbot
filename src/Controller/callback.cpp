@@ -7,9 +7,12 @@ void ControllerClass::__odom_callback(const nav_msgs::Odometry& msg)
 
 void ControllerClass::path_callback(const nav_msgs::Path& msg)
 {
-    robot_path_ = msg;
-    robot_path_index_ = 0;
-    line_following_start_ = robot_;
+    if (robot_path_.header.stamp != msg.header.stamp)
+    {
+        robot_path_ = msg;
+        robot_path_index_ = 0;
+        line_following_start_ = robot_;
+    }
 
 }
 

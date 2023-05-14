@@ -7,7 +7,7 @@ void PathPlanningClass::mainloop()
     ros::Rate loop_rate(10);
 	while (ros::ok())
 	{
-        __create_PotentialField();
+        run();
         loop_rate.sleep();
 		ros::spinOnce();
 	}
@@ -20,10 +20,14 @@ void PathPlanningClass::run()
     // header_ = robot_pose.header;
     // odom_.header = header_;
     // odom_.pose.pose = robot_pose.pose;
-
-    __create_PotentialField();
-    __create_Path();
+    if (path_planning_id == POTENTIAL_METHOD)
+    {
+        __create_PotentialField();
+        __create_Path();
+    }
     publishPathPlan();
+    
+    
 }
 
 std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_msgs::OccupancyGrid &map)

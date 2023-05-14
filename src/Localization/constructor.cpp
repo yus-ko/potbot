@@ -23,12 +23,12 @@ LocalizationClass::LocalizationClass()
 		localization_method_id_ = PARTICLE_FILTER;
 	}
 
-	sub_scan_=nhSub_.subscribe("/scan",1,&LocalizationClass::scan_callback,this);
+	sub_scan_=nhSub_.subscribe("scan",1,&LocalizationClass::scan_callback,this);
 	sub_map_=nhSub_.subscribe("/map",1,&LocalizationClass::map_callback,this);
 	sub_inipose_=nhSub_.subscribe("/initialpose",1,&LocalizationClass::inipose_callback,this);
 	sub_goal_=nhSub_.subscribe("/move_base_simple/goal",1,&LocalizationClass::goal_callback,this);
 	sub_point_=nhSub_.subscribe("/clicked_point",1,&LocalizationClass::point_callback,this);
-	sub_cluster_ = nhSub_.subscribe("/classificationDataEstimateVelocity", 1, &LocalizationClass::cluster_callback, this);
+	sub_cluster_ = nhSub_.subscribe("classificationDataEstimateVelocity", 1, &LocalizationClass::cluster_callback, this);
 
 	if (robot_id_ == MEGAROVER)
 	{
@@ -43,19 +43,19 @@ LocalizationClass::LocalizationClass()
 	}
 	else if (robot_id_ == TURTLEBOT3)
 	{
-		sub_encoder_ = nhSub_.subscribe("/odom", 1, &LocalizationClass::encoder_callback_sim, this);
+		sub_encoder_ = nhSub_.subscribe("odom", 1, &LocalizationClass::encoder_callback_sim, this);
 	}
 
 	if (localization_method_id_ == PARTICLE_FILTER)
 	{
-		pub_particle_ = nhPub_.advertise<visualization_msgs::MarkerArray>("/potbot/Particle", 1);
+		pub_particle_ = nhPub_.advertise<visualization_msgs::MarkerArray>("Particle", 1);
 	}
 
-	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("/potbot/Localmap", 1);
-	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
-	pub_scan0_ = nhPub_.advertise<sensor_msgs::LaserScan>("/potbot/scan0", 1);
-	pub_scan1_ = nhPub_.advertise<sensor_msgs::LaserScan>("/potbot/scan1", 1);
-	pub_segment_ = nhPub_.advertise<visualization_msgs::MarkerArray>("/potbot/segment", 1);
+	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("Localmap", 1);
+	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>("position", 1);
+	pub_scan0_ = nhPub_.advertise<sensor_msgs::LaserScan>("scan0", 1);
+	pub_scan1_ = nhPub_.advertise<sensor_msgs::LaserScan>("scan1", 1);
+	pub_segment_ = nhPub_.advertise<visualization_msgs::MarkerArray>("segment", 1);
 
 	particles_.markers.resize(particle_num_);
 	weights_.resize(particle_num_);

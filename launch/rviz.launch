@@ -4,4 +4,6 @@
   <param name="POTENTIAL_VALUE_PLOT_LIMIT" value="4.0"/>
   <param name="POTENTIAL_VALUE_PLOT_SHRINK_SCALE" value="10.0"/>
  </node>
+<node pkg="rviz" type="rviz" name="rviz" required="true"
+        args="-d $(find potbot)/rviz/Localization.rviz"/>
 </launch>

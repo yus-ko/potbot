@@ -15,9 +15,9 @@ FilterClass::FilterClass()
 		robot_id_ = TURTLEBOT3;
 	}
 
-	sub_odom_ = nhSub_.subscribe("/potbot/odom",1,&FilterClass::__odom_callback,this);
-	sub_obstacle_ = nhSub_.subscribe("/potbot/segment",1,&FilterClass::__obstacle_callback,this);
-	pub_state_ = nhPub_.advertise<geometry_msgs::Vector3Stamped>("/potbot/state", 1);
+	sub_odom_ = nhSub_.subscribe("position",1,&FilterClass::__odom_callback,this);
+	sub_obstacle_ = nhSub_.subscribe("segment",1,&FilterClass::__obstacle_callback,this);
+	pub_state_ = nhPub_.advertise<geometry_msgs::Vector3Stamped>("state", 1);
 	
 }
 FilterClass::~FilterClass(){

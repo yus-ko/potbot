@@ -557,8 +557,11 @@ void LocalizationClass::puclish_odom()
 void LocalizationClass::tf_broadcast()
 {
     geometry_msgs::TransformStamped tf_map2robot;
+
+    std::string ns = ros::this_node::getNamespace();
+
     tf_map2robot.header = odom_.header;
-    tf_map2robot.child_frame_id = "/robot";
+    tf_map2robot.child_frame_id = ns;
     tf_map2robot.transform.translation.x = odom_.pose.pose.position.x;
     tf_map2robot.transform.translation.y = odom_.pose.pose.position.y;
     tf_map2robot.transform.translation.z = odom_.pose.pose.position.z;
@@ -569,7 +572,7 @@ void LocalizationClass::tf_broadcast()
 
     geometry_msgs::TransformStamped tf_robot2lidar;
     tf_robot2lidar.header = odom_.header;
-    tf_robot2lidar.header.frame_id = "/robot";
+    tf_robot2lidar.header.frame_id = ns;
     tf_robot2lidar.child_frame_id = "/lidar";
     tf_robot2lidar.transform.translation.x = 0.0;
     tf_robot2lidar.transform.translation.y = 0.0;
@@ -584,7 +587,7 @@ void LocalizationClass::tf_broadcast()
 
     geometry_msgs::TransformStamped tf_robot2stereo_camera;
     tf_robot2stereo_camera.header = odom_.header;
-    tf_robot2stereo_camera.header.frame_id = "/robot";
+    tf_robot2stereo_camera.header.frame_id = ns;
     tf_robot2stereo_camera.child_frame_id = "/stereo_camera";
     tf_robot2stereo_camera.transform.translation.x = 0.1;
     tf_robot2stereo_camera.transform.translation.y = 0.0;

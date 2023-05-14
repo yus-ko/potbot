@@ -107,9 +107,13 @@ void ControllerClass::__LineFollowing()
         //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
         {
             robot_path_index_++;
-            if (robot_path_index_ >= robot_path_size-2)
+            // if (robot_path_index_ >= robot_path_size-2)
+            // {
+            //     break;
+            // }
+            if (robot_path_index_ >= robot_path_size)
             {
-                break;
+                robot_path_index_ = 0;
             }
         }
         else

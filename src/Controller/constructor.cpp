@@ -15,13 +15,13 @@ ControllerClass::ControllerClass()
 		robot_id_ = TURTLEBOT3;
 	}
 
-	sub_odom_ = nhSub_.subscribe("/potbot/odom",1,&ControllerClass::__odom_callback,this);
-	sub_path_ = nhSub_.subscribe("/potbot/Path",1,&ControllerClass::path_callback,this);
-	sub_goal_ = nhSub_.subscribe("/potbot/goal", 1, &ControllerClass::__goal_callback, this);
-	sub_local_map_ = nhSub_.subscribe("/potbot/Localmap", 1, &ControllerClass::__local_map_callback, this);
-	sub_scan_ = nhSub_.subscribe("/scan",1,&ControllerClass::__scan_callback,this);
+	sub_odom_ = nhSub_.subscribe("position",1,&ControllerClass::__odom_callback,this);
+	sub_path_ = nhSub_.subscribe("Path",1,&ControllerClass::path_callback,this);
+	sub_goal_ = nhSub_.subscribe("goal", 1, &ControllerClass::__goal_callback, this);
+	sub_local_map_ = nhSub_.subscribe("Localmap", 1, &ControllerClass::__local_map_callback, this);
+	sub_scan_ = nhSub_.subscribe("scan",1,&ControllerClass::__scan_callback,this);
 
-	pub_path_request_ = nhPub_.advertise<std_msgs::Empty>("/potbot/create_path", 1);
+	pub_path_request_ = nhPub_.advertise<std_msgs::Empty>("create_path", 1);
 	
 
 	if(PUBLISH_COMMAND)
@@ -39,7 +39,7 @@ ControllerClass::ControllerClass()
 		}
 		else if (robot_id_ == TURTLEBOT3)
 		{
-			pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+			pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 		}
 	}
 }
