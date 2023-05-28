@@ -5,6 +5,19 @@ void FilterClass::__odom_callback(const nav_msgs::Odometry& msg)
     odom_ = msg;
 }
 
+void matrixToDoubleArray(const Eigen::MatrixXd& matrix, std_msgs::Float64MultiArray& array) {
+    int rows = matrix.rows();
+    int cols = matrix.cols();
+
+    int index = 0;
+    for (int j = 0; j < cols; j++) {
+        for (int i = 0; i < rows; i++) {
+            array.data[index] = matrix(i, j);
+            index++;
+        }
+    }
+}
+
 void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)
 {
     obstacles_ = msg;
@@ -31,15 +44,31 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
                 data<< x, y, vx, vy;
                 states_[0].input_data(data,t_now);
                 states_[0].update();
-                geometry_msgs::Vector3Stamped state_msg;
+                potbot::State state_msg;
                 state_msg.header = obstacles_.markers[i].header;
-                double vxhat = states_[0].get_state()(2,0);
-                double vyhat = states_[0].get_state()(3,0);
-                state_msg.vector.x = vxhat;
-                state_msg.vector.y = vyhat;
+
+                state_msg.z.data.resize(4);
+                state_msg.xhat.data.resize(4);
+                state_msg.K.data.resize(16);
+                state_msg.P.data.resize(16);
+
+                matrixToDoubleArray(states_[0].get_z(), state_msg.z);
+                matrixToDoubleArray(states_[0].get_xhat(), state_msg.xhat);
+                matrixToDoubleArray(states_[0].get_K(), state_msg.K);
+                matrixToDoubleArray(states_[0].get_P(), state_msg.P);
+                
+                // state_msg.xhat = states_[0].get_xhat();
+                // state_msg.K = states_[0].get_K();
+                // state_msg.P = states_[0].get_P();
+
+                // double vxhat = states_[0].get_state()(2,0);
+                // double vyhat = states_[0].get_state()(3,0);
+                // state_msg.vector.x = vxhat;
+                // state_msg.vector.y = vyhat;
                 // ROS_INFO("%f, %f",vy,vyhat);
                 // ROS_INFO("%f, %f, %f",t_now, t_pre, dt);
-                std::cout<<states_[0].get_state().transpose()<<std::endl;
+                
+                std::cout<<states_[0].get_xhat().transpose()<<std::endl;
                 pub_state_.publish(state_msg);
             }
             x_pre = x;

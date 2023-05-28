@@ -1,5 +1,6 @@
 //include haeders
 #include <potbot/Utility.h>
+#include <potbot/State.h>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <geometry_msgs/Twist.h>
@@ -98,9 +99,24 @@ class KalmanFilter{
 			xtilde = An*xhat;
 		};
 
-		inline Eigen::MatrixXd get_state()
+		inline Eigen::MatrixXd get_xhat()
 		{
 			return xhat;
+		};
+
+		inline Eigen::MatrixXd get_z()
+		{
+			return z;
+		};
+
+		inline Eigen::MatrixXd get_K()
+		{
+			return K;
+		};
+
+		inline Eigen::MatrixXd get_P()
+		{
+			return Phat;
 		};
 
 };

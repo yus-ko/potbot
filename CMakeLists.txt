@@ -32,6 +32,7 @@ add_message_files(
   PointCloudData.msg
   ClusterData.msg
   PotentialValue.msg
+  State.msg
 )
 
 generate_messages(
