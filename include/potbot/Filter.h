@@ -121,6 +121,96 @@ class KalmanFilter{
 
 };
 
+// Unscented Kalman Filter
+class UKF{
+	private:
+		// 引数として受け取る関数の型
+		typedef Eigen::VectorXd (*ModelFunction)(Eigen::VectorXd, double);
+		ModelFunction f, h;
+		Eigen::VectorXd xhat;
+		Eigen::MatrixXd P,Q,R;
+
+		// U変換(unscented transform)
+		inline std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> U_transform(ModelFunction f_ut, Eigen::VectorXd xm, Eigen::MatrixXd Pxx, double dt) 
+		{
+			double n = xm.rows();
+			double kappa = 3.0-n;
+
+			Eigen::VectorXd w(2*(int)n+1);
+			w.fill(1.0/(2*(n+kappa)));
+			w(0) = kappa/(n+kappa);
+
+			Eigen::MatrixXd L;
+			Eigen::LLT<Eigen::MatrixXd> llt(Pxx);  // Pをコレスキー分解
+			if (llt.info() == Eigen::Success) {
+				L = llt.matrixL();  // 下三角行列Lを取得
+			} else {
+				std::cout << "Matrix is not positive definite." << std::endl;
+			}
+
+			//シグマポイントを作成
+			Eigen::MatrixXd X((int)n, 2*(int)n+1);
+			X.col(0)=xm;
+			X.block(0, 1,					(X.cols()-1)/2, (X.cols()-1)/2) = xm*Eigen::RowVectorXd::Ones((int)n) + sqrt(n+kappa)*L;
+			X.block(0, (X.cols()-1)/2+1,	(X.cols()-1)/2, (X.cols()-1)/2) = xm*Eigen::RowVectorXd::Ones((int)n) - sqrt(n+kappa)*L;
+
+			//シグマポイントをfで変換
+			int num_dim = f_ut(X.col(0),dt).rows();
+			Eigen::MatrixXd Y(num_dim, X.cols());
+			for(int i=0; i<Y.cols(); i++) Y.col(i) = f_ut(X.col(i),dt);
+
+			// 重みをかけながら行ごとの総和を計算する(yの期待値計算)
+			Eigen::VectorXd ym = (Y.array().rowwise() * w.transpose().array()).rowwise().sum();
+
+			//ここが怪しい
+			Eigen::MatrixXd Pyy(num_dim, num_dim);
+			for(int i=0; i<Y.cols(); i++) Pyy += w(i)*(Y.col(i) - ym)*(Y.col(i) - ym).transpose();
+			
+			//ここが怪しい
+			Eigen::MatrixXd Pxy(X.rows(), num_dim);
+			for(int i=0; i<Y.cols(); i++) Pxy += w(i)*(X.col(i) - xm)*(Y.col(i) - ym).transpose();
+			
+			//std::cout<<Pyy<<std::endl;
+			return std::make_tuple(ym, Pyy, Pxy);
+		};
+
+	public:
+		UKF(ModelFunction model_func_system, ModelFunction model_func_observ, 
+			Eigen::MatrixXd noise_covariance_system, Eigen::MatrixXd noise_covariance_observ, 
+			Eigen::MatrixXd error_covariance_ini, Eigen::VectorXd estimate_state_ini)
+		{
+			f = model_func_system;
+			h = model_func_observ;
+			R = noise_covariance_system;
+			Q = noise_covariance_observ;
+			P = error_covariance_ini;
+			xhat = estimate_state_ini;
+		};
+		~UKF(){};
+
+		inline std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> update(Eigen::VectorXd y, double dt)
+		{
+			std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans1 = U_transform(f,xhat,P,dt);
+
+			Eigen::VectorXd xhatm = std::get<0>(ans1);
+			Eigen::MatrixXd Pm = std::get<1>(ans1);
+
+			Pm += R;
+
+			std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans2 = U_transform(h,xhatm,Pm,dt);
+			Eigen::VectorXd yhatm = std::get<0>(ans2);
+			Eigen::MatrixXd Pyy = std::get<1>(ans2);
+			Eigen::MatrixXd Pxy = std::get<2>(ans2);
+
+			Eigen::MatrixXd G = Pxy*(Pyy+Q).inverse();			//カルマンゲイン
+			Eigen::VectorXd xhat_new = xhatm + G*(y-yhatm);		//推定値
+			Eigen::MatrixXd P_new = Pm - G*Pxy.transpose();		//推定誤差共分散
+
+			// std::cout<<G<<std::endl;
+			return std::make_tuple(xhat_new, P_new, G);
+		}
+};
+
 //クラスの定義
 class FilterClass{
 
@@ -135,6 +225,7 @@ class FilterClass{
 
         visualization_msgs::MarkerArray obstacles_;
         std::vector<KalmanFilter> states_;
+		std::vector<UKF> states_ukf_;
 
         tf::TransformListener tflistener;
         tf2_ros::Buffer tf_buffer_;
@@ -146,18 +237,10 @@ class FilterClass{
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
-        std::string ROBOT_NAME;
-        bool IS_SIMULATOR, PUBLISH_COMMAND;
-        double PATH_TRACKING_MARGIN;
+        double SIGMA_P, SIGMA_Q, SIGMA_R;
 
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __obstacle_callback(const visualization_msgs::MarkerArray& msg);
-        void __publish_path_request();
-        void __publishcmd();
-
-        void __LineFollowing();
-        void __PoseAlignment();
-        bool __PathCollision();
 
     public:
         FilterClass();

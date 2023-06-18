@@ -6,6 +6,6 @@ int main(int argc,char **argv){
     FilterClass fc;
 
 	fc.mainloop();
-
+	
 	return 0;
 }

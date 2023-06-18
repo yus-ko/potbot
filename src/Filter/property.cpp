@@ -4,5 +4,7 @@ void FilterClass::setLaunchParam(){
     
     ros::NodeHandle n("~");
     //n.getParam("",);
-    //n.getParam("ROBOT_NAME",ROBOT_NAME);
+    n.getParam("SIGMA_P",SIGMA_P);
+    n.getParam("SIGMA_Q",SIGMA_Q);
+    n.getParam("SIGMA_R",SIGMA_R);
 }
