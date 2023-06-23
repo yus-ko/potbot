@@ -127,9 +127,10 @@ add_executable(${PROJECT_NAME}_pp
 add_executable(${PROJECT_NAME}_te
   # src/test/test.cpp
   # src/test/kalman_filter.cpp
-  #src/test/spline.cpp
-  src/test/motor_response.cpp
-  #src/test/localization_accuracy.cpp
+  # src/test/spline.cpp
+  # src/test/motor_response.cpp
+  # src/test/localization_accuracy.cpp
+  src/test/simulation.cpp
 )
 
 add_executable(${PROJECT_NAME}_rv
