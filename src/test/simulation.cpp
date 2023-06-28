@@ -156,8 +156,8 @@ int main(int argc,char **argv){
 			segment.action = visualization_msgs::Marker::MODIFY;
 
 			
-			segment.pose.position.x = y(0) + dist_y1(gen);
-			segment.pose.position.y = y(1) + dist_y1(gen);
+			segment.pose.position.x = x(0) + dist_y1(gen);
+			segment.pose.position.y = x(1) + dist_y1(gen);
 			segment.pose.position.z = 0;
 
 			segment.pose.orientation.x = 0;
@@ -199,7 +199,7 @@ int main(int argc,char **argv){
 		matrixToDoubleArray(P, state_msg.P);
 		matrixToDoubleArray(K, state_msg.K);
 		
-		std::cout<<xhat.transpose()<<std::endl;
+		std::cout<<xhat(3)<<std::endl;
 		pub_state.publish(state_msg);
 
 		pub_robot.publish(robot);
