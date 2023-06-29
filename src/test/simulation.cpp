@@ -20,8 +20,8 @@ Eigen::VectorXd u(double t)
 Eigen::VectorXd f(Eigen::VectorXd x,Eigen::VectorXd u, double dt)
 {
 	Eigen::VectorXd ans(5);
-	ans<<	x(0) + u(0)*cos(u(1))*dt,
-			x(1) + u(0)*sin(u(1))*dt,
+	ans<<	x(0) + u(0)*cos(u(1)*dt)*dt,
+			x(1) + u(0)*sin(u(1)*dt)*dt,
 			x(2) + u(1)*dt,
 			u(0),
 			u(1);
@@ -76,7 +76,7 @@ int main(int argc,char **argv){
 	ros::Publisher pub_seg = nhPub.advertise<visualization_msgs::MarkerArray>("/robot_0/segment_test", 1);
 	ros::Publisher pub_state = nhPub.advertise<potbot::State>("/robot_0/state", 1);
 
-	ros::Rate loop_rate(50);
+	ros::Rate loop_rate(20);
 	
 	ros::WallTime time_begin = ros::WallTime::now();
 
@@ -97,9 +97,10 @@ int main(int argc,char **argv){
 
 	Eigen::MatrixXd Q(__NY__,__NY__), R(__NX__,__NX__), P(__NX__,__NX__);
 	Q.setZero();R.setZero();P.setZero();
-	for (int i = 3; i < __NX__; i++) R(i,i) = 1e-5;
-	for (int i = 0; i < __NY__; i++) Q(i,i) = 1e-2;
+	for (int i = 3; i < __NX__; i++) R(i,i) = 0.07*1e-4;
+	for (int i = 0; i < __NY__; i++) Q(i,i) = 1e-4;
 	for (int i = 0; i < __NX__; i++) P(i,i) = 1e2;
+	std::cout<<R<<"\n\n"<<Q<<"\n\n"<<P<<std::endl;
 
 	Eigen::VectorXd xhat(__NX__);
 	xhat.setZero();
@@ -107,6 +108,29 @@ int main(int argc,char **argv){
 	UKF estimate(f1,h,R,Q,P,xhat);
 
 	ROS_INFO("begin");
+	
+	// Eigen::MatrixXd L,Pxx(5,5);
+	// Pxx<<	3.02504691083892e-05, 9.86835420220657e-07, 0.00355564298320550, 3.53263334992600e-05, 0.00183766231217078,
+	// 		9.86835420220657e-07, 3.53503058726569e-05, 0.0261724029068720, -1.37575234537005e-06, 0.0161781079462003,
+	// 		0.00355564298320550, 0.0261724029068720, 118.798382325686, 0.00200092580753455, 13.4944198964642,
+	// 		3.53263334992600e-05, -1.37575234537005e-06, 0.00200092580753455, 7.64370774235453e-05, 0.000903389541703051,
+	// 		0.00183766231217078, 0.0161781079462003, 13.4944198964642, 0.000903389541703051, 8.96078842542747;
+	// Eigen::LLT<Eigen::MatrixXd> llt(Pxx);  // Pをコレスキー分解
+	// if (llt.info() == Eigen::Success) {
+	// 	L = llt.matrixL();  // 下三角行列Lを取得
+	// 	std::cout<<"S*S^T = A"<<std::endl;
+	// 	std::cout<<L<<"\n"<<std::endl;
+	// 	std::cout<<L.transpose()<<"\n"<<std::endl;
+	// 	std::cout<<L*L.transpose()<<"\n"<<std::endl;
+	// 	std::cout<<Pxx<<"\n"<<std::endl;
+	// 	std::cout<<bool(L*L.transpose() == Pxx)<<std::endl;
+		
+	// } else {
+	// 	std::cout << "Matrix is not positive definite." << std::endl;
+	// }
+
+	// double dt1 = 0.05;
+	// int step = 0;
 	while (ros::ok())
 	{
 		nav_msgs::Odometry robot;
@@ -117,10 +141,12 @@ int main(int argc,char **argv){
 		static ros::Time t_pre = t_now;
 		
 		double dt = t_now.toSec() - t_pre.toSec();
+		// double dt = dt1;
 		t_pre = t_now;
 		if(dt>1) continue;
 
 		double t = t_now.toSec() - time_begin.toSec();
+		// double t = dt*step++;
 		double v = dist_x(gen);
 		double w = dist_y(gen);
 		x = f(x,u(t),dt) + v*E;
@@ -199,7 +225,7 @@ int main(int argc,char **argv){
 		matrixToDoubleArray(P, state_msg.P);
 		matrixToDoubleArray(K, state_msg.K);
 		
-		std::cout<<xhat(3)<<std::endl;
+		std::cout<<xhat.transpose()<<std::endl;
 		pub_state.publish(state_msg);
 
 		pub_robot.publish(robot);

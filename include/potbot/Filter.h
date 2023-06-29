@@ -140,6 +140,7 @@ class UKF{
 			w.fill(1.0/(2*(n+kappa)));
 			w(0) = kappa/(n+kappa);
 
+			//std::cout<<"Pxx =\n"<<Pxx<<"\n"<<std::endl;
 			Eigen::MatrixXd L;
 			Eigen::LLT<Eigen::MatrixXd> llt(Pxx);  // Pをコレスキー分解
 			if (llt.info() == Eigen::Success) {
@@ -162,12 +163,27 @@ class UKF{
 			// 重みをかけながら行ごとの総和を計算する(yの期待値計算)
 			Eigen::VectorXd ym = (Y.array().rowwise() * w.transpose().array()).rowwise().sum();
 
+			// Eigen::VectorXd I(Y.cols());
+			// I.setOnes();
+			// Eigen::MatrixXd Yd(Y.rows(), Y.cols());
+			// for(int i=0; i<Y.rows(); i++) Yd.row(i) = Y.row(i) - (ym(i)*I).transpose();
+			
+			// I.resize(X.cols());
+			// I.setOnes();
+			// Eigen::MatrixXd Xd(X.rows(), X.cols());
+			// for(int i=0; i<X.rows(); i++) Xd.row(i) = X.row(i) - (xm(i)*I).transpose();
+
+			// Eigen::MatrixXd Pyy = Yd*w.asDiagonal()*Yd.transpose();
+			// Eigen::MatrixXd Pxy = Xd*w.asDiagonal()*Yd.transpose();
+
 			//ここが怪しい
 			Eigen::MatrixXd Pyy(num_dim, num_dim);
+			Pyy.setZero();
 			for(int i=0; i<Y.cols(); i++) Pyy += w(i)*(Y.col(i) - ym)*(Y.col(i) - ym).transpose();
 			
 			//ここが怪しい
 			Eigen::MatrixXd Pxy(X.rows(), num_dim);
+			Pxy.setZero();
 			for(int i=0; i<Y.cols(); i++) Pxy += w(i)*(X.col(i) - xm)*(Y.col(i) - ym).transpose();
 			
 			//std::cout<<Pyy<<std::endl;
@@ -190,6 +206,7 @@ class UKF{
 
 		inline std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> update(Eigen::VectorXd y, double dt)
 		{
+			
 			std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans1 = U_transform(f,xhat,P,dt);
 
 			Eigen::VectorXd xhatm = std::get<0>(ans1);
@@ -206,7 +223,10 @@ class UKF{
 			Eigen::VectorXd xhat_new = xhatm + G*(y-yhatm);		//推定値
 			Eigen::MatrixXd P_new = Pm - G*Pxy.transpose();		//推定誤差共分散
 
-			// std::cout<<G<<std::endl;
+			xhat = xhat_new;
+			P = P_new;
+
+			// std::cout<<"P_new =\n"<<P_new<<"\n"<<std::endl;
 			return std::make_tuple(xhat_new, P_new, G);
 		}
 };
