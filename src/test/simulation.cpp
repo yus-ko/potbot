@@ -108,29 +108,6 @@ int main(int argc,char **argv){
 	UKF estimate(f1,h,R,Q,P,xhat);
 
 	ROS_INFO("begin");
-	
-	// Eigen::MatrixXd L,Pxx(5,5);
-	// Pxx<<	3.02504691083892e-05, 9.86835420220657e-07, 0.00355564298320550, 3.53263334992600e-05, 0.00183766231217078,
-	// 		9.86835420220657e-07, 3.53503058726569e-05, 0.0261724029068720, -1.37575234537005e-06, 0.0161781079462003,
-	// 		0.00355564298320550, 0.0261724029068720, 118.798382325686, 0.00200092580753455, 13.4944198964642,
-	// 		3.53263334992600e-05, -1.37575234537005e-06, 0.00200092580753455, 7.64370774235453e-05, 0.000903389541703051,
-	// 		0.00183766231217078, 0.0161781079462003, 13.4944198964642, 0.000903389541703051, 8.96078842542747;
-	// Eigen::LLT<Eigen::MatrixXd> llt(Pxx);  // Pをコレスキー分解
-	// if (llt.info() == Eigen::Success) {
-	// 	L = llt.matrixL();  // 下三角行列Lを取得
-	// 	std::cout<<"S*S^T = A"<<std::endl;
-	// 	std::cout<<L<<"\n"<<std::endl;
-	// 	std::cout<<L.transpose()<<"\n"<<std::endl;
-	// 	std::cout<<L*L.transpose()<<"\n"<<std::endl;
-	// 	std::cout<<Pxx<<"\n"<<std::endl;
-	// 	std::cout<<bool(L*L.transpose() == Pxx)<<std::endl;
-		
-	// } else {
-	// 	std::cout << "Matrix is not positive definite." << std::endl;
-	// }
-
-	// double dt1 = 0.05;
-	// int step = 0;
 	while (ros::ok())
 	{
 		nav_msgs::Odometry robot;
@@ -141,12 +118,10 @@ int main(int argc,char **argv){
 		static ros::Time t_pre = t_now;
 		
 		double dt = t_now.toSec() - t_pre.toSec();
-		// double dt = dt1;
 		t_pre = t_now;
 		if(dt>1) continue;
 
 		double t = t_now.toSec() - time_begin.toSec();
-		// double t = dt*step++;
 		double v = dist_x(gen);
 		double w = dist_y(gen);
 		x = f(x,u(t),dt) + v*E;

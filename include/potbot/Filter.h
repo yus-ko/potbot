@@ -131,8 +131,9 @@ class UKF{
 		Eigen::MatrixXd P,Q,R;
 
 		// U変換(unscented transform)
-		inline std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> U_transform(ModelFunction f_ut, Eigen::VectorXd xm, Eigen::MatrixXd Pxx, double dt) 
+		inline std::tuple<bool, Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> U_transform(ModelFunction f_ut, Eigen::VectorXd xm, Eigen::MatrixXd Pxx, double dt) 
 		{
+			bool result = false;
 			double n = xm.rows();
 			double kappa = 3.0-n;
 
@@ -145,8 +146,11 @@ class UKF{
 			Eigen::LLT<Eigen::MatrixXd> llt(Pxx);  // Pをコレスキー分解
 			if (llt.info() == Eigen::Success) {
 				L = llt.matrixL();  // 下三角行列Lを取得
+				result = true;
 			} else {
+				std::cout << "Pxx =\n" << Pxx << std::endl;
 				std::cout << "Matrix is not positive definite." << std::endl;
+				return std::make_tuple(result, xm, Pxx, Pxx);
 			}
 
 			//シグマポイントを作成
@@ -176,18 +180,16 @@ class UKF{
 			// Eigen::MatrixXd Pyy = Yd*w.asDiagonal()*Yd.transpose();
 			// Eigen::MatrixXd Pxy = Xd*w.asDiagonal()*Yd.transpose();
 
-			//ここが怪しい
 			Eigen::MatrixXd Pyy(num_dim, num_dim);
 			Pyy.setZero();
 			for(int i=0; i<Y.cols(); i++) Pyy += w(i)*(Y.col(i) - ym)*(Y.col(i) - ym).transpose();
 			
-			//ここが怪しい
 			Eigen::MatrixXd Pxy(X.rows(), num_dim);
 			Pxy.setZero();
 			for(int i=0; i<Y.cols(); i++) Pxy += w(i)*(X.col(i) - xm)*(Y.col(i) - ym).transpose();
 			
-			//std::cout<<Pyy<<std::endl;
-			return std::make_tuple(ym, Pyy, Pxy);
+			// std::cout<<"Pyy =\n"<<Pyy<<std::endl;
+			return std::make_tuple(result, ym, Pyy, Pxy);
 		};
 
 	public:
@@ -207,19 +209,28 @@ class UKF{
 		inline std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> update(Eigen::VectorXd y, double dt)
 		{
 			
-			std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans1 = U_transform(f,xhat,P,dt);
+			Eigen::MatrixXd G(xhat.rows(), y.rows());
+			
+			std::tuple<bool, Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans1 = U_transform(f,xhat,P,dt);
 
-			Eigen::VectorXd xhatm = std::get<0>(ans1);
-			Eigen::MatrixXd Pm = std::get<1>(ans1);
+			bool success = std::get<0>(ans1);
+			if (!success) return std::make_tuple(xhat, P, G);
+
+			Eigen::VectorXd xhatm = std::get<1>(ans1);
+			Eigen::MatrixXd Pm = std::get<2>(ans1);
 
 			Pm += R;
 
-			std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans2 = U_transform(h,xhatm,Pm,dt);
-			Eigen::VectorXd yhatm = std::get<0>(ans2);
-			Eigen::MatrixXd Pyy = std::get<1>(ans2);
-			Eigen::MatrixXd Pxy = std::get<2>(ans2);
+			std::tuple<bool, Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans2 = U_transform(h,xhatm,Pm,dt);
 
-			Eigen::MatrixXd G = Pxy*(Pyy+Q).inverse();			//カルマンゲイン
+			success = std::get<0>(ans2);
+			if (!success) return std::make_tuple(xhat, P, G);
+
+			Eigen::VectorXd yhatm = std::get<1>(ans2);
+			Eigen::MatrixXd Pyy = std::get<2>(ans2);
+			Eigen::MatrixXd Pxy = std::get<3>(ans2);
+
+			G = Pxy*(Pyy+Q).inverse();			//カルマンゲイン
 			Eigen::VectorXd xhat_new = xhatm + G*(y-yhatm);		//推定値
 			Eigen::MatrixXd P_new = Pm - G*Pxy.transpose();		//推定誤差共分散
 

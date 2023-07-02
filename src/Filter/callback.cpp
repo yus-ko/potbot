@@ -55,15 +55,15 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
         
         if (obstacles_.markers[i].ns == "segments_display")
         {
-            // double t_now = obstacles_.markers[i].header.stamp.toSec();
-            double t_now = ros::Time::now().toSec();
+            double t_now = obstacles_.markers[i].header.stamp.toSec();
+            // double t_now = ros::Time::now().toSec();
             double x = obstacles_.markers[i].pose.position.x;
             double y = obstacles_.markers[i].pose.position.y;
             // ROS_INFO("%f, %f",x,y);
             static double x_pre = -1000;
             static double y_pre = -1000;
             static double t_pre = -1000;
-            if (t_pre >= 0)
+            if (t_pre > 0)
             {
                 double dt = t_now-t_pre;
                 int ny = 2;
@@ -93,27 +93,29 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
             else
             {
                 Eigen::MatrixXd Q(__NY__,__NY__), R(__NX__,__NX__), P(__NX__,__NX__);
-                for (int i = 0; i < __NY__; i++) Q(i,i) = SIGMA_Q;
-                for (int i = 0; i < __NX__; i++) R(i,i) = SIGMA_R;
-                for (int i = 0; i < __NX__; i++) P(i,i) = SIGMA_P;
+                Q.setZero();R.setZero();P.setZero();
+                // for (int i = 0; i < __NY__; i++) Q(i,i) = SIGMA_Q;
+                // for (int i = 0; i < __NX__; i++) R(i,i) = SIGMA_R;
+                // for (int i = 0; i < __NX__; i++) P(i,i) = SIGMA_P;
 
-                // Q<< SIGMA_Q, 0,
-                //     0, SIGMA_Q;
+                Q<< SIGMA_Q, 0,
+                    0, SIGMA_Q;
                 
-                // R<< 0, 0, 0, 0, 0,
-                //     0, 0, 0, 0, 0,
-                //     0, 0, 0, 0, 0,
-                //     0, 0, 0, SIGMA_R, 0,
-                //     0, 0, 0, 0, SIGMA_R;
+                R<< 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0,
+                    0, 0, 0, SIGMA_R, 0,
+                    0, 0, 0, 0, SIGMA_R;
 
-                // P<< SIGMA_P, 0, 0, 0, 0,
-                //     0, SIGMA_P, 0, 0, 0,
-                //     0, 0, SIGMA_P, 0, 0,
-                //     0, 0, 0, SIGMA_P, 0,
-                //     0, 0, 0, 0, SIGMA_P;
+                P<< SIGMA_P, 0, 0, 0, 0,
+                    0, SIGMA_P, 0, 0, 0,
+                    0, 0, SIGMA_P, 0, 0,
+                    0, 0, 0, SIGMA_P, 0,
+                    0, 0, 0, 0, SIGMA_P;
 
                 Eigen::VectorXd xhat(__NX__);
-                //xhat<< 2,0,0,-0.2,0;
+                // xhat.setZero();
+                xhat<< x,y,0,0,0;
                 UKF estimate(f,h,R,Q,P,xhat);
                 states_ukf_.push_back(estimate);
             }
