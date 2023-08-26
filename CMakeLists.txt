@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   #obstacle_detection_2019
   visualization_msgs
   #autonomous_mobile_robot
+  # nav_msgs
 )
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
@@ -33,12 +34,15 @@ add_message_files(
   ClusterData.msg
   PotentialValue.msg
   State.msg
+  StateArray.msg
+  # OdometryArray.msg
 )
 
 generate_messages(
   DEPENDENCIES
   sensor_msgs
   geometry_msgs
+  # nav_msgs
 )
 
 generate_dynamic_reconfigure_options(
@@ -47,7 +51,11 @@ generate_dynamic_reconfigure_options(
 )
 
 catkin_package(
-  CATKIN_DEPENDS roscpp sensor_msgs message_runtime 
+  CATKIN_DEPENDS
+  roscpp
+  sensor_msgs
+  message_runtime 
+  # nav_msgs
 )
 
 include_directories(
@@ -96,11 +104,11 @@ add_executable(${PROJECT_NAME}_frm # manage
 )
 
 add_executable(${PROJECT_NAME}_im # image matching
-   src/StereoCamera/imageMatching/constructor.cpp
-   src/StereoCamera/imageMatching/methods.cpp
-   src/StereoCamera/imageMatching/debug_main.cpp
-   src/StereoCamera/imageMatching/debug_methods.cpp
-   src/StereoCamera/imageMatching/property.cpp
+  src/StereoCamera/imageMatching/constructor.cpp
+  src/StereoCamera/imageMatching/methods.cpp
+  src/StereoCamera/imageMatching/debug_main.cpp
+  src/StereoCamera/imageMatching/debug_methods.cpp
+  src/StereoCamera/imageMatching/property.cpp
  )
 
 add_executable(${PROJECT_NAME}_estimate # manage

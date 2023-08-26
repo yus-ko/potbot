@@ -1,6 +1,7 @@
 //include haeders
 #include <potbot/Utility.h>
 #include <potbot/State.h>
+#include <potbot/StateArray.h>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <geometry_msgs/Twist.h>

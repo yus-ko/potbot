@@ -3,6 +3,13 @@
 void FilterClass::__odom_callback(const nav_msgs::Odometry& msg)
 {
     odom_ = msg;
+    //print_Pose(odom_.pose.pose);
+    double linear_vel = odom_.twist.twist.linear.x;
+    double pose = get_Yaw(odom_.pose.pose.orientation);
+    //std::cout<< linear_vel << ", " << robot_pose<<std::endl;
+    double vx = linear_vel*cos(pose);
+    double vy = linear_vel*sin(pose);
+    std::cout<< vx << ", " << vy<<std::endl;
 }
 
 void matrixToDoubleArray(const Eigen::MatrixXd& matrix, std_msgs::Float64MultiArray& array) {
@@ -46,36 +53,56 @@ Eigen::VectorXd h(Eigen::VectorXd x, double dt) {
 	return y;
 }
 
+int id2index(int id, std::vector<int> idvec)
+{
+    int idx = -1;
+    for(int i = 0; i < idvec.size(); i++)
+    {
+        if (idvec[i] == id)
+        {
+            idx = i;
+            break;
+        }
+    }
+    return idx;
+}
+
 void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)
 {
     obstacles_ = msg;
+    static std::vector<int> ukf_id;
     std::cout<<"-----------------"<<std::endl;
+
+    double t_now = obstacles_.markers[0].header.stamp.toSec();
+    // double t_now = ros::Time::now().toSec();
+    static double t_pre = t_now;
+    double dt = t_now-t_pre;
+
+    potbot::StateArray state_array_msg;
     for(int i =0; i < obstacles_.markers.size(); i++)
     {
         
         if (obstacles_.markers[i].ns == "segments_display")
         {
-            double t_now = obstacles_.markers[i].header.stamp.toSec();
-            // double t_now = ros::Time::now().toSec();
             double x = obstacles_.markers[i].pose.position.x;
             double y = obstacles_.markers[i].pose.position.y;
-            // ROS_INFO("%f, %f",x,y);
-            static double x_pre = -1000;
-            static double y_pre = -1000;
-            static double t_pre = -1000;
-            if (t_pre > 0)
+            int id = obstacles_.markers[i].id;
+
+            auto iter = std::find(ukf_id.begin(), ukf_id.end(), id);
+            if (iter != ukf_id.end())
             {
-                double dt = t_now-t_pre;
+                int index_ukf = std::distance(ukf_id.begin(), iter);
                 int ny = 2;
                 Eigen::VectorXd observed_data(ny);
                 observed_data<< x, y;
-                std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans = states_ukf_[0].update(observed_data,dt);
+                std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans = states_ukf_[index_ukf].update(observed_data,dt);
                 Eigen::MatrixXd xhat = std::get<0>(ans);
                 Eigen::MatrixXd P = std::get<1>(ans);
                 Eigen::MatrixXd K = std::get<2>(ans);
 
                 potbot::State state_msg;
                 state_msg.header = obstacles_.markers[i].header;
+                state_msg.id = id;
 
                 state_msg.z.data.resize(ny);
                 state_msg.xhat.data.resize(xhat.rows());
@@ -87,11 +114,12 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
                 matrixToDoubleArray(P, state_msg.P);
                 matrixToDoubleArray(K, state_msg.K);
                 
-                std::cout<<xhat.transpose()<<std::endl;
-                pub_state_.publish(state_msg);
+                //std::cout<<xhat.transpose()<<std::endl;
+                state_array_msg.data.push_back(state_msg);
             }
             else
             {
+
                 Eigen::MatrixXd Q(__NY__,__NY__), R(__NX__,__NX__), P(__NX__,__NX__);
                 Q.setZero();R.setZero();P.setZero();
                 // for (int i = 0; i < __NY__; i++) Q(i,i) = SIGMA_Q;
@@ -117,16 +145,18 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
                 // xhat.setZero();
                 xhat<< x,y,0,0,0;
                 UKF estimate(f,h,R,Q,P,xhat);
+
                 states_ukf_.push_back(estimate);
+                ukf_id.push_back(id);
             }
-            x_pre = x;
-            y_pre = y;
-            t_pre = t_now;
-            
-            break;
+
+            // ROS_INFO("%f, %f",x,y);
 
         }
     }
+    t_pre = t_now;
+    
+    if (state_array_msg.data.size() > 0) pub_state_.publish(state_array_msg);
 }
 
 // void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)

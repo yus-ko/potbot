@@ -27,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Scan Raw
+    SyncSource: Scan Median
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -65,15 +65,19 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_footprint:
-          Value: true
         lidar:
           Value: false
         map:
           Value: false
-        odom:
+        robot_0:
           Value: true
-        robot:
+        robot_0_tf/base_footprint:
+          Value: true
+        robot_0_tf/odom:
+          Value: true
+        robot_1_tf/base_footprint:
+          Value: true
+        robot_1_tf/odom:
           Value: true
         stereo_camera:
           Value: false
@@ -84,7 +88,7 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          robot:
+          robot_0:
             lidar:
               {}
             stereo_camera:
@@ -244,7 +248,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /scan0
+      Topic: /robot_0/scan0
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -261,7 +265,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -272,14 +276,14 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /scan1
+      Topic: /robot_0/scan1
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /segment
+      Marker Topic: /robot_0/segment
       Name: Segments
       Namespaces:
         points_display: true

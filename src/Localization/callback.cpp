@@ -42,10 +42,12 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
     std::vector<SEGMENT> segments;
     __Segmentation(scan_, segments);
     __SplitSegments(segments);
-    
+    __AssociateSegments(segments);
+
+    // for(int i = 0; i < segments.size(); i++) std::cout<<segments[i].id<<", ";
+    // std::cout<<std::endl;
 
     visualization_msgs::MarkerArray seg;
-    int id = 0;
     for (int i = 0; i < segments.size(); i++)
     {
 
@@ -54,7 +56,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
         segment.header.frame_id = "lidar";
 
         segment.ns = "segments_display";
-        segment.id = i;
+        segment.id = segments[i].id;
         segment.lifetime = ros::Duration(1);
 
         segment.type = segments[i].type;
@@ -97,7 +99,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
             point.header = segment.header;
 
             point.ns = "points_display";
-            point.id = id++;
+            point.id = segments[i].id;
             point.lifetime = ros::Duration(1);
 
             point.type = segment.type;

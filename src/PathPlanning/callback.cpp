@@ -76,9 +76,26 @@ void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)
     odom_ = msg;
 }
 
-void PathPlanningClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)
+// void PathPlanningClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)
+// {
+//     obstacles_ = msg;
+// }
+
+void PathPlanningClass::__obstacle_callback(const potbot::StateArray& msg)
 {
-    obstacles_ = msg;
+    potbot::StateArray obstacle_state = msg;
+    for (int i = 0; i < obstacle_state.data.size(); i++)
+    {
+        int id          = obstacle_state.data[i].id;
+        double x        = obstacle_state.data[i].xhat.data[0];
+        double y        = obstacle_state.data[i].xhat.data[1];
+        double theta    = obstacle_state.data[i].xhat.data[2];
+        double v        = obstacle_state.data[i].xhat.data[3];
+        double omega    = obstacle_state.data[i].xhat.data[4];
+        std::cout<< id << ":(" << v << ", " << omega << ")" <<std::endl;
+    }
+    std::cout<<std::endl;
+    // obstacles_ = msg;
 }
 
 void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)

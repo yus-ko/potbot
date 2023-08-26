@@ -4,6 +4,7 @@
 #include <potbot/Utility.h>
 #include <potbot/ClassificationVelocityData.h>
 #include <potbot/PotentialValue.h>
+#include <potbot/StateArray.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -114,7 +115,8 @@ class PathPlanningClass{
         
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __param_callback(const potbot::PathPlanningConfig& param, uint32_t level);
-        void __obstacle_callback(const visualization_msgs::MarkerArray& msg);
+        // void __obstacle_callback(const visualization_msgs::MarkerArray& msg);
+        void __obstacle_callback(const potbot::StateArray& msg);
         void __create_path_callback(const std_msgs::Empty& msg);
 
         double __nCr(double n, double r);

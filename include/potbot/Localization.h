@@ -32,6 +32,7 @@ typedef struct {
 
 typedef struct {
                 std::vector<POINT> points;
+                int id=0;
                 int type=0;
                 double x=0;
                 double y=0;
@@ -97,6 +98,7 @@ class LocalizationClass{
         void __Segmentation(sensor_msgs::LaserScan &scan, std::vector<SEGMENT> &segments);
         double __distanceToLineSegment(POINT o, POINT p, POINT q);
         void __SplitSegments(std::vector<SEGMENT> &segments);
+        void __AssociateSegments(std::vector<SEGMENT> &segments);
 
     public:
         //in constracter.cpp

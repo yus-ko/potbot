@@ -186,6 +186,38 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
 
 }
 
+void LocalizationClass::__AssociateSegments(std::vector<SEGMENT> &segments)
+{
+    static std::vector<SEGMENT> segments_pre;
+    static int global_idx = 0;
+    for(int i = 0; i < segments.size(); i++)
+    {
+        double distance_min = std::numeric_limits<double>::infinity();
+        int idx = 0;
+        for(int j = 0; j < segments_pre.size(); j++)
+        {
+            double distance = sqrt(pow((segments[i].x - segments_pre[j].x),2) + 
+                                    pow(segments[i].y - segments_pre[j].y,2));
+            if(distance < distance_min)
+            {
+                distance_min = distance;
+                idx = j;
+            }
+        }
+
+        if (distance_min > 1)
+        {
+            segments[i].id = global_idx++;
+        }
+        else
+        {
+            segments[i].id = segments_pre[idx].id;
+            // segments_pre.erase(segments_pre.begin() + idx);
+        }
+    }
+    segments_pre = segments;
+}
+
 // void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
 // {
 //     std::vector<SEGMENT> segments_original = segments;   //Vc
@@ -289,6 +321,8 @@ void LocalizationClass::__SplitSegments(std::vector<SEGMENT> &segments)
 //     }
 
 // }
+
+
 
 void LocalizationClass::set_pose(geometry_msgs::PoseWithCovarianceStamped pose)
 {
