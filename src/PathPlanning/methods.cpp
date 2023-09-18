@@ -7,7 +7,7 @@ void PathPlanningClass::mainloop()
     ros::Rate loop_rate(10);
 	while (ros::ok())
 	{
-        run();
+        //run();
         loop_rate.sleep();
 		ros::spinOnce();
 	}
@@ -16,7 +16,7 @@ void PathPlanningClass::mainloop()
 void PathPlanningClass::run()
 {
     // geometry_msgs::PoseStamped robot_pose;
-    // while (!get_WorldCoordinate("robot", ros::Time(0), robot_pose, tf_buffer_)){}
+    // while (!get_WorldCoordinate("my_robot", ros::Time(0), robot_pose, tf_buffer_)){}
     // header_ = robot_pose.header;
     // odom_.header = header_;
     // odom_.pose.pose = robot_pose.pose;
@@ -32,41 +32,50 @@ void PathPlanningClass::run()
 
 std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_msgs::OccupancyGrid &map)
 {
-    // int map_size = map.data.size();
-    // int map_cols = map.info.width;
-    // int map_rows = map.info.height;
-    // double map_ori_x = map.info.origin.position.x;
-    // double map_ori_y = map.info.origin.position.y;
-    // double map_res = map.info.resolution;
 
-    // std::vector<geometry_msgs::Vector3> obstacle_arr(map_size);
-    // int obs_idx = 0;
-    // for (int i = 0; i < map_size; i++)
-    // {
-    //     if (map.data[i])
-    //     {
-    //         obstacle_arr[obs_idx].x = int(i%map_cols)*map_res + map_ori_x;
-    //         obstacle_arr[obs_idx].y = int(i/map_cols)*map_res + map_ori_y;
-    //         obs_idx++;
-    //     }
-    // }
-    // obstacle_arr.resize(obs_idx);
-    // return obstacle_arr;
+    static int mode = 0;
 
-    std::vector<geometry_msgs::Vector3> obstacle_arr;
-    int size = obstacles_.markers.size();
-    int obscnt = 0;
-    for (int i = 0; i < size; i++)
+    if (mode == 0)
     {
-        if(obstacles_.markers[i].ns == "segments_display")
+        int map_size = map.data.size();
+        int map_cols = map.info.width;
+        int map_rows = map.info.height;
+        double map_ori_x = map.info.origin.position.x;
+        double map_ori_y = map.info.origin.position.y;
+        double map_res = map.info.resolution;
+
+        std::vector<geometry_msgs::Vector3> obstacle_arr(map_size);
+        int obs_idx = 0;
+        for (int i = 0; i < map_size; i++)
         {
-            geometry_msgs::Vector3 pos;
-            pos.x = obstacles_.markers[i].pose.position.x;
-            pos.y = obstacles_.markers[i].pose.position.y;
-            obstacle_arr.push_back(pos);
+            if (map.data[i])
+            {
+                obstacle_arr[obs_idx].x = int(i%map_cols)*map_res + map_ori_x;
+                obstacle_arr[obs_idx].y = int(i/map_cols)*map_res + map_ori_y;
+                obs_idx++;
+            }
         }
+        obstacle_arr.resize(obs_idx);
+        return obstacle_arr;
     }
-    return obstacle_arr;
+    else if (mode == 1)
+    {
+        std::vector<geometry_msgs::Vector3> obstacle_arr;
+        int size = obstacles_.markers.size();
+        int obscnt = 0;
+        for (int i = 0; i < size; i++)
+        {
+            if(obstacles_.markers[i].ns == "segments_display")
+            {
+                geometry_msgs::Vector3 pos;
+                pos.x = obstacles_.markers[i].pose.position.x;
+                pos.y = obstacles_.markers[i].pose.position.y;
+                obstacle_arr.push_back(pos);
+            }
+        }
+        return obstacle_arr;
+    }
+
 }
 
 double PathPlanningClass::__get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> &obstacles)
@@ -89,13 +98,20 @@ double PathPlanningClass::__get_ShortestDistanceToObstacle(double x, double y, s
 int PathPlanningClass::__create_PotentialField()
 {
 
-    // geometry_msgs::PoseStamped robot_pose = __get_WorldCoordinate("robot",local_map_.header.stamp);
+    // geometry_msgs::PoseStamped robot_pose = __get_WorldCoordinate("my_robot",local_map_.header.stamp);
     // // __print_Pose(lidar_pose.pose);
     // double robot_x = robot_pose.pose.position.x;
     // double robot_y = robot_pose.pose.position.y;
 
     double robot_x = odom_.pose.pose.position.x;
     double robot_y = odom_.pose.pose.position.y;
+
+    double linear_vel = odom_.twist.twist.linear.x;
+    double pose = get_Yaw(odom_.pose.pose.orientation);
+    //std::cout<< linear_vel << ", " << robot_pose<<std::endl;
+    double robot_vx = linear_vel*cos(pose);
+    double robot_vy = linear_vel*sin(pose);
+    //std::cout<< robot_vx << ", " << robot_vy<<std::endl;
 
     int map_size = local_map_.data.size();
     int map_cols = local_map_.info.width;
@@ -108,7 +124,7 @@ int PathPlanningClass::__create_PotentialField()
     int obs_size = obstacles.size();
 
     potential_field_.header = header_;
-    potential_field_.header.frame_id = "/robot";
+    potential_field_.header.frame_id = "my_robot";
     potential_field_.cell_width = map_res;
     potential_field_.cell_height = map_res;
     potential_field_.cells.resize(map_size);
@@ -116,12 +132,28 @@ int PathPlanningClass::__create_PotentialField()
     // 変換する座標
     geometry_msgs::PoseStamped world_goal, robot_goal;
     world_goal.header.frame_id = "map";
-    world_goal.header.stamp = ros::Time(0);
+    world_goal.header.stamp = header_.stamp;
     world_goal.pose = goal_.pose;
 
-    robot_goal.header.frame_id = "robot";
+    robot_goal.header.frame_id = "my_robot";
 
-    while(!get_tf(world_goal ,robot_goal, tf_buffer_)){}
+    geometry_msgs::TransformStamped transform;
+    geometry_msgs::PointStamped target_point;
+    static tf2_ros::TransformListener tfListener(tf_buffer_);
+    try 
+    {
+        // 世界座標系のゴールをロボット座標系に変換
+        transform = tf_buffer_.lookupTransform(robot_goal.header.frame_id, world_goal.header.frame_id, ros::Time());
+        tf2::doTransform(world_goal, robot_goal, transform);
+    }
+    catch (tf2::TransformException &ex) 
+    {
+        ROS_ERROR("TF Ereor in 1: %s", ex.what());
+        return FAIL;
+    }
+
+    // int break_cnt = 0;
+    // while(!get_tf(world_goal ,robot_goal, tf_buffer_) || break_cnt > 1000){break_cnt++;}
 
     for (int i = 0; i < map_size; i++)
     {
@@ -129,6 +161,24 @@ int PathPlanningClass::__create_PotentialField()
         double y = int(i/map_cols)*map_res + map_ori_y;
 
         double rho = __get_ShortestDistanceToObstacle(x,y,obstacles) + 0.00000000000001;
+
+        // double rho = std::numeric_limits<double>::infinity();
+        // for (int j = 0; j < obstacle_state_.data.size(); j++)
+        // {
+        //     int id          = obstacle_state_.data[j].id;
+        //     double x        = obstacle_state_.data[j].xhat.data[0];
+        //     double y        = obstacle_state_.data[j].xhat.data[1];
+        //     double theta    = obstacle_state_.data[j].xhat.data[2];
+        //     double v        = obstacle_state_.data[j].xhat.data[3];
+        //     double omega    = obstacle_state_.data[j].xhat.data[4];
+
+        //     double obstacle_vx = v*cos(theta);
+        //     double obstacle_vy = v*sin(theta);
+
+        //     //rho += sqrt(pow(robot_vx + obstacle_vx,2) + pow(robot_vy + obstacle_vy,2));
+        //     double dist = sqrt(pow(robot_x - x,2) + pow(robot_y - y,2));
+        //     if (dist < rho) rho = dist;
+        // }
 
         double Uo;
         if (rho < rho_zero_)
@@ -182,7 +232,7 @@ void PathPlanningClass::__create_Path()
 {
     nav_msgs::Path robot_path;
     robot_path.header = header_;
-    robot_path.header.frame_id = "robot";
+    robot_path.header.frame_id = "my_robot";
 
     double center_x = 0;
     double center_y = 0;
@@ -193,7 +243,7 @@ void PathPlanningClass::__create_Path()
     {
         geometry_msgs::PoseStamped robot_pose;
         robot_pose.header = header_;
-        robot_pose.header.frame_id = "robot";
+        robot_pose.header.frame_id = "my_robot";
         double J_min = std::numeric_limits<double>::infinity();
         double x,y;
         double breakflag = false;
@@ -260,9 +310,24 @@ void PathPlanningClass::__create_Path()
         world_path.header.frame_id = "map";
         for (int i = 0; i <= index; i++)
         {
-            geometry_msgs::PoseStamped world_pose;
+            geometry_msgs::PoseStamped world_pose, target_point;
             world_pose.header = world_path.header;
-            while(!get_tf(robot_path.poses[i] ,world_pose, tf_buffer_)){}
+
+            geometry_msgs::TransformStamped transform;
+            try 
+            {
+                // ロボット座標系の経路を世界座標系に変換
+                transform = tf_buffer_.lookupTransform(world_pose.header.frame_id, robot_path.poses[i].header.frame_id, ros::Time());
+                tf2::doTransform(robot_path.poses[i], world_pose, transform);
+            }
+            catch (tf2::TransformException &ex) 
+            {
+                ROS_ERROR("TF Ereor in 2: %s", ex.what());
+                return;
+            }
+
+            // int break_cnt = 0;
+            // while(!get_tf(robot_path.poses[i] ,world_pose, tf_buffer_) || break_cnt > 1000){break_cnt++;}
             if (get_Distance(world_pose.pose.position,goal_.pose.position) > 0.06)
             {
                 world_path.poses.push_back(world_pose);

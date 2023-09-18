@@ -20,23 +20,22 @@ void ControllerClass::manage()
     // robot_.pose.pose = robot_pose.pose;
     robot_ = odom_;
     // print_Pose(robot_.pose.pose);
-
-    controller();
-    if(PUBLISH_COMMAND) __publishcmd();
+    if (robot_path_.poses.size() > 0) controller();
+    if (PUBLISH_COMMAND) __publishcmd();
 }
 
 void ControllerClass::controller()
 {
     double distance = get_Distance(robot_.pose.pose.position, goal_.pose.position);
     double angle = get_Yaw(goal_.pose.orientation) - get_Yaw(robot_.pose.pose.orientation);
-    if (distance < 0.05 && abs(angle) < 0.01)
+    if (distance < 0.05 && abs(angle) < 0.03)
     {
         geometry_msgs::Twist cmd;
         cmd_=cmd;
     }
     else if (distance < 0.3)
     {
-        __PoseAlignment();
+        __PoseAlignment(goal_.pose);
     }
     else
     {
@@ -61,39 +60,12 @@ void ControllerClass::__LineFollowing()
 
     double procces = double(robot_path_index_)/double(robot_path_size);
     ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
-    if (procces > 0.8)
+    if (procces > 0.8 && get_Distance(robot_path_.poses[robot_path_size-1].pose.position, goal_.pose.position) > 0.1)
     {
         __publish_path_request();
     }
 
     double margin = PATH_TRACKING_MARGIN;
-    //if (robot_path_index >= robot_path_size - 1) margin = 0.1;
-
-    // tf2_ros::TransformListener tfListener(tf_buffer_);
-    // geometry_msgs::TransformStamped transformStamped;
-    // try{
-    //     transformStamped = tf_buffer_.lookupTransform("robot", robot_.header.stamp, "robot", line_following_start__start_, "map");
-    // }
-    // catch (tf2::TransformException &ex) {
-    //     ROS_WARN("%s",ex.what());
-    //     return;
-    // }
-    // robot_.header = transformStamped.header;
-    // robot_.pose.pose.position.x = transformStamped.transform.translation.x;
-    // robot_.pose.pose.position.y = transformStamped.transform.translation.y;
-    // robot_.pose.pose.position.z = transformStamped.transform.translation.z;
-    // robot_.pose.pose.orientation.x = transformStamped.transform.rotation.x;
-    // robot_.pose.pose.orientation.y = transformStamped.transform.rotation.y;
-    // robot_.pose.pose.orientation.z = transformStamped.transform.rotation.z;
-    // robot_.pose.pose.orientation.w = transformStamped.transform.rotation.w;
-
-    // robot_.pose.pose.position.x -= line_following_start__start_.pose.pose.position.x;
-    // robot_.pose.pose.position.y -= line_following_start__start_.pose.pose.position.y;
-    // robot_.pose.pose.position.z -= line_following_start__start_.pose.pose.position.z;
-    // robot_.pose.pose.orientation.x -= line_following_start__start_.pose.pose.orientation.x;
-    // robot_.pose.pose.orientation.y -= line_following_start__start_.pose.pose.orientation.y;
-    // robot_.pose.pose.orientation.z -= line_following_start__start_.pose.pose.orientation.z;
-    // robot_.pose.pose.orientation.w -= line_following_start__start_.pose.pose.orientation.w;
 
     print_Pose(robot_.pose.pose);
 
@@ -103,17 +75,12 @@ void ControllerClass::__LineFollowing()
     {
         sub_goal = robot_path_.poses[robot_path_index_].pose.position;
         l_d = sqrt(pow(robot_.pose.pose.position.x - sub_goal.x,2) + pow(robot_.pose.pose.position.y - sub_goal.y,2));
-        if (l_d <= margin)// || (sub_goal.x - odom.pose.pose.position.x < AHEAD_PATH))
-        //if (sqrt(pow(odom.pose.pose.position.x - sub_goal.x,2)) <= 0.05)
+        if (l_d <= margin)
         {
             robot_path_index_++;
-            // if (robot_path_index_ >= robot_path_size-2)
-            // {
-            //     break;
-            // }
-            if (robot_path_index_ >= robot_path_size)
+            if (robot_path_index_ >= robot_path_size-1)
             {
-                robot_path_index_ = 0;
+                break;
             }
         }
         else
@@ -126,45 +93,62 @@ void ControllerClass::__LineFollowing()
         }
     }
 
-    
     geometry_msgs::Twist cmd;
+    double init_angle, x1,x2,y1,y2;
 
-    if (robot_path_index_ < robot_path_size)
+    if (robot_path_index_ <= robot_path_size - 2)
+    {
+        x1 = robot_path_.poses[robot_path_index_].pose.position.x;
+        x2 = robot_path_.poses[robot_path_index_+1].pose.position.x;
+        y1 = robot_path_.poses[robot_path_index_].pose.position.y;
+        y2 = robot_path_.poses[robot_path_index_+1].pose.position.y;
+    }
+    else
+    {
+        x1 = robot_path_.poses[robot_path_index_-1].pose.position.x;
+        x2 = robot_path_.poses[robot_path_index_].pose.position.x;
+        y1 = robot_path_.poses[robot_path_index_-1].pose.position.y;
+        y2 = robot_path_.poses[robot_path_index_].pose.position.y;
+    }
+    init_angle = atan2(y2-y1,x2-x1);
+
+    if(!done_init_pose_alignment_ && abs(init_angle - get_Yaw(robot_.pose.pose.orientation)) > M_PI/6.0)
+    {
+        geometry_msgs::Quaternion alpha_quat;
+        getQuat(0,0,init_angle,alpha_quat);
+        geometry_msgs::Pose target;
+        target.position = robot_.pose.pose.position;
+        target.orientation = alpha_quat;
+        __PoseAlignment(target);
+    }
+    else if (robot_path_index_ < robot_path_size)
     {   
-        double roll, pitch, yaw;
-        tf2::Quaternion quat;
-        tf2::convert(robot_.pose.pose.orientation, quat);
-        tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+        done_init_pose_alignment_ = true;
+        double yaw = get_Yaw(robot_.pose.pose.orientation);
         double alpha = atan2(sub_goal.y - robot_.pose.pose.position.y, sub_goal.x - robot_.pose.pose.position.x) - yaw;
-
         cmd.linear.x = 0.2;
         cmd.angular.z = 2*cmd.linear.x*sin(alpha)/l_d;
-        if(abs(cmd.angular.z) > M_PI_2)
-        {
-            //cmd.linear.x = 0.0;
-        }
-    
-    }
-    cmd_ = cmd;
+        cmd_ = cmd;
+    } 
 }
 
-void ControllerClass::__PoseAlignment()
+void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
 {
-    double v=0,omega=0;
-    double yaw_target = atan2(goal_.pose.position.y - robot_.pose.pose.position.y ,goal_.pose.position.x - robot_.pose.pose.position.x);
+    double v=0,omega=0,yaw_target,yaw_err;
     double yaw_now = get_Yaw(robot_.pose.pose.orientation);
-    double yaw_err = yaw_target - yaw_now;
-    if (get_Distance(robot_.pose.pose.position, goal_.pose.position) < 0.05)
+    if (get_Distance(robot_.pose.pose.position, target.position) < 0.05)
     {
-        yaw_target = get_Yaw(goal_.pose.orientation);
-        yaw_err = yaw_target - yaw_now;
         if (abs(yaw_err) > 0.01)
         {
+            yaw_target = get_Yaw(target.orientation);
+            yaw_err = yaw_target - yaw_now;
             omega = yaw_err;
         }
     }
     else
     {
+        yaw_target = atan2(target.position.y - robot_.pose.pose.position.y ,target.position.x - robot_.pose.pose.position.x);
+        yaw_err = yaw_target - yaw_now;
         v = 0.05;
         omega = yaw_err;
     }
@@ -175,30 +159,6 @@ void ControllerClass::__PoseAlignment()
 bool ControllerClass::__PathCollision()
 {
     int path_size = robot_path_.poses.size();
-
-    // nav_msgs::MapMetaData mapinfo = local_map_.info;
-    // mapinfo.origin.position.x += robot_.pose.pose.position.x;
-    // mapinfo.origin.position.y += robot_.pose.pose.position.y;
-    // for (int p = 0; p < path_size; p++)
-    // {
-    //     double px = robot_path_.poses[p].pose.position.x;
-    //     double py = robot_path_.poses[p].pose.position.y;
-    //     int map_index = get_index(px,py,mapinfo);
-    //     // ROS_INFO("%d, %f, %f",map_index, px, py);
-    //     if (map_index && local_map_.data[map_index])
-    //     {
-    //         geometry_msgs::Point obs = get_coordinate(map_index,local_map_.info);
-    //         obs.x += robot_.pose.pose.position.x;
-    //         obs.y += robot_.pose.pose.position.y;
-    //         geometry_msgs::Pose pose;
-    //         pose.position = obs;
-    //         std::cout<<"obs";
-    //         print_Pose(pose);
-    //         std::cout<<"path";
-    //         print_Pose(robot_path_.poses[p].pose);
-    //         return true;
-    //     }
-    // }
     
     int map_size = local_map_.data.size();
 
@@ -206,16 +166,7 @@ bool ControllerClass::__PathCollision()
     double rx = robot_.pose.pose.position.x;
     double ry = robot_.pose.pose.position.y;
     double yaw = get_Yaw(robot_.pose.pose.orientation);
-    // for (int i=0; i < map_size; i++)
-    // {
-    //     if(local_map_.data[i])
-    //     {
-    //         geometry_msgs::Point o = get_coordinate(i,local_map_.info);
-    //         o.x += rx;
-    //         o.y += ry;
-    //         obs.push_back(o);
-    //     }
-    // }
+
     int scan_size = scan_.ranges.size();
     for (int i = 0; i < scan_size; i++)
     {
@@ -232,7 +183,6 @@ bool ControllerClass::__PathCollision()
         }
     }
 
-    
     int obs_size = obs.size();
     for (int i=0; i < obs_size; i++)
     {
@@ -241,12 +191,12 @@ bool ControllerClass::__PathCollision()
         {
             if (get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.1)
             {
-                geometry_msgs::Pose pose;
-                pose.position = obs[i];
-                std::cout<<"obs";
-                print_Pose(pose);
-                std::cout<<"path";
-                print_Pose(robot_path_.poses[p].pose);
+                // geometry_msgs::Pose pose;
+                // pose.position = obs[i];
+                // std::cout<<"obs";
+                // print_Pose(pose);
+                // std::cout<<"path";
+                // print_Pose(robot_path_.poses[p].pose);
                 return true;
             }
         }

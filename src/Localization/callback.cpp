@@ -35,7 +35,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
     scan_ = msg;
 
-    scan_.header.frame_id = "/lidar";
+    scan_.header.frame_id = "lidar";
     pub_scan0_.publish(scan_);
     __MedianFilter(scan_);
     pub_scan1_.publish(scan_);
@@ -130,7 +130,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
 
     local_map_.header = header_;
-    local_map_.header.frame_id = "/lidar";
+    local_map_.header.frame_id = "lidar";
     local_map_.info = world_map_.info;
     local_map_.info.map_load_time = header_.stamp;
     local_map_.info.width = 240;
@@ -150,10 +150,10 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
     local_map_.data.resize(0);
     local_map_.data.resize(mapsize);
 
-    double roll, pitch, yaw;
-    tf2::Quaternion quat;
-    tf2::convert(odom_.pose.pose.orientation, quat);
-    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+    // double roll, pitch, yaw;
+    // tf2::Quaternion quat;
+    // tf2::convert(odom_.pose.pose.orientation, quat);
+    // tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
     int size = scan_.ranges.size();
     for (int i = 0; i < size; i++)

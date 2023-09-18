@@ -28,7 +28,6 @@ void PathPlanningClass::pwcs_callback(const geometry_msgs::PoseWithCovarianceSta
 
 void PathPlanningClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
 {
-    return;
     header_ = msg.header;
     odom_msg = msg;
     odom = msg;
@@ -61,8 +60,8 @@ void PathPlanningClass::goal_callback(const geometry_msgs::PoseStamped& msg)
     //std::cout<< goal_ <<std::endl;
     print_Pose(goal_.pose);
     pub_goal_.publish(goal_);
-    // run();
-    // publishPathPlan();
+    run();
+    publishPathPlan();
 }
 
 void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
@@ -74,32 +73,35 @@ void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
 void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)
 {
     odom_ = msg;
+    //header_ = odom_.header;
+    //header_.stamp = ros::Time();
 }
 
-// void PathPlanningClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)
-// {
-//     obstacles_ = msg;
-// }
-
-void PathPlanningClass::__obstacle_callback(const potbot::StateArray& msg)
+void PathPlanningClass::__segment_callback(const visualization_msgs::MarkerArray& msg)
 {
-    potbot::StateArray obstacle_state = msg;
-    for (int i = 0; i < obstacle_state.data.size(); i++)
-    {
-        int id          = obstacle_state.data[i].id;
-        double x        = obstacle_state.data[i].xhat.data[0];
-        double y        = obstacle_state.data[i].xhat.data[1];
-        double theta    = obstacle_state.data[i].xhat.data[2];
-        double v        = obstacle_state.data[i].xhat.data[3];
-        double omega    = obstacle_state.data[i].xhat.data[4];
-        std::cout<< id << ":(" << v << ", " << omega << ")" <<std::endl;
-    }
-    std::cout<<std::endl;
-    // obstacles_ = msg;
+    obstacles_ = msg;
+}
+
+void PathPlanningClass::__state_callback(const potbot::StateArray& msg)
+{
+    //std::cout<< "__state_callback" <<std::endl;
+    obstacle_state_ = msg;
+    // for (int i = 0; i < obstacle_state_.data.size(); i++)
+    // {
+    //     int id          = obstacle_state_.data[i].id;
+    //     double x        = obstacle_state_.data[i].xhat.data[0];
+    //     double y        = obstacle_state_.data[i].xhat.data[1];
+    //     double theta    = obstacle_state_.data[i].xhat.data[2];
+    //     double v        = obstacle_state_.data[i].xhat.data[3];
+    //     double omega    = obstacle_state_.data[i].xhat.data[4];
+    //     std::cout<< id << ":(" << v << ", " << omega << ")" <<std::endl;
+    // }
+    // std::cout<<std::endl;
 }
 
 void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)
 {
+    ROS_INFO("subscribe creation path");
     run();
 }
 

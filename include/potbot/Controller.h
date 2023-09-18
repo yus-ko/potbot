@@ -35,6 +35,8 @@ class ControllerClass{
         nav_msgs::Path robot_path_;
         nav_msgs::OccupancyGrid local_map_;
 
+        bool done_init_pose_alignment_;
+
         geometry_msgs::PoseStamped goal_;
 
         sensor_msgs::LaserScan scan_;
@@ -53,7 +55,7 @@ class ControllerClass{
         void __publishcmd();
 
         void __LineFollowing();
-        void __PoseAlignment();
+        void __PoseAlignment(geometry_msgs::Pose target);
         bool __PathCollision();
 
     public:

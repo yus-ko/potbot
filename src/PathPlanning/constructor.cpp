@@ -41,7 +41,7 @@ PathPlanningClass::PathPlanningClass()
 
 	sub_scan=nhSub.subscribe("scan",1,&PathPlanningClass::scan_callback,this);
 
-	// sub_encoder = nhSub.subscribe("/potbot/odom", 1, &PathPlanningClass::encoder_callback_sim, this);
+	sub_encoder = nhSub.subscribe("/odom", 1, &PathPlanningClass::encoder_callback_sim, this);
 
 	if (USE_AMCL) sub_encoder = nhSub.subscribe("/amcl_pose", 1, &PathPlanningClass::pwcs_callback, this);
 
@@ -62,8 +62,8 @@ PathPlanningClass::PathPlanningClass()
 	sub_coefficient = nhSub.subscribe("/potential_coefficient", 1, &PathPlanningClass::coefficient_callback, this);
 	sub_local_map_ = nhSub.subscribe("Localmap", 1, &PathPlanningClass::local_map_callback, this);
 	sub_run_ = nhSub.subscribe("create_path", 1, &PathPlanningClass::__create_path_callback, this);
-	// sub_obs_ = nhSub.subscribe("segment", 1, &PathPlanningClass::__obstacle_callback, this);
-	sub_obs_ = nhSub.subscribe("state",1,&PathPlanningClass::__obstacle_callback,this);
+	sub_seg_ = nhSub.subscribe("segment", 1, &PathPlanningClass::__segment_callback, this);
+	sub_state_ = nhSub.subscribe("state",1,&PathPlanningClass::__state_callback,this);
 	
 	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("ShortestDistance", 1);

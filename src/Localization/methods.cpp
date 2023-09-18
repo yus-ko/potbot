@@ -592,7 +592,8 @@ void LocalizationClass::tf_broadcast()
 {
     geometry_msgs::TransformStamped tf_map2robot;
 
-    std::string ns = ros::this_node::getNamespace();
+    //std::string ns = ros::this_node::getNamespace();
+    std::string ns = "my_robot";
 
     tf_map2robot.header = odom_.header;
     tf_map2robot.child_frame_id = ns;

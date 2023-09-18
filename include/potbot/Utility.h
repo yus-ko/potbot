@@ -57,7 +57,7 @@ inline void print_Pose(geometry_msgs::Pose pose)
 
 inline int get_tf(geometry_msgs::PoseStamped pose_in, geometry_msgs::PoseStamped &pose_out, tf2_ros::Buffer &buffer)
 {
-    tf2_ros::TransformListener tf_listener(buffer);
+    static tf2_ros::TransformListener tf_listener(buffer);
     std::string target_frame = pose_out.header.frame_id;
     std::string source_frame = pose_in.header.frame_id;
     ros::Time transform_time = pose_in.header.stamp;

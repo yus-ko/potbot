@@ -35,7 +35,7 @@ class PathPlanningClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub;
-		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_, sub_local_map_, sub_odom_, sub_obs_, sub_run_;
+		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_, sub_local_map_, sub_odom_, sub_seg_, sub_state_, sub_run_;
         //送信データ
 		ros::NodeHandle nhPub;
         ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP, pub_goal_, pub_pf_, pub_cmd_, pub_potential_;
@@ -102,6 +102,8 @@ class PathPlanningClass{
         int max_path_index_ = 50;
         double wu_=1, w_theta_=0;
 
+        potbot::StateArray obstacle_state_;
+
         dynamic_reconfigure::Server<potbot::PathPlanningConfig> server_;
   	    dynamic_reconfigure::Server<potbot::PathPlanningConfig>::CallbackType f_;
 
@@ -115,8 +117,8 @@ class PathPlanningClass{
         
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __param_callback(const potbot::PathPlanningConfig& param, uint32_t level);
-        // void __obstacle_callback(const visualization_msgs::MarkerArray& msg);
-        void __obstacle_callback(const potbot::StateArray& msg);
+        void __segment_callback(const visualization_msgs::MarkerArray& msg);
+        void __state_callback(const potbot::StateArray& msg);
         void __create_path_callback(const std_msgs::Empty& msg);
 
         double __nCr(double n, double r);

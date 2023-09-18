@@ -136,9 +136,10 @@ add_executable(${PROJECT_NAME}_te
   # src/test/test.cpp
   # src/test/kalman_filter.cpp
   # src/test/spline.cpp
-  src/test/motor_response.cpp
+  # src/test/motor_response.cpp
   # src/test/localization_accuracy.cpp
   # src/test/simulation.cpp
+  src/test/tf2.cpp
 )
 
 add_executable(${PROJECT_NAME}_rv
@@ -172,6 +173,10 @@ add_executable(${PROJECT_NAME}_fi
   src/Filter/property.cpp
 )
 
+add_executable(${PROJECT_NAME}_tf2
+  src/TF2/tf2.cpp
+)
+
 add_dependencies(${PROJECT_NAME}_cc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_sc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_mv ${PROJECT_NAME}_generate_messages_cpp)
@@ -185,6 +190,7 @@ add_dependencies(${PROJECT_NAME}_rv ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_lo ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_co ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_fi ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_tf2 ${PROJECT_NAME}_generate_messages_cpp)
 
 add_dependencies(${PROJECT_NAME}_pp ${PROJECT_NAME}_gencfg)
 
@@ -201,5 +207,6 @@ target_link_libraries(${PROJECT_NAME}_rv ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_lo ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_co ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_fi ${catkin_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME}_tf2 ${catkin_LIBRARIES} )
 
 add_definitions(-std=c++11)

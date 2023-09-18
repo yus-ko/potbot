@@ -3,7 +3,7 @@
    
    <node pkg="potbot" name="potbot_pp" type="potbot_pp" output="screen">
       <param name="USE_RVIZ" value="$(arg USE_RVIZ)"/>
-      <param name="PATH_PLANNING_METHOD" value="csv"/>
+      <param name="PATH_PLANNING_METHOD" value="potential_method"/>
       <!--potential_method csv-->
       <param name="PATH_PLANNING_FILE" value="$(find potbot)/path/eight_1.csv"/>
       <param name="USE_AMCL" value="false"/>

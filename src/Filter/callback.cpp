@@ -4,12 +4,6 @@ void FilterClass::__odom_callback(const nav_msgs::Odometry& msg)
 {
     odom_ = msg;
     //print_Pose(odom_.pose.pose);
-    double linear_vel = odom_.twist.twist.linear.x;
-    double pose = get_Yaw(odom_.pose.pose.orientation);
-    //std::cout<< linear_vel << ", " << robot_pose<<std::endl;
-    double vx = linear_vel*cos(pose);
-    double vy = linear_vel*sin(pose);
-    std::cout<< vx << ", " << vy<<std::endl;
 }
 
 void matrixToDoubleArray(const Eigen::MatrixXd& matrix, std_msgs::Float64MultiArray& array) {
@@ -71,21 +65,47 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
 {
     obstacles_ = msg;
     static std::vector<int> ukf_id;
-    std::cout<<"-----------------"<<std::endl;
+    std::cout<<"__obstacle_callback"<<std::endl;
 
-    double t_now = obstacles_.markers[0].header.stamp.toSec();
+    double t_now = obstacles_.markers[0].header.stamp.toSec();  //markers配列のサイズが0のときの例外処理を追加する
     // double t_now = ros::Time::now().toSec();
     static double t_pre = t_now;
     double dt = t_now-t_pre;
 
+    static tf2_ros::TransformListener tfListener(tf_buffer_);
+
     potbot::StateArray state_array_msg;
-    for(int i =0; i < obstacles_.markers.size(); i++)
+    for(int i = 0; i < obstacles_.markers.size(); i++)
     {
         
         if (obstacles_.markers[i].ns == "segments_display")
         {
-            double x = obstacles_.markers[i].pose.position.x;
-            double y = obstacles_.markers[i].pose.position.y;
+            
+            geometry_msgs::TransformStamped transform;
+            geometry_msgs::PointStamped target_point;
+            try 
+            {
+                // 2つの座標系間の変換を取得
+                transform = tf_buffer_.lookupTransform("map", obstacles_.markers[i].header.frame_id, ros::Time());
+                geometry_msgs::PointStamped source_point;
+                // source_point.header = obstacles_.markers[i].header;
+                // source_point.header.frame_id = "lidar";
+                // source_point.header.stamp = ros::Time();
+                source_point.point = obstacles_.markers[i].pose.position;
+
+                tf2::doTransform(source_point, target_point, transform);
+
+                // ROS_INFO("Transformed Point: (%f, %f, %f) in target_frame",
+                //         target_point.point.x, target_point.point.y, target_point.point.z);
+            }
+            catch (tf2::TransformException &ex) 
+            {
+                ROS_ERROR("TF Ereor in FilterClass::__obstacle_callback: %s", ex.what());
+                break;
+            }
+
+            double x = target_point.point.x;
+            double y = target_point.point.y;
             int id = obstacles_.markers[i].id;
 
             auto iter = std::find(ukf_id.begin(), ukf_id.end(), id);
@@ -102,6 +122,7 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
 
                 potbot::State state_msg;
                 state_msg.header = obstacles_.markers[i].header;
+                state_msg.header.frame_id = "map";
                 state_msg.id = id;
 
                 state_msg.z.data.resize(ny);
