@@ -158,51 +158,108 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
 
 bool ControllerClass::__PathCollision()
 {
-    int path_size = robot_path_.poses.size();
-    
-    int map_size = local_map_.data.size();
-
-    std::vector<geometry_msgs::Point> obs;
-    double rx = robot_.pose.pose.position.x;
-    double ry = robot_.pose.pose.position.y;
-    double yaw = get_Yaw(robot_.pose.pose.orientation);
-
-    int scan_size = scan_.ranges.size();
-    for (int i = 0; i < scan_size; i++)
+    static int mode = 1;
+    if (mode == 0)
     {
-        if (!isinf(scan_.ranges[i]) && !isnan(scan_.ranges[i]))
-        {
-            double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
-            double distance = scan_.ranges[i] + scan_.range_min;
-            double x = distance * cos(angle) + rx;
-            double y = distance * sin(angle) + ry;
-            geometry_msgs::Point o;
-            o.x=x;
-            o.y=y;
-            obs.push_back(o);
-        }
-    }
-
-    int obs_size = obs.size();
-    for (int i=0; i < obs_size; i++)
-    {
+        int path_size = robot_path_.poses.size();
         
-        for (int p = robot_path_index_; p < path_size; p++)
+        int map_size = local_map_.data.size();
+
+        std::vector<geometry_msgs::Point> obs;
+        double rx = robot_.pose.pose.position.x;
+        double ry = robot_.pose.pose.position.y;
+        double yaw = get_Yaw(robot_.pose.pose.orientation);
+
+        int scan_size = scan_.ranges.size();
+        for (int i = 0; i < scan_size; i++)
         {
-            if (get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.1)
+            if (!isinf(scan_.ranges[i]) && !isnan(scan_.ranges[i]))
             {
-                // geometry_msgs::Pose pose;
-                // pose.position = obs[i];
-                // std::cout<<"obs";
-                // print_Pose(pose);
-                // std::cout<<"path";
-                // print_Pose(robot_path_.poses[p].pose);
-                return true;
+                double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
+                double distance = scan_.ranges[i] + scan_.range_min;
+                double x = distance * cos(angle) + rx;
+                double y = distance * sin(angle) + ry;
+                geometry_msgs::Point o;
+                o.x=x;
+                o.y=y;
+                obs.push_back(o);
             }
         }
-    }
 
-    return false;
+        int obs_size = obs.size();
+        for (int i=0; i < obs_size; i++)
+        {
+            
+            for (int p = robot_path_index_; p < path_size; p++)
+            {
+                if (get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.1)
+                {
+                    // geometry_msgs::Pose pose;
+                    // pose.position = obs[i];
+                    // std::cout<<"obs";
+                    // print_Pose(pose);
+                    // std::cout<<"path";
+                    // print_Pose(robot_path_.poses[p].pose);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+    else if (mode == 1)
+    {
+        std::vector<geometry_msgs::Vector3> obstacle_arr;
+        for (int i = 0; i < obstacle_segment_.markers.size(); i++)
+        {
+            if (obstacle_segment_.markers[i].ns == "segments_display")
+            {
+
+                geometry_msgs::Pose world_obslacle_pose;
+                geometry_msgs::TransformStamped transform;
+                static tf2_ros::TransformListener tfListener(tf_buffer_);
+                try 
+                {
+                    // ロボット座標系の障害物を世界座標系に変換
+                    transform = tf_buffer_.lookupTransform("map", obstacle_segment_.markers[i].header.frame_id, ros::Time());
+                    tf2::doTransform(obstacle_segment_.markers[i].pose, world_obslacle_pose, transform);
+                }
+                catch (tf2::TransformException &ex) 
+                {
+                    ROS_ERROR("TF Ereor : %s", ex.what());
+                    continue;
+                }
+
+                if (obstacle_segment_.markers[i].type == visualization_msgs::Marker::SPHERE)
+                {
+                    double a = world_obslacle_pose.position.x;
+                    double b = world_obslacle_pose.position.y;
+                    double r = obstacle_segment_.markers[i].scale.x/2.0;
+                    for (int p = robot_path_index_; p < robot_path_.poses.size(); p++)
+                    {
+                        double x = robot_path_.poses[p].pose.position.x;
+                        double y = robot_path_.poses[p].pose.position.y;
+                        if (x <= sqrt(pow(r,2)-pow(y-b,2))+a && y <= sqrt(pow(r,2)-pow(x-a,2))+b) return true;
+                    }
+                }
+                else if(obstacle_segment_.markers[i].type == visualization_msgs::Marker::CUBE)
+                {
+                    double xmin = world_obslacle_pose.position.x - obstacle_segment_.markers[i].scale.x/2.0;
+                    double xmax = world_obslacle_pose.position.x + obstacle_segment_.markers[i].scale.x/2.0;
+                    double ymin = world_obslacle_pose.position.y - obstacle_segment_.markers[i].scale.y/2.0;
+                    double ymax = world_obslacle_pose.position.y + obstacle_segment_.markers[i].scale.y/2.0;
+                    for (int p = robot_path_index_; p < robot_path_.poses.size(); p++)
+                    {
+                        double x = robot_path_.poses[p].pose.position.x;
+                        double y = robot_path_.poses[p].pose.position.y;
+                        if (x >= xmin && x <= xmax && y >= ymin && y <= ymax) return true;
+                    }
+                }
+                
+            }
+        }
+        return false;
+    }
     
 }
 

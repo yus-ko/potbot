@@ -54,3 +54,8 @@ void ControllerClass::__scan_callback(const sensor_msgs::LaserScan& msg)
 {
     scan_ = msg;
 }
+
+void ControllerClass::__segment_callback(const visualization_msgs::MarkerArray& msg)
+{
+    obstacle_segment_ = msg;
+}

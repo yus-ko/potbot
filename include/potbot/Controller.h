@@ -10,6 +10,7 @@
 #include <tf/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <visualization_msgs/MarkerArray.h>
 
 //クラスの定義
 class ControllerClass{
@@ -18,12 +19,11 @@ class ControllerClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub_;
-		ros::Subscriber sub_odom_, sub_path_, sub_goal_, sub_local_map_, sub_scan_;
+		ros::Subscriber sub_odom_, sub_path_, sub_goal_, sub_local_map_, sub_scan_, sub_seg_;
         //送信データ
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_cmd_, pub_path_request_;
 
-        tf::TransformListener tflistener;
         tf2_ros::Buffer tf_buffer_;
 
         int robot_id_ = MEGAROVER;
@@ -41,6 +41,8 @@ class ControllerClass{
 
         sensor_msgs::LaserScan scan_;
 
+        visualization_msgs::MarkerArray obstacle_segment_;
+
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
         std::string ROBOT_NAME;
@@ -51,6 +53,7 @@ class ControllerClass{
         void __goal_callback(const geometry_msgs::PoseStamped& msg);
         void __local_map_callback(const nav_msgs::OccupancyGrid& msg);
         void __scan_callback(const sensor_msgs::LaserScan& msg);
+        void __segment_callback(const visualization_msgs::MarkerArray& msg);
         void __publish_path_request();
         void __publishcmd();
 
