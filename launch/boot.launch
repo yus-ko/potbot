@@ -1,5 +1,5 @@
 <launch>
-  <arg name="GROUP" default="/"/>
+  <arg name="GROUP" default="/robot_0"/>
   <arg name="ROBOT_NAME" default="turtlebot3"/>
   <!--megarover turtlebot3-->
   <arg name="IS_SIMULATOR" default="true"/>

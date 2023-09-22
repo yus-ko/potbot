@@ -102,6 +102,8 @@ class PathPlanningClass{
         int max_path_index_ = 50;
         double wu_=1, w_theta_=0;
 
+        bool sync_createpath_ = false;
+
         potbot::StateArray obstacle_state_;
 
         dynamic_reconfigure::Server<potbot::PathPlanningConfig> server_;

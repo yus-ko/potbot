@@ -41,6 +41,7 @@ void ControllerClass::controller()
     {
         if (__PathCollision())
         {
+            ROS_INFO("PathCollision");
             __publish_path_request();
         }
         __LineFollowing();
@@ -158,7 +159,7 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
 
 bool ControllerClass::__PathCollision()
 {
-    static int mode = 1;
+    static int mode = 0;
     if (mode == 0)
     {
         int path_size = robot_path_.poses.size();
@@ -192,7 +193,7 @@ bool ControllerClass::__PathCollision()
             
             for (int p = robot_path_index_; p < path_size; p++)
             {
-                if (get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.1)
+                if (get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.15)
                 {
                     // geometry_msgs::Pose pose;
                     // pose.position = obs[i];

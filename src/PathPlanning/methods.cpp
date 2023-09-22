@@ -7,7 +7,7 @@ void PathPlanningClass::mainloop()
     ros::Rate loop_rate(10);
 	while (ros::ok())
 	{
-        //run();
+        if (sync_createpath_) run();
         loop_rate.sleep();
 		ros::spinOnce();
 	}
@@ -160,28 +160,45 @@ int PathPlanningClass::__create_PotentialField()
         double x = int(i%map_cols)*map_res + map_ori_x;
         double y = int(i/map_cols)*map_res + map_ori_y;
 
-        double rho = __get_ShortestDistanceToObstacle(x,y,obstacles) + 0.00000000000001;
+        // double rho = __get_ShortestDistanceToObstacle(x,y,obstacles) + 0.00000000000001;
 
-        // double rho = std::numeric_limits<double>::infinity();
-        // for (int j = 0; j < obstacle_state_.data.size(); j++)
-        // {
-        //     int id          = obstacle_state_.data[j].id;
-        //     double x        = obstacle_state_.data[j].xhat.data[0];
-        //     double y        = obstacle_state_.data[j].xhat.data[1];
-        //     double theta    = obstacle_state_.data[j].xhat.data[2];
-        //     double v        = obstacle_state_.data[j].xhat.data[3];
-        //     double omega    = obstacle_state_.data[j].xhat.data[4];
+        double rho = std::numeric_limits<double>::infinity(), 
+                obs_x = std::numeric_limits<double>::infinity(),
+                obs_y = std::numeric_limits<double>::infinity(),
+                obs_vx=0, obs_vy=0;
+        potbot::State nearest_state;
+        for (int j = 0; j < obstacle_state_.data.size(); j++)
+        {
+            obs_x        = obstacle_state_.data[j].xhat.data[0];
+            obs_y        = obstacle_state_.data[j].xhat.data[1];
 
-        //     double obstacle_vx = v*cos(theta);
-        //     double obstacle_vy = v*sin(theta);
+            double dist = sqrt(pow(robot_x - obs_x,2) + pow(robot_y - obs_y,2));
+            if (dist < rho) 
+            {
+                rho = dist;
+                nearest_state = obstacle_state_.data[j];
+            }
+        }
+        
+        if (nearest_state.xhat.data.size() >= 5)
+        {
+            int obs_id          = nearest_state.id;
+            obs_x        = nearest_state.xhat.data[0];
+            obs_y        = nearest_state.xhat.data[1];
+            double obs_theta    = nearest_state.xhat.data[2];
+            double obs_v        = nearest_state.xhat.data[3];
+            double obs_omega    = nearest_state.xhat.data[4];
 
-        //     //rho += sqrt(pow(robot_vx + obstacle_vx,2) + pow(robot_vy + obstacle_vy,2));
-        //     double dist = sqrt(pow(robot_x - x,2) + pow(robot_y - y,2));
-        //     if (dist < rho) rho = dist;
-        // }
+            obs_vx = obs_v*cos(obs_theta);
+            obs_vy = obs_v*sin(obs_theta);
+            //ROS_INFO("vx,vy = %f, %f", obs_vx, obs_vy);
+
+        }
 
         double Uo;
-        if (rho < rho_zero_)
+        obs_x-=robot_x,obs_y-=robot_y;
+        //if (rho < rho_zero_)
+        if (abs(x-obs_x) < 2*abs(obs_vx)+rho_zero_ && abs(y-obs_y) < abs(obs_vy)+rho_zero_)
         {
             Uo = 0.5 * eta_ * pow(1/rho - 1/rho_zero_, 2.0);
         }

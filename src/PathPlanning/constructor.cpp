@@ -41,7 +41,7 @@ PathPlanningClass::PathPlanningClass()
 
 	sub_scan=nhSub.subscribe("scan",1,&PathPlanningClass::scan_callback,this);
 
-	sub_encoder = nhSub.subscribe("/odom", 1, &PathPlanningClass::encoder_callback_sim, this);
+	sub_encoder = nhSub.subscribe("odom", 1, &PathPlanningClass::encoder_callback_sim, this);
 
 	if (USE_AMCL) sub_encoder = nhSub.subscribe("/amcl_pose", 1, &PathPlanningClass::pwcs_callback, this);
 
