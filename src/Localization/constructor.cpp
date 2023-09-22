@@ -13,6 +13,10 @@ LocalizationClass::LocalizationClass()
 	{
 		robot_id_ = TURTLEBOT3;
 	}
+	else if (ROBOT_NAME == "beego")
+	{
+		robot_id_ = BEEGO;
+	}
 
 	if (LOCALIZATION_METHOD == "dead_reckoning")
 	{
@@ -44,6 +48,10 @@ LocalizationClass::LocalizationClass()
 	else if (robot_id_ == TURTLEBOT3)
 	{
 		sub_encoder_ = nhSub_.subscribe("odom", 1, &LocalizationClass::encoder_callback_sim, this);
+	}
+	else if (robot_id_ == BEEGO)
+	{
+		sub_encoder_ = nhSub_.subscribe("/encoder",1,&LocalizationClass::beego_encoder_callback,this);
 	}
 
 	if (localization_method_id_ == PARTICLE_FILTER)

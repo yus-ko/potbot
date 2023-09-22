@@ -20,6 +20,29 @@ void LocalizationClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
     manage();
 }
 
+void LocalizationClass::beego_encoder_callback(const beego_control::beego_encoder& msg)
+{
+    // odom_.pose.pose.position.x = 0; //add
+    // odom_.pose.pose.position.y = 0; //add
+
+    // double yaw = 0; //add
+    // geometry_msgs::Quaternion quat;
+    // getQuat(0, 0, yaw, quat);
+    // odom_.pose.pose.orientation = quat;
+
+    // odom_.twist.twist.linear.x = 0;     //add
+    // odom_.twist.twist.angular.z = 0;    //add
+
+    double wheel_d = 1;
+    double v = (-msg.vel.r+msg.vel.l)/2.0;
+	double omega = (-msg.vel.r-msg.vel.l)/(2.0*wheel_d);
+
+    encoder_value_.linear.x = v;        //add
+    encoder_value_.angular.z = omega;   //add
+
+    manage();
+}
+
 void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 {
     std::vector<std::vector<double>> color = {
@@ -158,7 +181,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
     int size = scan_.ranges.size();
     for (int i = 0; i < size; i++)
     {
-        if (!isinf(scan_.ranges[i]) && !isnan(scan_.ranges[i]))
+        if (!std::isinf(scan_.ranges[i]) && !std::isnan(scan_.ranges[i]))
         {
             // double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
             double angle = i * scan_.angle_increment + scan_.angle_min;

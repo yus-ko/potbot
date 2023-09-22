@@ -174,7 +174,7 @@ bool ControllerClass::__PathCollision()
         int scan_size = scan_.ranges.size();
         for (int i = 0; i < scan_size; i++)
         {
-            if (!isinf(scan_.ranges[i]) && !isnan(scan_.ranges[i]))
+            if (!std::isinf(scan_.ranges[i]) && !std::isnan(scan_.ranges[i]))
             {
                 double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
                 double distance = scan_.ranges[i] + scan_.range_min;

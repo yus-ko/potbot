@@ -7,12 +7,14 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <beego_control/beego_encoder.h>
 
 #define SUCCESS 1
 #define FAIL 0
 
 #define MEGAROVER 0
 #define TURTLEBOT3 1
+#define BEEGO 2
 
 #define DEAD_RECKONING 0
 #define PARTICLE_FILTER 1

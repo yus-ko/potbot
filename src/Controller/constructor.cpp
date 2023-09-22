@@ -14,6 +14,10 @@ ControllerClass::ControllerClass()
 	{
 		robot_id_ = TURTLEBOT3;
 	}
+	else if (ROBOT_NAME == "beego")
+	{
+		robot_id_ = BEEGO;
+	}
 
 	sub_odom_ = nhSub_.subscribe("position",1,&ControllerClass::__odom_callback,this);
 	sub_path_ = nhSub_.subscribe("Path",1,&ControllerClass::path_callback,this);
@@ -41,6 +45,10 @@ ControllerClass::ControllerClass()
 		else if (robot_id_ == TURTLEBOT3)
 		{
 			pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+		}
+		else if (robot_id_ == BEEGO)
+		{
+			pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("/beego/cmd_vel", 1);
 		}
 	}
 }

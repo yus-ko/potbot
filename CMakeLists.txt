@@ -8,13 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   pcl_ros
   dynamic_reconfigure
-  #beego_control
+  beego_control
   #dynamixel_sdk
   #dynamixel_sdk_examples
   #obstacle_detection_2019
   visualization_msgs
   #autonomous_mobile_robot
-  # nav_msgs
 )
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)

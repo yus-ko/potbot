@@ -282,7 +282,7 @@ void PathPlanningClass::__create_Path()
                     posediff = abs(atan2(y,x));
                 }
 
-                if (index > max_path_index_ || PotentialValue <= 0 || isnan(posediff))
+                if (index > max_path_index_ || PotentialValue <= 0 || std::isnan(posediff))
                 {
                     breakflag = true;
                     break;
@@ -466,7 +466,7 @@ void PathPlanningClass::transform_obstacle_pos()
         double angle = i * scan.angle_increment + scan.angle_min + odom.pose.pose.orientation.z;
         double distance = scan.ranges[i] + scan.range_min;
 
-        if (!isinf(scan.ranges[i]) && distance >= EXCLUDE_LRF)
+        if (!std::isinf(scan.ranges[i]) && distance >= EXCLUDE_LRF)
         {
             
 

@@ -1,6 +1,6 @@
 <launch>
         <arg name="ROBOT_NAME" default="turtlebot3"/>
-        <!--megarover turtlebot3-->
+        <!--megarover turtlebot3 beego-->
         <arg name="IS_SIMULATOR" default="true"/>
         <arg name="PUBLISH_COMMAND" default="true"/>
 

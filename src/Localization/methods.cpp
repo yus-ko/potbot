@@ -32,7 +32,7 @@ void LocalizationClass::__MedianFilter(sensor_msgs::LaserScan &scan)
                 for (int j = -1; j <= 1; j++)
                 {
                     double data = scans_[t].ranges[i+j];
-                    if (isinf(data) || isnan(data))
+                    if (std::isinf(data) || std::isnan(data))
                     {
                         data = std::numeric_limits<double>::infinity();
                     }
@@ -55,7 +55,7 @@ void LocalizationClass::__Segmentation(sensor_msgs::LaserScan &scan, std::vector
     {
         
         double data = scan.ranges[i];
-        if (!isinf(data) && !isnan(data))
+        if (!std::isinf(data) && !std::isnan(data))
         {
             if(!start)
             {
@@ -398,7 +398,7 @@ void LocalizationClass::manage()
         }
         else if(localization_method_id_ == DEAD_RECKONING)
         {
-            if (robot_id_ == MEGAROVER && !IS_SIMULATOR) odometry();
+            if (((robot_id_ == MEGAROVER) && !IS_SIMULATOR)  || robot_id_ == BEEGO) odometry();
         }
         
         puclish_odom();
