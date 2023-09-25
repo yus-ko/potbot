@@ -51,6 +51,11 @@ ControllerClass::ControllerClass()
 			pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("/beego/cmd_vel", 1);
 		}
 	}
+
+	publish_command_ = PUBLISH_COMMAND;
+
+	f_ = boost::bind(&ControllerClass::__param_callback, this, _1, _2);
+	server_.setCallback(f_);
 }
 ControllerClass::~ControllerClass(){
 }

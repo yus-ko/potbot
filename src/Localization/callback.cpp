@@ -20,7 +20,7 @@ void LocalizationClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
     manage();
 }
 
-void LocalizationClass::beego_encoder_callback(const beego_control::beego_encoder& msg)
+void LocalizationClass::beego_encoder_callback(const potbot::beego_encoder& msg)
 {
     // odom_.pose.pose.position.x = 0; //add
     // odom_.pose.pose.position.y = 0; //add

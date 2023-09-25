@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   pcl_ros
   dynamic_reconfigure
-  beego_control
+  # beego_control
   #dynamixel_sdk
   #dynamixel_sdk_examples
   #obstacle_detection_2019
@@ -35,6 +35,9 @@ add_message_files(
   State.msg
   StateArray.msg
   # OdometryArray.msg
+  rpc.msg
+  vel.msg
+  beego_encoder.msg
 )
 
 generate_messages(
@@ -47,6 +50,7 @@ generate_messages(
 generate_dynamic_reconfigure_options(
   cfg/PathPlanning.cfg
   cfg/Localization.cfg
+  cfg/Controller.cfg
 )
 
 catkin_package(
@@ -208,4 +212,4 @@ target_link_libraries(${PROJECT_NAME}_co ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_fi ${catkin_LIBRARIES} )
 target_link_libraries(${PROJECT_NAME}_tf2 ${catkin_LIBRARIES} )
 
-add_definitions(-std=c++11)
+add_definitions(-std=c++14)

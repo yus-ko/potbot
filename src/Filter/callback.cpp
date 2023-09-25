@@ -65,7 +65,7 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
 {
     obstacles_ = msg;
     static std::vector<int> ukf_id;
-    ROS_INFO("__obstacle_callback");
+    //ROS_INFO("__obstacle_callback");
 
     if (obstacles_.markers.size() > 0)
     {

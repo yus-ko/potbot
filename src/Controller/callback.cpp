@@ -59,3 +59,8 @@ void ControllerClass::__segment_callback(const visualization_msgs::MarkerArray& 
 {
     obstacle_segment_ = msg;
 }
+
+void ControllerClass::__param_callback(const potbot::ControllerConfig& param, uint32_t level)
+{
+    publish_command_ = param.publish_control_command;
+}

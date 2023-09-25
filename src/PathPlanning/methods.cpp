@@ -1,6 +1,9 @@
 #include<potbot/PathPlanning.h>
 
-
+#define IS_REPULSION_FIELD_INSIDE 0
+#define IS_REPULSION_FIELD_EDGE 1
+#define IS_REPULSION_FIELD_EDGE_DUPLICATION 2
+#define IS_PLANNED_PATH 3
 
 void PathPlanningClass::mainloop()
 {
@@ -30,28 +33,26 @@ void PathPlanningClass::run()
     
 }
 
-std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_msgs::OccupancyGrid &map)
+std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
 {
-
-    static int mode = 0;
 
     if (mode == 0)
     {
-        int map_size = map.data.size();
-        int map_cols = map.info.width;
-        int map_rows = map.info.height;
-        double map_ori_x = map.info.origin.position.x;
-        double map_ori_y = map.info.origin.position.y;
-        double map_res = map.info.resolution;
+        int map_size = local_map_.data.size();
+        int map_cols = local_map_.info.width;
+        int map_rows = local_map_.info.height;
+        double map_ori_x = local_map_.info.origin.position.x;
+        double map_ori_y = local_map_.info.origin.position.y;
+        double map_res = local_map_.info.resolution;
 
-        std::vector<geometry_msgs::Vector3> obstacle_arr(map_size);
+        std::vector<nav_msgs::Odometry> obstacle_arr(map_size);
         int obs_idx = 0;
         for (int i = 0; i < map_size; i++)
         {
-            if (map.data[i])
+            if (local_map_.data[i])
             {
-                obstacle_arr[obs_idx].x = int(i%map_cols)*map_res + map_ori_x;
-                obstacle_arr[obs_idx].y = int(i/map_cols)*map_res + map_ori_y;
+                obstacle_arr[obs_idx].pose.pose.position.x = int(i%map_cols)*map_res + map_ori_x;
+                obstacle_arr[obs_idx].pose.pose.position.y = int(i/map_cols)*map_res + map_ori_y;
                 obs_idx++;
             }
         }
@@ -60,18 +61,42 @@ std::vector<geometry_msgs::Vector3> PathPlanningClass::__get_ObstacleList(nav_ms
     }
     else if (mode == 1)
     {
-        std::vector<geometry_msgs::Vector3> obstacle_arr;
+        std::vector<nav_msgs::Odometry> obstacle_arr;
         int size = obstacles_.markers.size();
-        int obscnt = 0;
         for (int i = 0; i < size; i++)
         {
             if(obstacles_.markers[i].ns == "segments_display")
             {
-                geometry_msgs::Vector3 pos;
-                pos.x = obstacles_.markers[i].pose.position.x;
-                pos.y = obstacles_.markers[i].pose.position.y;
-                obstacle_arr.push_back(pos);
+                nav_msgs::Odometry obs;
+                obs.pose.pose.position.x = obstacles_.markers[i].pose.position.x;
+                obs.pose.pose.position.y = obstacles_.markers[i].pose.position.y;
+                obstacle_arr.push_back(obs);
             }
+        }
+        return obstacle_arr;
+    }
+    else if (mode == 2)
+    {
+        std::vector<nav_msgs::Odometry> obstacle_arr;
+        for (int i = 0; i < obstacle_state_.data.size(); i++)
+        {
+            nav_msgs::Odometry obs;
+            obs.pose.pose.position.x = obstacle_state_.data[i].xhat.data[0];
+            obs.pose.pose.position.y = obstacle_state_.data[i].xhat.data[1];
+            // obs.pose.pose.orientation = get_Quat(0,0,obstacle_state_.data[i].xhat.data[2]);
+            // obs.twist.twist.linear.x = obstacle_state_.data[i].xhat.data[3];
+            obs.twist.twist.angular.z = obstacle_state_.data[i].xhat.data[4];
+            obs.pose.pose.orientation = get_Quat(0,0,test_theta_);
+            obs.twist.twist.linear.x = test_vx_;
+
+            nav_msgs::Odometry obs_add;
+            obs_add.pose.pose.position.x = obs.twist.twist.linear.x*cos(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.x;
+            obs_add.pose.pose.position.y = obs.twist.twist.linear.x*sin(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.y;
+            obs_add.pose.pose.orientation = obs.pose.pose.orientation;
+            obs_add.twist = obs.twist;
+
+            obstacle_arr.push_back(obs);
+            obstacle_arr.push_back(obs_add);
         }
         return obstacle_arr;
     }
@@ -120,14 +145,17 @@ int PathPlanningClass::__create_PotentialField()
     double map_ori_y = local_map_.info.origin.position.y;
     double map_res = local_map_.info.resolution;
 
-    std::vector<geometry_msgs::Vector3> obstacles = __get_ObstacleList(local_map_);
-    int obs_size = obstacles.size();
+    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);
 
     potential_field_.header = header_;
     potential_field_.header.frame_id = "my_robot";
     potential_field_.cell_width = map_res;
     potential_field_.cell_height = map_res;
     potential_field_.cells.resize(map_size);
+    potential_field_info_.resize(map_size);
+
+    std::vector<bool> potential_field_cell_info = {false,false,false,false};
+    std::fill(potential_field_info_.begin(), potential_field_info_.end(), potential_field_cell_info);
 
     // 変換する座標
     geometry_msgs::PoseStamped world_goal, robot_goal;
@@ -162,49 +190,62 @@ int PathPlanningClass::__create_PotentialField()
 
         // double rho = __get_ShortestDistanceToObstacle(x,y,obstacles) + 0.00000000000001;
 
-        double rho = std::numeric_limits<double>::infinity(), 
-                obs_x = std::numeric_limits<double>::infinity(),
-                obs_y = std::numeric_limits<double>::infinity(),
-                obs_vx=0, obs_vy=0;
-        potbot::State nearest_state;
-        for (int j = 0; j < obstacle_state_.data.size(); j++)
+        double Uo = 0;
+        for (int j = 0; j < obstacles.size(); j++)
         {
-            obs_x        = obstacle_state_.data[j].xhat.data[0];
-            obs_y        = obstacle_state_.data[j].xhat.data[1];
+            double obs_x        = obstacles[j].pose.pose.position.x;
+            double obs_y        = obstacles[j].pose.pose.position.y;
+            double obs_theta    = get_Yaw(obstacles[j].pose.pose.orientation);
+            double obs_v        = obstacles[j].twist.twist.linear.x;
+            double obs_omega    = obstacles[j].twist.twist.angular.z;
+            double obs_vx       = obs_v*cos(obs_theta);
+            double obs_vy       = obs_v*sin(obs_theta);
+            double c = abs(test_vx_) + rho_zero_;
+            double d = abs(test_vy_) + rho_zero_;
+            double e = 1;
 
-            double dist = sqrt(pow(robot_x - obs_x,2) + pow(robot_y - obs_y,2));
-            if (dist < rho) 
+            double rot = test_theta_;
+
+            double x_rot = x*cos(rot)-y*sin(rot);
+            double y_rot = x*sin(rot)+y*cos(rot);
+
+            double obs_x_rot = obs_x*cos(rot)-obs_y*sin(rot);
+            double obs_y_rot = obs_x*sin(rot)+obs_y*cos(rot);
+
+            double edge_x_min = -sqrt(pow(c,2)-pow(c,2)*pow(y_rot-obs_y_rot,2)/pow(d,2))+obs_x_rot;
+            double edge_x_max = sqrt(pow(c,2)-pow(c,2)*pow(y_rot-obs_y_rot,2)/pow(d,2))+obs_x_rot;
+            double edge_y_min = -sqrt(pow(d,2)-pow(d,2)*pow(x_rot-obs_x_rot,2)/pow(c,2))+obs_y_rot;
+            double edge_y_max = sqrt(pow(d,2)-pow(d,2)*pow(x_rot-obs_x_rot,2)/pow(c,2))+obs_y_rot;
+
+            double rho = sqrt(pow(x-obs_x,2) + pow(y-obs_y,2));
+            
+            // double edge_x_min_rot = cos(rot)*edge_x_min-sin(rot)*edge_y_min;
+            // double edge_y_min_rot = sin(rot)*edge_x_min+cos(rot)*edge_y_min;
+            // double edge_x_max_rot = cos(rot)*edge_x_max-sin(rot)*edge_y_max;
+            // double edge_y_max_rot = sin(rot)*edge_x_max+cos(rot)*edge_y_max;
+            // if (x >= edge_x_min_rot && x <= edge_x_max_rot && y >= edge_y_min_rot && y <= edge_y_max_rot)
+            // if (x_rot >= edge_x_min && x_rot <= edge_x_max && y_rot >= edge_y_min && y_rot <= edge_y_max)
+            // if (pow((x_rot-obs_x_rot)/a_,2)+pow(b_*(y_rot-obs_y_rot)/(1+((x_rot-obs_x_rot)+a_)/c_),2) <= 1)
+            // if (x >= obs_x-a_ && x <= obs_x+a_ && y >= obs_y-b_ && y <= obs_y+b_)
+            if (rho <= rho_zero_)
             {
-                rho = dist;
-                nearest_state = obstacle_state_.data[j];
+                potential_field_info_[i][IS_REPULSION_FIELD_INSIDE] = true;
+                Uo += 0.5 * eta_ * pow(1/rho - 1/rho_zero_, 2.0);
+                // Uo = 1;
+
+                if ((x >= edge_x_min - map_res && x <= edge_x_min + map_res) || 
+                    (x >= edge_x_max - map_res && x <= edge_x_max + map_res) || 
+                    (y >= edge_y_min - map_res && y <= edge_y_min + map_res) ||
+                    (y >= edge_y_max - map_res && y <= edge_y_max + map_res))
+                {
+                    potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+                }
+                //if (potential_field_info_[i][IS_REPULSION_FIELD_EDGE] && !potential_field_info_[i][IS_REPULSION_FIELD_EDGE_DUPLICATION]) Uo = 2;
             }
-        }
-        
-        if (nearest_state.xhat.data.size() >= 5)
-        {
-            int obs_id          = nearest_state.id;
-            obs_x        = nearest_state.xhat.data[0];
-            obs_y        = nearest_state.xhat.data[1];
-            double obs_theta    = nearest_state.xhat.data[2];
-            double obs_v        = nearest_state.xhat.data[3];
-            double obs_omega    = nearest_state.xhat.data[4];
-
-            obs_vx = obs_v*cos(obs_theta);
-            obs_vy = obs_v*sin(obs_theta);
-            //ROS_INFO("vx,vy = %f, %f", obs_vx, obs_vy);
-
-        }
-
-        double Uo;
-        obs_x-=robot_x,obs_y-=robot_y;
-        //if (rho < rho_zero_)
-        if (abs(x-obs_x) < 2*abs(obs_vx)+rho_zero_ && abs(y-obs_y) < abs(obs_vy)+rho_zero_)
-        {
-            Uo = 0.5 * eta_ * pow(1/rho - 1/rho_zero_, 2.0);
-        }
-        else
-        {
-            Uo = 0;
+            else
+            {
+                Uo += 0;
+            }
         }
 
         double distance_to_goal = sqrt(pow(x - robot_goal.pose.position.x,2)+pow(y - robot_goal.pose.position.y,2));
@@ -221,11 +262,43 @@ int PathPlanningClass::__create_PotentialField()
         potential_field_.cells[i].z = U;
 
     }
+
+    for (int i = 0; i < map_size; i++)
+    {
+        if (potential_field_info_[i][IS_REPULSION_FIELD_EDGE])
+        {
+            double x = int(i%map_cols)*map_res + map_ori_x;
+            double y = int(i/map_cols)*map_res + map_ori_y;
+            bool inside = false;
+            for (int j = 0; j < obstacles.size(); j++)
+            {
+                double obs_x        = obstacles[j].pose.pose.position.x;
+                double obs_y        = obstacles[j].pose.pose.position.y;
+                double c = rho_zero_;
+                double d = 1;
+
+                double edge_x_min = -sqrt(pow(c,2)-pow(c,2)*pow(y-obs_y,2)/pow(c,2))+obs_x;
+                double edge_x_max = sqrt(pow(c,2)-pow(c,2)*pow(y-obs_y,2)/pow(d,2))+obs_x;
+                double edge_y_min = -sqrt(pow(d,2)-pow(d,2)*pow(x-obs_x,2)/pow(c,2))+obs_y;
+                double edge_y_max = sqrt(pow(d,2)-pow(d,2)*pow(x-obs_x,2)/pow(c,2))+obs_y;
+                if (x >= edge_x_min && x <= edge_x_max && y >= edge_y_min && y <= edge_y_max)
+                {
+                    if (inside) 
+                    {
+                        potential_field_info_[i][IS_REPULSION_FIELD_EDGE_DUPLICATION] = true;
+                        break;
+                    }
+                    inside = true;
+                }
+            }
+        }
+    }
+
     pub_pf_.publish(potential_field_);
     return SUCCESS;
 }
 
-double PathPlanningClass::__get_PotentialValue(double x, double y)
+int PathPlanningClass::__get_PotentialFiledIndex(double x, double y)
 {
     int map_size = local_map_.data.size();
     int map_cols = local_map_.info.width;
@@ -242,7 +315,7 @@ double PathPlanningClass::__get_PotentialValue(double x, double y)
     if (col > map_cols || row > map_rows) return -1;
     int index = col + map_cols*row;
     if (index > map_size || index < 0) return -1;
-    return potential_field_.cells[index].z;
+    return index;
 }
 
 void PathPlanningClass::__create_Path()
@@ -253,27 +326,47 @@ void PathPlanningClass::__create_Path()
 
     double center_x = 0;
     double center_y = 0;
-    geometry_msgs::Quaternion non_angle;
-    getQuat(0,0,0,non_angle);
     int index = -1;
+    double J_min_pre;
+    double map_res = local_map_.info.resolution;
     while (true)
     {
         geometry_msgs::PoseStamped robot_pose;
         robot_pose.header = header_;
         robot_pose.header.frame_id = "my_robot";
-        double J_min = std::numeric_limits<double>::infinity();
-        double x,y;
-        double breakflag = false;
-        for (x = -0.1 + center_x; x <= 0.1 + center_x; x+=0.05)
+        
+        double J_min;
+        if (index > -1)
         {
-            for (y = -0.1 + center_y; y <= 0.1 + center_y; y+=0.05)
+            J_min = J_min_pre;
+        }
+        else
+        {
+            J_min = std::numeric_limits<double>::infinity();
+        }
+        
+        double x,y;
+        bool breakflag = false;
+        bool local_minimum = true;
+        for (x = -2*map_res + center_x; x <= 2*map_res + center_x; x+=map_res)
+        {
+            for (y = -2*map_res + center_y; y <= 2*map_res + center_y; y+=map_res)
             {
-                double PotentialValue = __get_PotentialValue(x,y);
+                
+                int pf_idx = __get_PotentialFiledIndex(x,y);
+                if (pf_idx == -1)
+                {
+                    breakflag = true;
+                    break;
+                }
+                double PotentialValue = potential_field_.cells[pf_idx].z;
+
                 double posediff;
                 if (index > -1)
                 {
                     double x_pre = robot_path.poses[index].pose.position.x;
                     double y_pre = robot_path.poses[index].pose.position.y;
+                    if (x == x_pre && y == y_pre) continue;
                     double theta = get_Yaw(robot_path.poses[index].pose.orientation);
                     posediff = abs(atan2(y-y_pre,x-x_pre) - theta);
                 }
@@ -282,16 +375,11 @@ void PathPlanningClass::__create_Path()
                     posediff = abs(atan2(y,x));
                 }
 
-                if (index > max_path_index_ || PotentialValue <= 0 || std::isnan(posediff))
-                {
-                    breakflag = true;
-                    break;
-                }
-
                 double J = wu_*PotentialValue + w_theta_*posediff;
 
                 if (J < J_min) 
                 {
+                    local_minimum = false;
                     robot_pose.pose.position.x = x;
                     robot_pose.pose.position.y = y;
                     J_min = J;
@@ -300,22 +388,53 @@ void PathPlanningClass::__create_Path()
             if (breakflag) break;
         }
 
+        if (local_minimum)
+        {
+            breakflag = false;
+            for (x = -2*map_res + center_x; x <= 2*map_res + center_x; x+=map_res)
+            {
+                for (y = -2*map_res + center_y; y <= 2*map_res + center_y; y+=map_res)
+                {
+                    // double x_pre = robot_path.poses[index].pose.position.x;
+                    // double y_pre = robot_path.poses[index].pose.position.y;
+                    // if (x == x_pre && y == y_pre) continue;
+
+                    int pf_idx = __get_PotentialFiledIndex(x,y);
+                    if (pf_idx == -1)
+                    {
+                        breakflag = true;
+                        break;
+                    }
+                    if (potential_field_info_[pf_idx][IS_REPULSION_FIELD_EDGE] && !potential_field_info_[pf_idx][IS_REPULSION_FIELD_EDGE_DUPLICATION] && !potential_field_info_[pf_idx][IS_PLANNED_PATH])
+                    {
+                        robot_pose.pose.position.x = x;
+                        robot_pose.pose.position.y = y;
+                        local_minimum = false;
+                        break;
+                    }
+                    
+                }
+                if (breakflag) break;
+            }
+        }
+
         if (index > -1)
         {
+            if (breakflag || local_minimum) break;
             geometry_msgs::PoseStamped &pre = robot_path.poses.back();
-            if (breakflag || 
-                robot_pose.pose.position.x >= pre.pose.position.x-0.01 && 
-                robot_pose.pose.position.x <= pre.pose.position.x+0.01 &&
-                robot_pose.pose.position.y >= pre.pose.position.y-0.01 && 
-                robot_pose.pose.position.y <= pre.pose.position.y+0.01) break;
-            getQuat(0,0,atan2(robot_pose.pose.position.y-pre.pose.position.y,robot_pose.pose.position.x-pre.pose.position.x),robot_pose.pose.orientation);
+            robot_pose.pose.orientation = get_Quat(0,0,atan2(robot_pose.pose.position.y-pre.pose.position.y,robot_pose.pose.position.x-pre.pose.position.x));
         }
         else
         {
-            robot_pose.pose.orientation = non_angle;
+            robot_pose.pose.orientation = odom_.pose.pose.orientation;
         }
         robot_path.poses.push_back(robot_pose);
+
+        int idxtmp = __get_PotentialFiledIndex(robot_pose.pose.position.x,robot_pose.pose.position.y);
+        if (idxtmp != -1) potential_field_info_[idxtmp][IS_PLANNED_PATH] = true;
         index++;
+        if (index > max_path_index_) break;
+        J_min_pre = J_min;
         center_x = robot_pose.pose.position.x;
         center_y = robot_pose.pose.position.y;
     }

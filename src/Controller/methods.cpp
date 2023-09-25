@@ -21,7 +21,7 @@ void ControllerClass::manage()
     robot_ = odom_;
     // print_Pose(robot_.pose.pose);
     if (robot_path_.poses.size() > 0) controller();
-    if (PUBLISH_COMMAND) __publishcmd();
+    if (publish_command_) __publishcmd();
 }
 
 void ControllerClass::controller()
@@ -60,7 +60,7 @@ void ControllerClass::__LineFollowing()
     }
 
     double procces = double(robot_path_index_)/double(robot_path_size);
-    ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
+    //ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
     if (procces > 0.8 && get_Distance(robot_path_.poses[robot_path_size-1].pose.position, goal_.pose.position) > 0.1)
     {
         __publish_path_request();
@@ -68,7 +68,7 @@ void ControllerClass::__LineFollowing()
 
     double margin = PATH_TRACKING_MARGIN;
 
-    print_Pose(robot_.pose.pose);
+    //print_Pose(robot_.pose.pose);
 
     geometry_msgs::Point sub_goal;
     double l_d;

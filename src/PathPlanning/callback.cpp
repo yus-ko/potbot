@@ -84,7 +84,7 @@ void PathPlanningClass::__segment_callback(const visualization_msgs::MarkerArray
 
 void PathPlanningClass::__state_callback(const potbot::StateArray& msg)
 {
-    ROS_INFO("__state_callback");
+    //ROS_INFO("__state_callback");
     obstacle_state_ = msg;
     // for (int i = 0; i < obstacle_state_.data.size(); i++)
     // {
@@ -117,4 +117,11 @@ void PathPlanningClass::__param_callback(const potbot::PathPlanningConfig& param
     w_theta_ = param.weight_angle;
 
     sync_createpath_ = param.sync_createpath_and_controlcycle;
+
+    test_vx_ = param.test_vx;
+    test_vy_ = param.test_vy;
+    test_theta_ = param.test_theta/180*M_PI;
+    a_ = param.c;
+    b_ = param.b;
+    c_ = param.c;
 }

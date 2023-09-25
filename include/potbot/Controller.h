@@ -11,6 +11,8 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <dynamic_reconfigure/server.h>
+#include <potbot/ControllerConfig.h>
 
 //クラスの定義
 class ControllerClass{
@@ -43,6 +45,11 @@ class ControllerClass{
 
         visualization_msgs::MarkerArray obstacle_segment_;
 
+        bool publish_command_;
+
+        dynamic_reconfigure::Server<potbot::ControllerConfig> server_;
+  	    dynamic_reconfigure::Server<potbot::ControllerConfig>::CallbackType f_;
+
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
         std::string ROBOT_NAME;
@@ -54,6 +61,7 @@ class ControllerClass{
         void __local_map_callback(const nav_msgs::OccupancyGrid& msg);
         void __scan_callback(const sensor_msgs::LaserScan& msg);
         void __segment_callback(const visualization_msgs::MarkerArray& msg);
+        void __param_callback(const potbot::ControllerConfig& param, uint32_t level);
         void __publish_path_request();
         void __publishcmd();
 

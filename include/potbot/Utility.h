@@ -7,7 +7,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <beego_control/beego_encoder.h>
+#include <potbot/beego_encoder.h>
 
 #define SUCCESS 1
 #define FAIL 0
@@ -34,6 +34,15 @@ inline void getQuat(double roll, double pitch, double yaw, geometry_msgs::Quater
     tf2::Quaternion quat;
     quat.setRPY(roll, pitch, yaw);
     tf2::convert(quat, orientation);
+}
+
+inline geometry_msgs::Quaternion get_Quat(double roll, double pitch, double yaw)
+{
+    tf2::Quaternion quat;
+    quat.setRPY(roll, pitch, yaw);
+    geometry_msgs::Quaternion orientation;
+    tf2::convert(quat, orientation);
+    return orientation;
 }
 
 inline double get_Yaw(geometry_msgs::Quaternion orientation)

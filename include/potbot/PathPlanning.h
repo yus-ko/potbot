@@ -98,9 +98,12 @@ class PathPlanningClass{
 
         double rho_zero_=0.3, eta_=0.02, kp_=0.1;
         nav_msgs::GridCells potential_field_;
+        std::vector<std::vector<bool>> potential_field_info_;
 
         int max_path_index_ = 50;
         double wu_=1, w_theta_=0;
+
+        double test_vx_=0,test_vy_=0,test_theta_=0,a_=1,b_=1,c_=1;
 
         bool sync_createpath_ = false;
 
@@ -126,9 +129,9 @@ class PathPlanningClass{
         double __nCr(double n, double r);
         void __bezier(nav_msgs::Path& points);
 
-        std::vector<geometry_msgs::Vector3> __get_ObstacleList(nav_msgs::OccupancyGrid &map);
+        std::vector<nav_msgs::Odometry> __get_ObstacleList(int mode);
         double __get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> &obstacles);
-        double __get_PotentialValue(double x, double y);
+        int __get_PotentialFiledIndex(double x, double y);
         int __create_PotentialField();
         void __create_Path();
 

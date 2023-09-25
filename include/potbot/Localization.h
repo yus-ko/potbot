@@ -60,13 +60,13 @@ class LocalizationClass{
         geometry_msgs::PointStamped point_;
         geometry_msgs::PoseStamped goal_;
         geometry_msgs::PoseWithCovarianceStamped initial_pose_;
-
+        
         bool encoder_first_ = false;
         std_msgs::Header header_, header_pre_, resampling_time_;
 
         int robot_id_ = 0, localization_method_id_ = 0;
 
-        beego_control::beego_encoder beggo_;
+        potbot::beego_encoder beggo_;
 
         geometry_msgs::Twist encoder_value_;
         nav_msgs::Odometry odom_;
@@ -114,7 +114,7 @@ class LocalizationClass{
         void setLaunchParam();//launchファイルから書き込み
         //in methods.cpp
         //--センサーデータ受信
-        void beego_encoder_callback(const beego_control::beego_encoder& msg);
+        void beego_encoder_callback(const potbot::beego_encoder& msg);
 	    void encoder_callback(const geometry_msgs::Twist& msg);
         void encoder_callback_sim(const nav_msgs::Odometry& msg);
         void scan_callback(const sensor_msgs::LaserScan& msg);
