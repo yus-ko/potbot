@@ -80,16 +80,18 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
         std::vector<nav_msgs::Odometry> obstacle_arr;
         for (int i = 0; i < obstacle_state_.data.size(); i++)
         {
+            // 世界座標系のobstacle_state_をロボット座標系に変換する
             nav_msgs::Odometry obs;
             obs.pose.pose.position.x = obstacle_state_.data[i].xhat.data[0];
             obs.pose.pose.position.y = obstacle_state_.data[i].xhat.data[1];
-            // obs.pose.pose.orientation = get_Quat(0,0,obstacle_state_.data[i].xhat.data[2]);
-            // obs.twist.twist.linear.x = obstacle_state_.data[i].xhat.data[3];
+            obs.pose.pose.orientation = get_Quat(0,0,obstacle_state_.data[i].xhat.data[2]);
+            obs.twist.twist.linear.x = obstacle_state_.data[i].xhat.data[3];
             obs.twist.twist.angular.z = obstacle_state_.data[i].xhat.data[4];
-            obs.pose.pose.orientation = get_Quat(0,0,test_theta_);
-            obs.twist.twist.linear.x = test_vx_;
+            // obs.pose.pose.orientation = get_Quat(0,0,test_theta_);
+            // obs.twist.twist.linear.x = test_vx_;
 
             nav_msgs::Odometry obs_add;
+            ROS_INFO("%f",obs.twist.twist.linear.x);
             obs_add.pose.pose.position.x = obs.twist.twist.linear.x*cos(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.x;
             obs_add.pose.pose.position.y = obs.twist.twist.linear.x*sin(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.y;
             obs_add.pose.pose.orientation = obs.pose.pose.orientation;
@@ -195,29 +197,29 @@ int PathPlanningClass::__create_PotentialField()
         {
             double obs_x        = obstacles[j].pose.pose.position.x;
             double obs_y        = obstacles[j].pose.pose.position.y;
-            double obs_theta    = get_Yaw(obstacles[j].pose.pose.orientation);
-            double obs_v        = obstacles[j].twist.twist.linear.x;
-            double obs_omega    = obstacles[j].twist.twist.angular.z;
-            double obs_vx       = obs_v*cos(obs_theta);
-            double obs_vy       = obs_v*sin(obs_theta);
-            double c = abs(test_vx_) + rho_zero_;
-            double d = abs(test_vy_) + rho_zero_;
-            double e = 1;
+            // double obs_theta    = get_Yaw(obstacles[j].pose.pose.orientation);
+            // double obs_v        = obstacles[j].twist.twist.linear.x;
+            // double obs_omega    = obstacles[j].twist.twist.angular.z;
+            // double obs_vx       = obs_v*cos(obs_theta);
+            // double obs_vy       = obs_v*sin(obs_theta);
+            // double c = abs(test_vx_) + rho_zero_;
+            // double d = abs(test_vy_) + rho_zero_;
+            // double e = 1;
 
-            double rot = test_theta_;
+            // double rot = test_theta_;
 
-            double x_rot = x*cos(rot)-y*sin(rot);
-            double y_rot = x*sin(rot)+y*cos(rot);
+            // double x_rot = x*cos(rot)-y*sin(rot);
+            // double y_rot = x*sin(rot)+y*cos(rot);
 
-            double obs_x_rot = obs_x*cos(rot)-obs_y*sin(rot);
-            double obs_y_rot = obs_x*sin(rot)+obs_y*cos(rot);
+            // double obs_x_rot = obs_x*cos(rot)-obs_y*sin(rot);
+            // double obs_y_rot = obs_x*sin(rot)+obs_y*cos(rot);
 
-            double edge_x_min = -sqrt(pow(c,2)-pow(c,2)*pow(y_rot-obs_y_rot,2)/pow(d,2))+obs_x_rot;
-            double edge_x_max = sqrt(pow(c,2)-pow(c,2)*pow(y_rot-obs_y_rot,2)/pow(d,2))+obs_x_rot;
-            double edge_y_min = -sqrt(pow(d,2)-pow(d,2)*pow(x_rot-obs_x_rot,2)/pow(c,2))+obs_y_rot;
-            double edge_y_max = sqrt(pow(d,2)-pow(d,2)*pow(x_rot-obs_x_rot,2)/pow(c,2))+obs_y_rot;
+            // double edge_x_min = -sqrt(pow(c,2)-pow(c,2)*pow(y_rot-obs_y_rot,2)/pow(d,2))+obs_x_rot;
+            // double edge_x_max = sqrt(pow(c,2)-pow(c,2)*pow(y_rot-obs_y_rot,2)/pow(d,2))+obs_x_rot;
+            // double edge_y_min = -sqrt(pow(d,2)-pow(d,2)*pow(x_rot-obs_x_rot,2)/pow(c,2))+obs_y_rot;
+            // double edge_y_max = sqrt(pow(d,2)-pow(d,2)*pow(x_rot-obs_x_rot,2)/pow(c,2))+obs_y_rot;
 
-            double rho = sqrt(pow(x-obs_x,2) + pow(y-obs_y,2));
+            double rho = sqrt(pow(x-obs_x,2) + pow(y-obs_y,2)) + 1e-9;
             
             // double edge_x_min_rot = cos(rot)*edge_x_min-sin(rot)*edge_y_min;
             // double edge_y_min_rot = sin(rot)*edge_x_min+cos(rot)*edge_y_min;
@@ -233,13 +235,13 @@ int PathPlanningClass::__create_PotentialField()
                 Uo += 0.5 * eta_ * pow(1/rho - 1/rho_zero_, 2.0);
                 // Uo = 1;
 
-                if ((x >= edge_x_min - map_res && x <= edge_x_min + map_res) || 
-                    (x >= edge_x_max - map_res && x <= edge_x_max + map_res) || 
-                    (y >= edge_y_min - map_res && y <= edge_y_min + map_res) ||
-                    (y >= edge_y_max - map_res && y <= edge_y_max + map_res))
-                {
-                    potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-                }
+                // if ((x >= edge_x_min - map_res && x <= edge_x_min + map_res) || 
+                //     (x >= edge_x_max - map_res && x <= edge_x_max + map_res) || 
+                //     (y >= edge_y_min - map_res && y <= edge_y_min + map_res) ||
+                //     (y >= edge_y_max - map_res && y <= edge_y_max + map_res))
+                // {
+                //     potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+                // }
                 //if (potential_field_info_[i][IS_REPULSION_FIELD_EDGE] && !potential_field_info_[i][IS_REPULSION_FIELD_EDGE_DUPLICATION]) Uo = 2;
             }
             else
@@ -263,36 +265,45 @@ int PathPlanningClass::__create_PotentialField()
 
     }
 
-    for (int i = 0; i < map_size; i++)
+    for (int i = map_cols+1; i < map_size-map_cols-1; i++)
     {
-        if (potential_field_info_[i][IS_REPULSION_FIELD_EDGE])
+        if (potential_field_info_[i][IS_REPULSION_FIELD_INSIDE])
         {
-            double x = int(i%map_cols)*map_res + map_ori_x;
-            double y = int(i/map_cols)*map_res + map_ori_y;
-            bool inside = false;
-            for (int j = 0; j < obstacles.size(); j++)
-            {
-                double obs_x        = obstacles[j].pose.pose.position.x;
-                double obs_y        = obstacles[j].pose.pose.position.y;
-                double c = rho_zero_;
-                double d = 1;
+            // double xx = int(i%map_cols)*map_res + map_ori_x;
+            // double yy = int(i/map_cols)*map_res + map_ori_y;
+            if(!potential_field_info_[i-1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+            if(!potential_field_info_[i+1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+            if(!potential_field_info_[i-map_cols][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+            if(!potential_field_info_[i-map_cols-1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+            if(!potential_field_info_[i-map_cols+1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+            if(!potential_field_info_[i+map_cols][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+            if(!potential_field_info_[i+map_cols-1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+            if(!potential_field_info_[i+map_cols+1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
+            // bool inside = false;
+            // for (int j = 0; j < obstacles.size(); j++)
+            // {
+            //     double obs_x        = obstacles[j].pose.pose.position.x;
+            //     double obs_y        = obstacles[j].pose.pose.position.y;
+            //     double c = rho_zero_;
+            //     double d = 1;
 
-                double edge_x_min = -sqrt(pow(c,2)-pow(c,2)*pow(y-obs_y,2)/pow(c,2))+obs_x;
-                double edge_x_max = sqrt(pow(c,2)-pow(c,2)*pow(y-obs_y,2)/pow(d,2))+obs_x;
-                double edge_y_min = -sqrt(pow(d,2)-pow(d,2)*pow(x-obs_x,2)/pow(c,2))+obs_y;
-                double edge_y_max = sqrt(pow(d,2)-pow(d,2)*pow(x-obs_x,2)/pow(c,2))+obs_y;
-                if (x >= edge_x_min && x <= edge_x_max && y >= edge_y_min && y <= edge_y_max)
-                {
-                    if (inside) 
-                    {
-                        potential_field_info_[i][IS_REPULSION_FIELD_EDGE_DUPLICATION] = true;
-                        break;
-                    }
-                    inside = true;
-                }
-            }
+            //     double edge_x_min = -sqrt(pow(c,2)-pow(c,2)*pow(y-obs_y,2)/pow(c,2))+obs_x;
+            //     double edge_x_max = sqrt(pow(c,2)-pow(c,2)*pow(y-obs_y,2)/pow(d,2))+obs_x;
+            //     double edge_y_min = -sqrt(pow(d,2)-pow(d,2)*pow(x-obs_x,2)/pow(c,2))+obs_y;
+            //     double edge_y_max = sqrt(pow(d,2)-pow(d,2)*pow(x-obs_x,2)/pow(c,2))+obs_y;
+            //     if (x >= edge_x_min && x <= edge_x_max && y >= edge_y_min && y <= edge_y_max)
+            //     {
+            //         if (inside) 
+            //         {
+            //             potential_field_info_[i][IS_REPULSION_FIELD_EDGE_DUPLICATION] = true;
+            //             break;
+            //         }
+            //         inside = true;
+            //     }
+            // }
         }
     }
+    // for (int i = 1; i < map_size; i++) if (potential_field_info_[i][IS_REPULSION_FIELD_EDGE]) potential_field_.cells[i].z = 2;
 
     pub_pf_.publish(potential_field_);
     return SUCCESS;
@@ -405,7 +416,7 @@ void PathPlanningClass::__create_Path()
                         breakflag = true;
                         break;
                     }
-                    if (potential_field_info_[pf_idx][IS_REPULSION_FIELD_EDGE] && !potential_field_info_[pf_idx][IS_REPULSION_FIELD_EDGE_DUPLICATION] && !potential_field_info_[pf_idx][IS_PLANNED_PATH])
+                    if (potential_field_info_[pf_idx][IS_REPULSION_FIELD_EDGE] && !potential_field_info_[pf_idx][IS_PLANNED_PATH])
                     {
                         robot_pose.pose.position.x = x;
                         robot_pose.pose.position.y = y;
