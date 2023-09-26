@@ -80,20 +80,47 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
         std::vector<nav_msgs::Odometry> obstacle_arr;
         for (int i = 0; i < obstacle_state_.data.size(); i++)
         {
-            // 世界座標系のobstacle_state_をロボット座標系に変換する
+
+            // 変換する座標
+            geometry_msgs::PoseStamped world_obstacle, robot_obstacle;
+            world_obstacle.header.frame_id = "map";
+            world_obstacle.header.stamp = header_.stamp;
+            world_obstacle.pose.position.x = obstacle_state_.data[i].xhat.data[0];
+            world_obstacle.pose.position.y = obstacle_state_.data[i].xhat.data[1];
+            world_obstacle.pose.orientation = get_Quat(0,0,-obstacle_state_.data[i].xhat.data[2]);
+
+            robot_obstacle.header.frame_id = "my_robot";
+
+            geometry_msgs::TransformStamped transform;
+            static tf2_ros::TransformListener tfListener(tf_buffer_);
+            try 
+            {
+                // 世界座標系の障害物位置をロボット座標系に変換
+                transform = tf_buffer_.lookupTransform(robot_obstacle.header.frame_id, world_obstacle.header.frame_id, ros::Time());
+                tf2::doTransform(world_obstacle, robot_obstacle, transform);
+            }
+            catch (tf2::TransformException &ex) 
+            {
+                ROS_ERROR("TF Ereor in %d: %s",i, ex.what());
+                continue;
+            }
+
             nav_msgs::Odometry obs;
-            obs.pose.pose.position.x = obstacle_state_.data[i].xhat.data[0];
-            obs.pose.pose.position.y = obstacle_state_.data[i].xhat.data[1];
-            obs.pose.pose.orientation = get_Quat(0,0,obstacle_state_.data[i].xhat.data[2]);
+            // obs.pose.pose.position.x = obstacle_state_.data[i].xhat.data[0];
+            // obs.pose.pose.position.y = obstacle_state_.data[i].xhat.data[1];
+            obs.pose.pose.position.x = robot_obstacle.pose.position.x;
+            obs.pose.pose.position.y = robot_obstacle.pose.position.y;
+            // obs.pose.pose.orientation = get_Quat(0,0,obstacle_state_.data[i].xhat.data[2]);
+            obs.pose.pose.orientation = robot_obstacle.pose.orientation;
             obs.twist.twist.linear.x = obstacle_state_.data[i].xhat.data[3];
             obs.twist.twist.angular.z = obstacle_state_.data[i].xhat.data[4];
             // obs.pose.pose.orientation = get_Quat(0,0,test_theta_);
             // obs.twist.twist.linear.x = test_vx_;
 
             nav_msgs::Odometry obs_add;
-            ROS_INFO("%f",obs.twist.twist.linear.x);
-            obs_add.pose.pose.position.x = obs.twist.twist.linear.x*cos(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.x;
-            obs_add.pose.pose.position.y = obs.twist.twist.linear.x*sin(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.y;
+            ROS_INFO("theta,v = %f, %f",get_Yaw(obs.pose.pose.orientation),obs.twist.twist.linear.x);
+            obs_add.pose.pose.position.x = test_theta_*obs.twist.twist.linear.x*cos(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.x;
+            obs_add.pose.pose.position.y = test_theta_*obs.twist.twist.linear.x*sin(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.y;
             obs_add.pose.pose.orientation = obs.pose.pose.orientation;
             obs_add.twist = obs.twist;
 
