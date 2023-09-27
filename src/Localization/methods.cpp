@@ -438,6 +438,12 @@ void LocalizationClass::odometry()
         odom_.pose.pose.orientation = quat_msg;
         odom_.twist.twist = encoder_value_;
     }
+
+    // double x = odom_.pose.pose.position.x, 
+    //         y = odom_.pose.pose.position.y, 
+    //         theta = get_Yaw(odom_.pose.pose.orientation);
+    // ROS_INFO("x,y,theta = %f, %f, %f",x, y, theta*180/M_PI);
+
     time_pre = header_.stamp.toSec();
 }
 

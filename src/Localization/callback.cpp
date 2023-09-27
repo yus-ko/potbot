@@ -22,6 +22,7 @@ void LocalizationClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
 
 void LocalizationClass::beego_encoder_callback(const potbot::beego_encoder& msg)
 {
+    header_ = msg.header;
     // odom_.pose.pose.position.x = 0; //add
     // odom_.pose.pose.position.y = 0; //add
 
@@ -33,9 +34,9 @@ void LocalizationClass::beego_encoder_callback(const potbot::beego_encoder& msg)
     // odom_.twist.twist.linear.x = 0;     //add
     // odom_.twist.twist.angular.z = 0;    //add
 
-    double wheel_d = 1;
+    double wheel_d = 0.275;
     double v = (-msg.vel.r+msg.vel.l)/2.0;
-	double omega = (-msg.vel.r-msg.vel.l)/(2.0*wheel_d);
+	double omega = (-msg.vel.r-msg.vel.l)/(wheel_d);
 
     encoder_value_.linear.x = v;        //add
     encoder_value_.angular.z = omega;   //add
