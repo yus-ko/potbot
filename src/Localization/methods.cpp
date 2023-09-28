@@ -597,9 +597,8 @@ void LocalizationClass::puclish_odom()
 void LocalizationClass::tf_broadcast()
 {
     geometry_msgs::TransformStamped tf_map2robot;
-
     //std::string ns = ros::this_node::getNamespace();
-    std::string ns = "my_robot";
+    std::string ns = FRAME_ID_ROBOT_BASE;
 
     tf_map2robot.header = odom_.header;
     tf_map2robot.child_frame_id = ns;
@@ -614,7 +613,7 @@ void LocalizationClass::tf_broadcast()
     geometry_msgs::TransformStamped tf_robot2lidar;
     tf_robot2lidar.header = odom_.header;
     tf_robot2lidar.header.frame_id = ns;
-    tf_robot2lidar.child_frame_id = "/lidar";
+    tf_robot2lidar.child_frame_id = FRAME_ID_LIDAR;
     tf_robot2lidar.transform.translation.x = 0.0;
     tf_robot2lidar.transform.translation.y = 0.0;
     tf_robot2lidar.transform.translation.z = 0.1;

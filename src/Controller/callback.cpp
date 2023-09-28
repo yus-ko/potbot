@@ -7,29 +7,38 @@ void ControllerClass::__odom_callback(const nav_msgs::Odometry& msg)
 
 void ControllerClass::path_callback(const nav_msgs::Path& msg)
 {
+    //ROS_INFO("path_callback");
     if (robot_path_.header.stamp != msg.header.stamp)
     {
-        nav_msgs::Path init;
-        robot_path_ = init;
-        robot_path_.header = msg.header;
-        static tf2_ros::TransformListener tfListener(tf_buffer_);
-        for (int i = 0; i < msg.poses.size(); i++)
+        if (msg.header.frame_id != "/" + FRAME_ID_GLOBAL)
         {
-            geometry_msgs::TransformStamped transform;
-            geometry_msgs::PoseStamped target_point;
-            //target_point.header.frame_id = "map";
-            try 
+            nav_msgs::Path init;
+            robot_path_ = init;
+            robot_path_.header = msg.header;
+            static tf2_ros::TransformListener tfListener(tf_buffer_);
+            for (int i = 0; i < msg.poses.size(); i++)
             {
-                // ロボット座標系の経路を世界座標系に変換
-                transform = tf_buffer_.lookupTransform("map", msg.header.frame_id, ros::Time());
-                tf2::doTransform(msg.poses[i], target_point, transform);
+                geometry_msgs::TransformStamped transform;
+                geometry_msgs::PoseStamped target_point;
+                //target_point.header.frame_id = FRAME_ID_GLOBAL;
+                try 
+                {
+                    // ロボット座標系の経路を世界座標系に変換
+                    transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, msg.header.frame_id, ros::Time());
+                    tf2::doTransform(msg.poses[i], target_point, transform);
+                }
+                catch (tf2::TransformException &ex) 
+                {
+                    ROS_ERROR("TF Ereor in ControllerClass::path_callback: %s", ex.what());
+                    break;
+                }
+                robot_path_.poses.push_back(target_point);
             }
-            catch (tf2::TransformException &ex) 
-            {
-                ROS_ERROR("TF Ereor in ControllerClass::path_callback: %s", ex.what());
-                break;
-            }
-            robot_path_.poses.push_back(target_point);
+            
+        }
+        else
+        {
+            robot_path_ = msg;
         }
         done_init_pose_alignment_ = false;
         robot_path_index_ = 0;

@@ -1,7 +1,12 @@
 <launch>
+    <arg name="FRAME_ID/GLOBAL" default="map"/>
+    <arg name="FRAME_ID/ROBOT_BASE" default="potbot"/>
+
     <node pkg="potbot" name="potbot_fi" type="potbot_fi" output="screen">
         <param name="SIGMA_P" value="1"/>
         <param name="SIGMA_Q" value="0.00001"/>    <!-- 観測ノイズ -->
         <param name="SIGMA_R" value="0.00001"/>    <!-- システムノイズ -->
+        <param name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
+        <param name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
     </node>
 </launch>

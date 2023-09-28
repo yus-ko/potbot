@@ -61,7 +61,6 @@ void PathPlanningClass::goal_callback(const geometry_msgs::PoseStamped& msg)
     print_Pose(goal_.pose);
     pub_goal_.publish(goal_);
     run();
-    publishPathPlan();
 }
 
 void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
@@ -101,8 +100,10 @@ void PathPlanningClass::__state_callback(const potbot::StateArray& msg)
 
 void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)
 {
-    ROS_INFO("subscribe creation path");
-    run();
+    
+    double distance = get_Distance(odom_.pose.pose.position, goal_.pose.position);
+    double angle = get_Yaw(goal_.pose.orientation) - get_Yaw(odom_.pose.pose.orientation);
+    if (distance > 0.05 || abs(angle) > 0.03) run();
 }
 
 void PathPlanningClass::__param_callback(const potbot::PathPlanningConfig& param, uint32_t level)
@@ -121,7 +122,7 @@ void PathPlanningClass::__param_callback(const potbot::PathPlanningConfig& param
     test_vx_ = param.test_vx;
     test_vy_ = param.test_vy;
     test_theta_ = param.test_theta/180*M_PI;
-    a_ = param.c;
+    a_ = param.a;
     b_ = param.b;
     c_ = param.c;
 }

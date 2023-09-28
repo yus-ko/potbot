@@ -68,6 +68,10 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
+# add_executable(${PROJECT_NAME}_param # classification
+#   src/param/debug_main.cpp
+# )
+
 add_executable(${PROJECT_NAME}_cc # classification
   src/StereoCamera/classification/constructor.cpp
   src/StereoCamera/classification/methods.cpp
@@ -180,6 +184,7 @@ add_executable(${PROJECT_NAME}_tf2
   src/TF2/tf2.cpp
 )
 
+# add_dependencies(${PROJECT_NAME}_param ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_cc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_sc ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_mv ${PROJECT_NAME}_generate_messages_cpp)
@@ -197,6 +202,7 @@ add_dependencies(${PROJECT_NAME}_tf2 ${PROJECT_NAME}_generate_messages_cpp)
 
 add_dependencies(${PROJECT_NAME}_pp ${PROJECT_NAME}_gencfg)
 
+# target_link_libraries(${PROJECT_NAME}_param ${catkin_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_cc ${catkin_LIBRARIES}) # classification
 target_link_libraries(${PROJECT_NAME}_sc ${catkin_LIBRARIES}) # stereo camera
 target_link_libraries(${PROJECT_NAME}_mv ${catkin_LIBRARIES} ) # measurement velocity 

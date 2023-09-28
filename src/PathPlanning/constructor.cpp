@@ -1,5 +1,4 @@
 #include<potbot/PathPlanning.h>
-#include <fstream>
 
 PathPlanningClass::PathPlanningClass()
 {
@@ -7,6 +6,7 @@ PathPlanningClass::PathPlanningClass()
 	//ros::Duration(5).sleep();
 	
 	setLaunchParam();	// lanchファイルの読み込み
+	//__set_Param();
 
 	U_pre.x = std::numeric_limits<double>::quiet_NaN();
 	U_pre.y = std::numeric_limits<double>::quiet_NaN();
@@ -66,51 +66,8 @@ PathPlanningClass::PathPlanningClass()
 	sub_state_ = nhSub.subscribe("state",1,&PathPlanningClass::__state_callback,this);
 	
 	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
-	pub_ShortestDistance = nhPub.advertise<geometry_msgs::Vector3>("ShortestDistance", 1);
-	pub_PV = nhPub.advertise<potbot::PotentialValue>("PotentialValue", 1);
 	pub_pf_ = nhPub.advertise<nav_msgs::GridCells>("pot", 1);
 	pub_PP = nhPub.advertise<nav_msgs::Path>("Path", 1);
-
-	if (path_planning_id == CSV_PATH)
-	{
-		std::string str_buf;
-		std::string str_conma_buf;
-		//std::cout<< PATH_PLANNING_FILE <<std::endl;
-		std::ifstream ifs_csv_file(PATH_PLANNING_FILE);
-
-		std_msgs::Header hd;
-		hd.frame_id = "/map";
-    	hd.stamp = ros::Time::now();
-		while(hd.stamp.toSec() == 0)
-		{
-			hd.stamp = ros::Time::now();
-		}
-		robot_path_.header = hd;
-
-		robot_path_.poses.resize(1000000);
-		int cnt = 0;
-		double line_buf[2];
-		while (getline(ifs_csv_file, str_buf)) 
-		{    
-			
-			std::istringstream i_stream(str_buf);// 「,」区切りごとにデータを読み込むためにistringstream型にする
-			
-			int i = 0;
-			while (getline(i_stream, str_conma_buf, ',')) // 「,」区切りごとにデータを読み込む
-			{
-				//std::cout<< str_conma_buf <<std::endl;
-				line_buf[i++] = std::stod(str_conma_buf);
-			}
-			robot_path_.poses[cnt].pose.position.x   = line_buf[0];
-			robot_path_.poses[cnt++].pose.position.y = line_buf[1];
-		}
-		//std::cout<< cnt <<std::endl;
-		robot_path_.poses.resize(cnt);
-		
-		//PP.data.resize(robot_path.size());
-    	//PP.data = robot_path;
-		publishPathPlan();
-	}
 
 	f_ = boost::bind(&PathPlanningClass::__param_callback, this, _1, _2);
 	server_.setCallback(f_);

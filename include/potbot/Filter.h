@@ -269,6 +269,8 @@ class FilterClass{
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
+
+		std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE;
         double SIGMA_P, SIGMA_Q, SIGMA_R;
 
         void __odom_callback(const nav_msgs::Odometry& msg);

@@ -2,7 +2,7 @@
 
 void LocalizationClass::encoder_callback(const geometry_msgs::Twist& msg)
 {
-    header_.frame_id = "/map";
+    header_.frame_id = "/" + FRAME_ID_GLOBAL;
     header_.stamp = ros::Time::now();
     encoder_value_ = msg;
     manage();
@@ -15,7 +15,7 @@ void LocalizationClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
     odom_.twist = msg.twist;
     encoder_value_ = msg.twist.twist;
     header_ = msg.header;
-    header_.frame_id = "/map";
+    header_.frame_id = "/" + FRAME_ID_GLOBAL;
     //std::cout<<msg.header<<std::endl;
     manage();
 }
@@ -59,7 +59,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
     scan_ = msg;
 
-    scan_.header.frame_id = "lidar";
+    scan_.header.frame_id = FRAME_ID_LIDAR;
     pub_scan0_.publish(scan_);
     __MedianFilter(scan_);
     pub_scan1_.publish(scan_);
@@ -77,7 +77,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
         visualization_msgs::Marker segment;
         segment.header = scan_.header;
-        segment.header.frame_id = "lidar";
+        segment.header.frame_id = FRAME_ID_LIDAR;
 
         segment.ns = "segments_display";
         segment.id = segments[i].id;
@@ -154,7 +154,7 @@ void LocalizationClass::scan_callback(const sensor_msgs::LaserScan& msg)
 
 
     local_map_.header = header_;
-    local_map_.header.frame_id = "lidar";
+    local_map_.header.frame_id = FRAME_ID_LIDAR;
     local_map_.info = world_map_.info;
     local_map_.info.map_load_time = header_.stamp;
     local_map_.info.width = 240;

@@ -19,7 +19,7 @@ void PathPlanningClass::mainloop()
 void PathPlanningClass::run()
 {
     // geometry_msgs::PoseStamped robot_pose;
-    // while (!get_WorldCoordinate("my_robot", ros::Time(0), robot_pose, tf_buffer_)){}
+    // while (!get_WorldCoordinate(FRAME_ID_ROBOT_BASE, ros::Time(0), robot_pose, tf_buffer_)){}
     // header_ = robot_pose.header;
     // odom_.header = header_;
     // odom_.pose.pose = robot_pose.pose;
@@ -28,8 +28,11 @@ void PathPlanningClass::run()
         __create_PotentialField();
         __create_Path();
     }
+    else if (path_planning_id == CSV_PATH)
+    {
+        __create_PathFromCSV();
+    }
     publishPathPlan();
-    
     
 }
 
@@ -83,13 +86,13 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
 
             // 変換する座標
             geometry_msgs::PoseStamped world_obstacle, robot_obstacle;
-            world_obstacle.header.frame_id = "map";
+            world_obstacle.header.frame_id = FRAME_ID_GLOBAL;
             world_obstacle.header.stamp = header_.stamp;
             world_obstacle.pose.position.x = obstacle_state_.data[i].xhat.data[0];
             world_obstacle.pose.position.y = obstacle_state_.data[i].xhat.data[1];
             world_obstacle.pose.orientation = get_Quat(0,0,-obstacle_state_.data[i].xhat.data[2]);
 
-            robot_obstacle.header.frame_id = "my_robot";
+            robot_obstacle.header.frame_id = FRAME_ID_ROBOT_BASE;
 
             geometry_msgs::TransformStamped transform;
             static tf2_ros::TransformListener tfListener(tf_buffer_);
@@ -116,16 +119,25 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
             obs.twist.twist.angular.z = obstacle_state_.data[i].xhat.data[4];
             // obs.pose.pose.orientation = get_Quat(0,0,test_theta_);
             // obs.twist.twist.linear.x = test_vx_;
-
-            nav_msgs::Odometry obs_add;
-            ROS_INFO("theta,v = %f, %f",get_Yaw(obs.pose.pose.orientation),obs.twist.twist.linear.x);
-            obs_add.pose.pose.position.x = test_theta_*obs.twist.twist.linear.x*cos(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.x;
-            obs_add.pose.pose.position.y = test_theta_*obs.twist.twist.linear.x*sin(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.y;
-            obs_add.pose.pose.orientation = obs.pose.pose.orientation;
-            obs_add.twist = obs.twist;
-
+            //ROS_INFO("theta,v = %f, %f",get_Yaw(obs.pose.pose.orientation),obs.twist.twist.linear.x);
             obstacle_arr.push_back(obs);
-            obstacle_arr.push_back(obs_add);
+
+            double k = a_;
+            int num = abs(k*obs.twist.twist.linear.x/rho_zero_);
+            for (int j = 1; j < num; j++)
+            {
+                nav_msgs::Odometry obs_add;
+                
+                double l = k*obs.twist.twist.linear.x/num*j;
+                obs_add.pose.pose.position.x = l*cos(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.x;
+                obs_add.pose.pose.position.y = l*sin(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.y;
+                obs_add.pose.pose.orientation = obs.pose.pose.orientation;
+                obs_add.twist = obs.twist;
+                ROS_INFO("%d: theta,v = %f, %f",j, get_Yaw(obs_add.pose.pose.orientation),l);
+
+                obstacle_arr.push_back(obs_add);
+            }
+
         }
         return obstacle_arr;
     }
@@ -152,7 +164,7 @@ double PathPlanningClass::__get_ShortestDistanceToObstacle(double x, double y, s
 int PathPlanningClass::__create_PotentialField()
 {
 
-    // geometry_msgs::PoseStamped robot_pose = __get_WorldCoordinate("my_robot",local_map_.header.stamp);
+    // geometry_msgs::PoseStamped robot_pose = __get_WorldCoordinate(FRAME_ID_ROBOT_BASE,local_map_.header.stamp);
     // // __print_Pose(lidar_pose.pose);
     // double robot_x = robot_pose.pose.position.x;
     // double robot_y = robot_pose.pose.position.y;
@@ -177,7 +189,7 @@ int PathPlanningClass::__create_PotentialField()
     std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);
 
     potential_field_.header = header_;
-    potential_field_.header.frame_id = "my_robot";
+    potential_field_.header.frame_id = FRAME_ID_ROBOT_BASE;
     potential_field_.cell_width = map_res;
     potential_field_.cell_height = map_res;
     potential_field_.cells.resize(map_size);
@@ -188,11 +200,11 @@ int PathPlanningClass::__create_PotentialField()
 
     // 変換する座標
     geometry_msgs::PoseStamped world_goal, robot_goal;
-    world_goal.header.frame_id = "map";
+    world_goal.header.frame_id = FRAME_ID_GLOBAL;
     world_goal.header.stamp = header_.stamp;
     world_goal.pose = goal_.pose;
 
-    robot_goal.header.frame_id = "my_robot";
+    robot_goal.header.frame_id = FRAME_ID_ROBOT_BASE;
 
     geometry_msgs::TransformStamped transform;
     geometry_msgs::PointStamped target_point;
@@ -360,7 +372,7 @@ void PathPlanningClass::__create_Path()
 {
     nav_msgs::Path robot_path;
     robot_path.header = header_;
-    robot_path.header.frame_id = "my_robot";
+    robot_path.header.frame_id = FRAME_ID_ROBOT_BASE;
 
     double center_x = 0;
     double center_y = 0;
@@ -371,7 +383,7 @@ void PathPlanningClass::__create_Path()
     {
         geometry_msgs::PoseStamped robot_pose;
         robot_pose.header = header_;
-        robot_pose.header.frame_id = "my_robot";
+        robot_pose.header.frame_id = FRAME_ID_ROBOT_BASE;
         
         double J_min;
         if (index > -1)
@@ -481,7 +493,7 @@ void PathPlanningClass::__create_Path()
     {
         nav_msgs::Path world_path;
         world_path.header = header_;
-        world_path.header.frame_id = "map";
+        world_path.header.frame_id = FRAME_ID_GLOBAL;
         for (int i = 0; i <= index; i++)
         {
             geometry_msgs::PoseStamped world_pose, target_point;
@@ -574,380 +586,6 @@ double PathPlanningClass::__nCr(double n, double r)
     }
     
     return top/bottom;
-}
-
-void PathPlanningClass::manage()
-{
-    //std::cout<< "----------------------------------------" <<std::endl;
-    //get_topic();
-    return;
-    if (encoder_first && scan_first)
-    {
-        transform_obstacle_pos();
-        if (path_planning_id == POTENTIAL_METHOD) potential();
-
-        //cont_pos(2,1);
-
-        // cmd.linear.x = cmd.linear.y = cmd.linear.z = 0.0;
-        // cmd.angular.x = cmd.angular.y = cmd.angular.z = 0.0;
-        // cmd.linear.x = 0.2;
-        // publishShortestDistance();
-        publishPotentialValue();
-        
-    }
-    odom_pre = odom;
-}
-
-geometry_msgs::Vector3 PathPlanningClass::F_xd()
-{   
-    geometry_msgs::Vector3 ans;
-    ans.x = -1.0 * (odom.pose.pose.position.x - goal_.pose.position.x);
-    ans.y = -1.0 * (odom.pose.pose.position.y - goal_.pose.position.y);
-    
-    return ans;
-}
-
-void PathPlanningClass::transform_obstacle_pos()
-{
-
-    int size = scan.ranges.size();
-    double maximum = 0;
-    double maximum_angle;
-    double diff_angle_min = 99999999;
-    double angle_sensor = 0;
-    double angle_to_goal = atan2(goal_.pose.position.y - odom.pose.pose.position.y,goal_.pose.position.x - odom.pose.pose.position.x);
-
-    for (int i = 0; i < size; i++)
-    {
-
-        double angle = i * scan.angle_increment + scan.angle_min + odom.pose.pose.orientation.z;
-        double distance = scan.ranges[i] + scan.range_min;
-
-        if (!std::isinf(scan.ranges[i]) && distance >= EXCLUDE_LRF)
-        {
-            
-
-            obstacle[0][obstacle_index] = cos(angle) * distance + odom.pose.pose.position.x;
-            obstacle[1][obstacle_index] = sin(angle) * distance + odom.pose.pose.position.y;
-            obstacle_index++;
-            if (obstacle_index >= obstacle_size) obstacle_index = 0;
-
-            //何もない場所(角度)を取得
-            if (scan.ranges[i] > maximum)
-            {
-                maximum = scan.ranges[i];
-                maximum_angle = i * scan.angle_increment + scan.angle_min;
-            }
-        }
-
-        double tmp_angle = abs(angle - angle_to_goal);
-        if (scan.ranges[i] >= 2.5 && tmp_angle < diff_angle_min)
-        {
-            diff_angle_min = tmp_angle;
-            angle_sensor = angle - odom.pose.pose.orientation.z;
-        }
-
-        
-    }
-
-    coe_0 = 0.9*angle_sensor + 0.05*odom.pose.pose.orientation.z;
-
-    //移動平均
-    scan_range_maximum_angle[scan_range_maximum_angle_index++] = maximum_angle;
-    if (scan_range_maximum_angle_index >= scan_range_maximum_angle_size)
-    {
-        moving_average = true;
-        scan_range_maximum_angle_index = 0;
-    }
-    if (moving_average)
-    {
-        double sum = 0;
-        for (int i=0;i<scan_range_maximum_angle_size;i++)
-        {
-            sum += scan_range_maximum_angle[i];
-        }
-        //coe_0 = sum/double(scan_range_maximum_angle_size);
-    }
-    else
-    {
-        //coe_0 = maximum_angle;
-    }
-
-    //ステレオカメラ点群
-    int cluster_num = pcl_cluster.data.size();
-    //std::cout<< "cluster data size = " << cluster_num <<std::endl;
-    for(int i = 0; i < cluster_num; i++)
-    {
-        double gcx = pcl_cluster.data[i].gc.x;
-        double gcy = pcl_cluster.data[i].gc.y;
-        if (sqrt(pow(gcx,2.0) + pow(gcy,2.0)) >= 0.05)
-        {
-            //std::cout<< i << " (x,y) = (" << gcx << ", " << gcy<< ")" <<std::endl;
-
-            obstacle[0][obstacle_index] = gcy + odom.pose.pose.position.x;
-            obstacle[1][obstacle_index] = gcx + odom.pose.pose.position.y;
-            obstacle_index++;
-            if (obstacle_index >= obstacle_size) obstacle_index = 0;
-        }
-    }
-
-}
-
-// void PathPlanningClass::transform_obstacle_pos()
-// {
-//     obstacle_index = 0;
-//     for (double x = 2; x <= 3; x += 0.025)
-//     {
-//         for (double y = -0.5; y <= 0.5; y += 0.025)
-//         {
-//             obstacle[0][obstacle_index] = x;
-//             obstacle[1][obstacle_index++] = y;
-//         }
-//     }
-
-// }
-
-geometry_msgs::Vector3 PathPlanningClass::rho_x(double robot_x, double robot_y)
-{
-    geometry_msgs::Vector3 ans;
-    ans.z = 99999999999;
-
-    
-    int size = obstacle[0].size();
-    //std::cout<< "=======================" <<std::endl;
-
-    double diffx = robot_x - odom.pose.pose.position.x;
-    double diffy = robot_y - odom.pose.pose.position.y;
-    double angle = atan2(diffy,diffx);
-    double min = 99999999999999;
-    for (int i = 0; i < size; i++)
-    {
-
-        double obs_x = obstacle[0][i] - odom.pose.pose.position.x;
-        double obs_y = obstacle[1][i] - odom.pose.pose.position.y;
-        double obs_angle = atan2(obs_y,obs_x);
-        if (angle >= 0.9*obs_angle && angle <= 1.1*obs_angle &&
-            abs(obs_x) <= abs(diffx) && 
-            abs(obs_y) <= abs(diffy))
-        {
-            ans.z = 0.00000001;
-            break;
-        }
-
-        double rho_val = sqrt(pow(robot_x - obstacle[0][i],2) + pow(robot_y - obstacle[1][i],2));
-
-        if (rho_val < min) min = rho_val;
-
-    }
-    ans.z = min;
-    ShortestDistance = ans;
-    return ans;
-}
-
-geometry_msgs::Vector3 PathPlanningClass::U_xd(double robot_x, double robot_y)
-{
-    double k_p = 1;
-    geometry_msgs::Vector3 ans;
-    ans.x = 0.5 * k_p * pow(robot_x - goal_.pose.position.x, 2.0);
-    ans.y = 0.5 * k_p * pow(robot_y - goal_.pose.position.y, 2.0);
-    
-    return ans;
-}
-
-geometry_msgs::Vector3 PathPlanningClass::U_o(double robot_x, double robot_y)
-{
-    double eta = 10000;
-    bool in_obstacle = false;
-    int size = obstacle[0].size();
-
-    geometry_msgs::Vector3 rho_x_cur = rho_x(robot_x, robot_y);
-    //std::cout<< "rho_x_cur = \n" << rho_x_cur <<std::endl;
-    
-    geometry_msgs::Vector3 ans;
-    if (rho_x_cur.z <= rho_zero || in_obstacle)
-    {
-        ans.x = ans.y = 0.5 * eta * pow(1/rho_x_cur.z - 1/rho_zero, 2.0);
-    }else
-    {
-        ans.x = ans.y = 0.0;
-    }
-    
-    return ans;
-}
-
-geometry_msgs::Vector3 PathPlanningClass::U(double robot_x, double robot_y)
-{
-    geometry_msgs::Vector3 ans;
-    geometry_msgs::Vector3 a = U_xd(robot_x, robot_y);
-    geometry_msgs::Vector3 b = U_o(robot_x, robot_y);
-    ans.x = a.x + b.x;
-    ans.y = a.y + b.y;
-    return ans;
-}
-
-geometry_msgs::Vector3 PathPlanningClass::F()
-{
-    geometry_msgs::Vector3 ans;
-
-    double width = POTENTIAL_FIELD_WIDTH;
-    double div_x = POTENTIAL_FIELD_DIVDE_X;
-    double div_y = POTENTIAL_FIELD_DIVDE_Y;
-
-    double x_min = odom.pose.pose.position.x - width/2;
-    double x_increment = width/div_x;
-    double x_max = odom.pose.pose.position.x + width/2;
-    int rows = (x_max - x_min) / x_increment;
-
-    double y_min = odom.pose.pose.position.y - width/2;
-    double y_increment = width/div_y;
-    double y_max = odom.pose.pose.position.y + width/2;
-    int cols = (y_max - y_min) / y_increment;
-
-    PV.x_min = x_min;
-    PV.x_increment = x_increment;
-    PV.x_max = x_max;
-    PV.rows = rows;
-
-    PV.y_min = y_min;
-    PV.y_increment = y_increment;
-    PV.y_max = y_max;
-    PV.cols = cols;
-
-    double F_x = 0;
-    double F_y = 0;
-    double potential_min = 999999999999;
-
-    int mapsize = rows * cols;
-
-    PV.potential_value.resize(mapsize);
-    
-    // geometry_msgs::Vector3 U_val_coe = U(odom.pose.pose.position.x, odom.pose.pose.position.y);
-    // coe_0 = atan2(U_val_coe.y,U_val_coe.x);
-
-    // std::vector<std::vector<double>> wall;
-    // wall.resize(10);
-
-    // double div = 4.0 / 10.0;
-    // for (int i = 0; i < obstacle_size; i++)
-    // {
-    //     if (obstacle[0][i] < odom.pose.pose.position.x + 1.0 && obstacle[0][i] > odom.pose.pose.position.x - 1.0)
-    //     {
-    //         for (int j = 0; j < 10; j++)
-    //         {
-    //             if (obstacle[1][i] < odom.pose.pose.position.y + (div * double(j) + 0.2) && 
-    //                 obstacle[1][i] > odom.pose.pose.position.y + (div * double(j) - 0.2))
-    //             {
-    //                 wall[j].push_back(obstacle[1][i]);
-    //             }
-    //         }
-    //     }
-        
-    // }
-
-    // coe_0 = 0;
-    // wall_exists = false;
-    // for (int j = 0; j < 10; j++)
-    // {
-    //     if(wall[j].size() > 500)
-    //     {
-    //         wall_exists = true;
-    //         coe_0 = M_PI_4;
-    //         std::cout<< "wall_exists" <<std::endl;
-    //         break;
-    //     }
-    // }
-
-    //std::cout<< "coe_0 = " << coe_0 << "[rad] "<< coe_0/M_PI*180 << "[deg]"<<std::endl;
-    for (int cellnum=0;cellnum<mapsize;cellnum++)
-    {
-        double x = cellnum/cols * x_increment + x_min;
-        double y = cellnum%cols * y_increment + y_min;
-        geometry_msgs::Vector3 U_val = U(x, y);
-        double potential_val = sqrt(pow(U_val.x,2) + pow(U_val.y,2));
-
-        // coe_x = POTENTIAL_BIAS_COEFFICIENT_0;
-        // coe_y = POTENTIAL_BIAS_COEFFICIENT_1;
-        
-        coe_x = cos(coe_0 + M_PI);
-        coe_y = sin(coe_0 + M_PI);
-
-        //std::cout<< "coe_x =" << coe_x << "coe_y =" << coe_y <<std::endl;
-
-        double bias = 1;
-        if (CALCULATE_BIAS) bias = (coe_x * (x - odom.pose.pose.position.x)) + (coe_y * (y - odom.pose.pose.position.y)) + 1;
-
-        PV.potential_value[cellnum] = potential_val * bias;
-
-        if (x >= odom.pose.pose.position.x - (x_increment*0.9) && x <= odom.pose.pose.position.x + (x_increment*0.9) &&
-            y >= odom.pose.pose.position.y - (y_increment*0.9) && y <= odom.pose.pose.position.y + (y_increment*0.9))
-        {
-            PV.robot_position = cellnum;
-        }
-
-        if (PV.potential_value[cellnum] < potential_min)
-        {
-            PV.min_potential_position = cellnum;
-            potential_min = PV.potential_value[cellnum];
-            F_x = x;
-            F_y = y;
-        }
-        
-    }
-    
-    // std::cout<< "potential_min = " << potential_min <<std::endl;
-    // std::cout<< "x = " << F_x <<std::endl;
-    // std::cout<< "y = " << F_y <<std::endl;
-
-    ans.x = 0.5*F_x;
-    ans.y = 0.5*F_y;
-
-    return ans;
-}
-
-void PathPlanningClass::create_exploration_idx(int width)
-{
-    int idx = 0;
-    exploration_arr.resize(idx);
-
-    for (int i=width; i>0; i--)
-    {
-        exploration_arr.resize(idx+1);
-        exploration_arr[idx++] = -PV.cols * width - i;
-    }
-
-    for (int i=1; i<=width; i++)
-    {
-        exploration_arr.resize(idx+1);
-        exploration_arr[idx++] = -PV.cols * width + i;
-    }
-
-    exploration_arr.resize(idx+1);
-    exploration_arr[idx++] = width;
-
-    for (int i=width; i>-1; i--)
-    {
-        exploration_arr.resize(idx+1);
-        exploration_arr[idx++] = PV.cols * width + i;
-    }
-
-    for (int i=width; i>0; i--)
-    {
-        exploration_arr.resize(idx+1);
-        exploration_arr[idx++] = PV.cols * width - i;
-    }
-
-    exploration_arr.resize(idx+1);
-    exploration_arr[idx++] = -width;
-}
-
-bool in(int num,std::vector<int> vec)
-{
-    int size = vec.size();
-    for (int i=0;i<size;i++)
-    {
-        if (vec[i] == num) return true;
-    }
-    return false;
 }
 
 void spline(std::vector<geometry_msgs::Vector3>& points)
@@ -1161,224 +799,50 @@ void spline(std::vector<geometry_msgs::Vector3>& points)
 
 }
 
-void PathPlanningClass::path_planning()
+void PathPlanningClass::__create_PathFromCSV()
 {
-    robot_path.header = header_;
-    nav_msgs::Path robot_path_tmp = robot_path;
+    nav_msgs::Path init;
+    robot_path_ = init;
 
-    int pathindex = 0;
-    // std::vector<int> exploration_arr = {-PV.cols-1, -PV.cols, -PV.cols+1, 1, PV.cols+1, PV.cols, PV.cols-1, -1,-PV.cols-1,
-    //                                     -PV.cols*2-2, -PV.cols*2-1, -PV.cols*2+1,-PV.cols*2+2, 2, PV.cols*2+2, PV.cols*2+1, PV.cols*2, PV.cols*2-2, PV.cols*2-1, -2};
-    
-    int exploration_size = exploration_arr.size();
-    int idx,p_min_idx,cnt=0,cnt_max=sqrt(pow(PV.cols,2)+pow(PV.rows,2))/2;
-    int center = PV.robot_position;
-    double x_robot = center/PV.cols * PV.x_increment + PV.x_min;
-    double y_robot = center%PV.cols * PV.y_increment + PV.y_min;
-    centered.resize(1);
-    centered[0] = {center};
-    double x_pre = std::numeric_limits<double>::infinity();
-    double y_pre = 0;
+    std::string str_buf;
+    std::string str_conma_buf;
+    //std::cout<< PATH_PLANNING_FILE <<std::endl;
+    std::ifstream ifs_csv_file(PATH_PLANNING_FILE);
 
-    while (true)
-    {
-        double x = center/PV.cols * PV.x_increment + PV.x_min;
-        double y = center%PV.cols * PV.y_increment + PV.y_min;
-        // if (sqrt(pow(odom.pose.pose.position.x - x,2) + pow(odom.pose.pose.position.y - y,2)) < 0.2)
-        // {
-        //     center++;
-        //     continue;
-        // }
+    std_msgs::Header hd;
+    hd.frame_id = "/" + FRAME_ID_GLOBAL;
+    hd.stamp = ros::Time::now();
+    robot_path_.header = hd;
 
-        if (x <= PV.x_min || x >= PV.x_max || y <= PV.y_min || y >= PV.y_max || cnt > 5) break;
-
+    double line_buf[2];
+    while (getline(ifs_csv_file, str_buf)) 
+    {    
         
-        int width = 2;
-        bool exist_p_min = false;
-        while (width == 2)
-        //while (p_min > 1000)
-        {
-            create_exploration_idx(width++);
-            double p_min = std::numeric_limits<double>::infinity();
-            for (int i=0; i<exploration_arr.size(); i++)
-            {
-                idx = center+exploration_arr[i];
-                if (!in(idx, centered))
-                {
-                    double x_tmp = idx/PV.cols * PV.x_increment + PV.x_min;
-                    double y_tmp = idx%PV.cols * PV.y_increment + PV.y_min;
-                    double positiondiff = sqrt(pow(goal_.pose.position.x - x_tmp,2) + pow(goal_.pose.position.y - y_tmp,2));
-                    double posediff = abs(atan2(y_tmp-y_pre,x_tmp-x_pre) - odom.pose.pose.orientation.z);
-                    double J = 0.1*PV.potential_value[idx] + positiondiff + posediff;
-
-                    if (J < p_min) 
-                    {
-                        exist_p_min = true;
-                        p_min_idx = idx;
-                        p_min = J;
-                    }
-                }
-                
-            }
-        }
+        std::istringstream i_stream(str_buf);// 「,」区切りごとにデータを読み込むためにistringstream型にする
         
-        if (!in(p_min_idx, centered) && exist_p_min)
+        int i = 0;
+        while (getline(i_stream, str_conma_buf, ',')) // 「,」区切りごとにデータを読み込む
         {
-            robot_path.poses.resize(pathindex+1);
-            double x_tmp = p_min_idx/PV.cols * PV.x_increment + PV.x_min;
-            double y_tmp = p_min_idx%PV.cols * PV.y_increment + PV.y_min;
-            robot_path.poses[pathindex].pose.position.x   = x_tmp;
-            robot_path.poses[pathindex++].pose.position.y = y_tmp;
-            double x_pre = x_tmp;
-            double y_pre = y_tmp;
-            
-            center = p_min_idx;
-            std::cout<< center << ", ";
-            centered.resize(centered.size()+1);
-            centered[centered.size()-1] = center;
-            cnt++;
+            //std::cout<< str_conma_buf <<std::endl;
+            line_buf[i++] = std::stod(str_conma_buf);
         }
-        else
-        {
-            break;
-        }
+        geometry_msgs::PoseStamped point;
+        point.pose.position.x = line_buf[0];
+        point.pose.position.y = line_buf[1];
+        robot_path_.poses.push_back(point);
     }
-    std::cout<<std::endl;
-    
-    int i = 1;
-    double th = sqrt(pow(0.25,2)+pow(0.25,2));
-    while(i < robot_path.poses.size())
+
+    static bool goal_published = false;
+    if(!goal_published)
     {
-        if (sqrt(pow(robot_path.poses[i].pose.position.x - robot_path.poses[i-1].pose.position.x,2) +
-                 pow(robot_path.poses[i].pose.position.y - robot_path.poses[i-1].pose.position.y,2)) > th)
-        {
-            for (int j = i; j < robot_path.poses.size()-1; j++)
-            {
-                robot_path.poses[j] = robot_path.poses[j+1];
-            }
-            robot_path.poses.resize(robot_path.poses.size()-1);
-            i = 1;
-        }
-        else
-        {
-            i++;
-        }
+        goal_published = true;
+        goal_ = robot_path_.poses.back();
+        goal_.header = robot_path_.header;
+        pub_goal_.publish(goal_);
     }
-
-    int pathsize = robot_path_tmp.poses.size();
-    if (pathsize > 0)
-    {
-        double path_score = 0;
-        int num = 3;
-        for(int i=0; i<num; i++)
-        {
-            path_score += sqrt(pow(robot_path_tmp.poses[i].pose.position.x - robot_path.poses[i].pose.position.x,2) +
-                                pow(robot_path_tmp.poses[i].pose.position.y - robot_path.poses[i].pose.position.y,2));
-        }
-        path_score=path_score/double(num);
-        std::cout<< "path score = " << path_score <<std::endl;
-
-        if (false&&robot_path.poses.size() < 4)
-        {
-            robot_path.poses.resize(robot_path_tmp.poses.size());
-            robot_path = robot_path_tmp;
-        }
-    }
-    
-    //延長経路
-    // if (pathsize < 3 && pathsize > 1)
-    // {
-    //     double startx = robot_path[pathsize-1].x;
-    //     double starty = robot_path[pathsize-1].y;
-    //     double angle = atan2(robot_path[pathsize-1].y - robot_path[pathsize-2].y, robot_path[pathsize-1].x - robot_path[pathsize-2].x);
-    //     robot_path.resize(pathsize + 5);
-    //     for (int i=0;i<5;i++)
-    //     {
-    //         robot_path[pathsize+i].x = 0.2*(i+1)*cos(angle) + startx;
-    //         robot_path[pathsize+i].y = 0.2*(i+1)*sin(angle) + starty;
-    //     }
-    // }
-    
-    //if (sqrt(pow(TARGET_POSITION_X - x_robot,2) + pow(TARGET_POSITION_Y - y_robot,2)) > 1) bezier(robot_path);
-    __bezier(robot_path);
-
-    // bool use_spline = true;
-    // for(int i = 1; i < robot_path.size(); i++)
-    // {
-    //     if (robot_path[i].x == robot_path[i-1].x)
-    //     {
-    //         use_spline = false;
-    //         break;
-    //     }
-    // }
-    // if (use_spline) spline(robot_path);
-    
-    double angle_sum = 0;
-    for (int i = 0; i < robot_path.poses.size()-1; i++)
-    {
-        angle_sum += atan2(robot_path.poses[i+1].pose.position.x - robot_path.poses[i].pose.position.x, 
-                            robot_path.poses[i+1].pose.position.y - robot_path.poses[i].pose.position.y);
-    }
-
-    //coe_0 = angle_sum / double(robot_path.size()-1);
-
-    //std::cout<< "coe_0 = " << coe_0 << "[rad] "<< coe_0/M_PI*180 << "[deg]"<<std::endl;
-
-    //if (robot_path.size() >= 3) spline(robot_path);
-
-    PV.path_plan.resize(centered.size());
-    PV.path_plan = centered;
     
 }
 
-//ポテンシャル法
-void PathPlanningClass::potential()
-{
-
-    // geometry_msgs::Vector3 potential_min_point = F();
-    // cmd.linear.x = 0.2;
-    // cmd.angular.z = 0.0;
-
-    if (true||done_cont_pos)
-    {
-        geometry_msgs::Vector3 potential_min_point = F();
-
-        //cont_vel(potential_min_point.x, potential_min_point.y);
-        //cont_pos(potential_min_point.x, potential_min_point.y);
-
-        double period = PATH_CREATE_PERIOD;
-        geometry_msgs::Vector3 ans = U_o(odom.pose.pose.position.x, odom.pose.pose.position.y);
-        //std::cout<< "Uo = " << sqrt(pow(ans.x,2) + pow(ans.y,2)) <<std::endl;
-
-        //if(sqrt(pow(ans.x,2) + pow(ans.y,2)) != 0.0) period = 0.2;
-
-        ros::Time nt = ros::Time::now();
-        //if ((path_update && (nt.toSec() > path_update_timestamp.toSec() + period || robot_path_index >= robot_path.size())) || wall_exists)
-        if (nt.toSec() > path_update_timestamp.toSec() + period)
-        //if (path_update)
-        {
-            // robot_path.resize(1);
-            path_update_timestamp = nt;
-            // robot_path[0] = potential_min_point;
-            path_planning();
-            if (sqrt(pow(goal_.pose.position.x - odom.pose.pose.position.x,2) + pow(goal_.pose.position.y - odom.pose.pose.position.y,2)) > TARGET_POSITION_MARGIN)
-                publishPathPlan();
-        }
-        
-    }
-
-    //std::cout<< "vel, ang = " << cmd.linear.x << "," << cmd.angular.z/M_PI*180.0 <<std::endl;
-
-}
-
-void PathPlanningClass::publishShortestDistance()
-{
-    pub_ShortestDistance.publish(ShortestDistance);
-}
-void PathPlanningClass::publishPotentialValue()
-{
-    pub_PV.publish(PV);
-}
 void PathPlanningClass::publishPathPlan()
 {
     pub_PP.publish(robot_path_);

@@ -87,7 +87,7 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
                 try 
                 {
                     // 2つの座標系間の変換を取得
-                    transform = tf_buffer_.lookupTransform("map", obstacles_.markers[i].header.frame_id, ros::Time());
+                    transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, obstacles_.markers[i].header.frame_id, ros::Time());
                     geometry_msgs::PointStamped source_point;
                     // source_point.header = obstacles_.markers[i].header;
                     // source_point.header.frame_id = "lidar";
@@ -123,7 +123,7 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
 
                     potbot::State state_msg;
                     state_msg.header = obstacles_.markers[i].header;
-                    state_msg.header.frame_id = "map";
+                    state_msg.header.frame_id = FRAME_ID_GLOBAL;
                     state_msg.id = id;
 
                     state_msg.z.data.resize(ny);

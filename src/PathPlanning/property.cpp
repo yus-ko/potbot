@@ -1,30 +1,34 @@
 #include<potbot/PathPlanning.h>
+#include<ros/param.h>
 
 void PathPlanningClass::setLaunchParam(){
     
     ros::NodeHandle n("~");
     //n.getParam("",);
+    n.getParam("YAML_FILE",YAML_FILE);
     n.getParam("PATH_PLANNING_METHOD",PATH_PLANNING_METHOD);
     n.getParam("PATH_PLANNING_FILE",PATH_PLANNING_FILE);
     n.getParam("USE_AMCL",USE_AMCL);
-    n.getParam("PID_CONTROL",PID_CONTROL);
-    n.getParam("ANGLE_CORRECTION",ANGLE_CORRECTION);
-    n.getParam("MAX_VELOCITY",MAX_VELOCITY);
-    n.getParam("MAX_ANGULAR",MAX_ANGULAR);
-    n.getParam("TARGET_POSITION_X",TARGET_POSITION_X);
-    n.getParam("TARGET_POSITION_Y",TARGET_POSITION_Y);
-    n.getParam("TARGET_POSITION_MARGIN",TARGET_POSITION_MARGIN);
-    n.getParam("GAIN_PROPORTIONAL",GAIN_PROPORTIONAL);
-    n.getParam("GAIN_INTEGRAL",GAIN_INTEGRAL);
-    n.getParam("GAIN_DIFFERENTIAL",GAIN_DIFFERENTIAL);
-    n.getParam("AVOIDANCE_RADIUS",rho_zero);
-    n.getParam("PATH_CREATE_PERIOD",PATH_CREATE_PERIOD);
+    n.getParam("TARGET/POSITION/X",TARGET_POSITION_X);
+    n.getParam("TARGET/POSITION/Y",TARGET_POSITION_Y);
+    n.getParam("TARGET/POSITION/YAW",TARGET_POSITION_YAW);
     n.getParam("POTENTIAL_FIELD_WIDTH",POTENTIAL_FIELD_WIDTH);
     n.getParam("POTENTIAL_FIELD_DIVDE_X",POTENTIAL_FIELD_DIVDE_X);
     n.getParam("POTENTIAL_FIELD_DIVDE_Y",POTENTIAL_FIELD_DIVDE_Y);
-    n.getParam("CALCULATE_BIAS",CALCULATE_BIAS);
-    n.getParam("POTENTIAL_BIAS_COEFFICIENT_0",POTENTIAL_BIAS_COEFFICIENT_0);
-    n.getParam("POTENTIAL_BIAS_COEFFICIENT_1",POTENTIAL_BIAS_COEFFICIENT_1);
-    n.getParam("AHEAD_PATH",AHEAD_PATH);
-    n.getParam("EXCLUDE_LRF",EXCLUDE_LRF);
+    n.getParam("FRAME_ID/GLOBAL",FRAME_ID_GLOBAL);
+    n.getParam("FRAME_ID/ROBOT_BASE",FRAME_ID_ROBOT_BASE);
+
+    goal_.pose.position.x = TARGET_POSITION_X;
+    goal_.pose.position.y = TARGET_POSITION_Y;
+    goal_.pose.orientation = get_Quat(0,0,TARGET_POSITION_YAW);
+}
+
+void PathPlanningClass::__set_Param(){
+    ros::NodeHandle n("~");
+    int param1;
+    std::string param2;
+    n.getParam("param1",param1);
+    n.getParam("param2",param2);
+    ROS_INFO("param1: %d", param1);
+    ROS_INFO("param2: %s", param2.c_str());
 }

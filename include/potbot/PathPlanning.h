@@ -24,6 +24,7 @@
 #include <potbot/PathPlanningConfig.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
+#include <fstream>
 
 //クラスの定義
 class PathPlanningClass{
@@ -38,7 +39,7 @@ class PathPlanningClass{
 		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_cluster, sub_goal_, sub_local_map_, sub_odom_, sub_seg_, sub_state_, sub_run_;
         //送信データ
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_cmd, pub_odom, pub_ShortestDistance, pub_PV, pub_PP, pub_goal_, pub_pf_, pub_cmd_, pub_potential_;
+        ros::Publisher pub_cmd, pub_odom, pub_PP, pub_goal_, pub_pf_, pub_cmd_, pub_potential_;
 
         std_msgs::Header header_;
 
@@ -65,7 +66,7 @@ class PathPlanningClass{
         double encoder_deltatime;
 
         bool zero_potential = true;
-        double rho_zero, f_time_pre = -999999999999999;
+        double f_time_pre = -999999999999999;
 
         double cont_pos_time_pre = -999999999999999, pos_x_pre = 0, pos_y_pre = 0, vel_x_pre = 0, vel_y_pre = 0;
 
@@ -112,13 +113,10 @@ class PathPlanningClass{
         dynamic_reconfigure::Server<potbot::PathPlanningConfig> server_;
   	    dynamic_reconfigure::Server<potbot::PathPlanningConfig>::CallbackType f_;
 
-        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE;
-        bool ANGLE_CORRECTION, PID_CONTROL, USE_AMCL, USE_RVIZ;
-        double MAX_VELOCITY, MAX_ANGULAR, TARGET_POSITION_X, TARGET_POSITION_Y;
-        double GAIN_PROPORTIONAL, GAIN_INTEGRAL, GAIN_DIFFERENTIAL;
-        double TARGET_POSITION_MARGIN, PATH_CREATE_PERIOD, POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
-        double POTENTIAL_BIAS_COEFFICIENT_0, POTENTIAL_BIAS_COEFFICIENT_1, AHEAD_PATH, EXCLUDE_LRF;
-        bool CALCULATE_BIAS;
+        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, YAML_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE;
+        bool USE_AMCL, USE_RVIZ;
+        double TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW;
+        double POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
         
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __param_callback(const potbot::PathPlanningConfig& param, uint32_t level);
@@ -134,6 +132,8 @@ class PathPlanningClass{
         int __get_PotentialFiledIndex(double x, double y);
         int __create_PotentialField();
         void __create_Path();
+        void __create_PathFromCSV();
+        void __set_Param();
 
         void run();
         
@@ -159,25 +159,7 @@ class PathPlanningClass{
         void local_map_callback(const nav_msgs::OccupancyGrid& msg);
         
         void mainloop();
-        void manage();
-
-        void transform_obstacle_pos();
-
-        geometry_msgs::Vector3 U_xd(double robot_x, double robot_y);
-        geometry_msgs::Vector3 U_o(double robot_x, double robot_y);
-        geometry_msgs::Vector3 U(double robot_x, double robot_y);
-
-        geometry_msgs::Vector3 F_xd();
-        geometry_msgs::Vector3 rho_x(double robot_x, double robot_y);
-        geometry_msgs::Vector3 F_o();
-        geometry_msgs::Vector3 F();
-        void potential();
-
-        void create_exploration_idx(int width);
-        void path_planning();
         void line_following();
 
-        void publishShortestDistance();
-        void publishPotentialValue();
         void publishPathPlan();
 };

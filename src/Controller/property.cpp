@@ -8,4 +8,13 @@ void ControllerClass::setLaunchParam(){
     n.getParam("IS_SIMULATOR",IS_SIMULATOR);
     n.getParam("PUBLISH_COMMAND",PUBLISH_COMMAND);
     n.getParam("PATH_TRACKING_MARGIN",PATH_TRACKING_MARGIN);
+    n.getParam("FRAME_ID/GLOBAL",FRAME_ID_GLOBAL);
+    n.getParam("FRAME_ID/ROBOT_BASE",FRAME_ID_ROBOT_BASE);
+    n.getParam("TARGET/POSITION/X",TARGET_POSITION_X);
+    n.getParam("TARGET/POSITION/Y",TARGET_POSITION_Y);
+    n.getParam("TARGET/POSITION/YAW",TARGET_POSITION_YAW);
+
+    goal_.pose.position.x = TARGET_POSITION_X;
+    goal_.pose.position.y = TARGET_POSITION_Y;
+    goal_.pose.orientation = get_Quat(0,0,TARGET_POSITION_YAW);
 }

@@ -20,7 +20,9 @@ void ControllerClass::manage()
     // robot_.pose.pose = robot_pose.pose;
     robot_ = odom_;
     // print_Pose(robot_.pose.pose);
+    // ROS_INFO("path_size: %d", robot_path_.poses.size());
     if (robot_path_.poses.size() > 0) controller();
+    else __publish_path_request();
     if (publish_command_) __publishcmd();
 }
 
@@ -222,7 +224,7 @@ bool ControllerClass::__PathCollision()
                 try 
                 {
                     // ロボット座標系の障害物を世界座標系に変換
-                    transform = tf_buffer_.lookupTransform("map", obstacle_segment_.markers[i].header.frame_id, ros::Time());
+                    transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, obstacle_segment_.markers[i].header.frame_id, ros::Time());
                     tf2::doTransform(obstacle_segment_.markers[i].pose, world_obslacle_pose, transform);
                 }
                 catch (tf2::TransformException &ex) 
@@ -263,6 +265,14 @@ bool ControllerClass::__PathCollision()
     }
     
 }
+
+// void ControllerClass::__PID()
+// {
+//     double error_distance = get_Distance(robot_.pose.pose.position, goal_.pose.position);
+//     double error_angle = get_Yaw(goal_.pose.orientation) - get_Yaw(robot_.pose.pose.orientation);
+//     cmd_.linear.x = 0.1*error_distance;
+//     cmd_.angular.z = 0.1*error_angle;
+// }
 
 void ControllerClass::__publishcmd()
 {
