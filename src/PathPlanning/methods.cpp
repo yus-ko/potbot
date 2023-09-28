@@ -186,7 +186,7 @@ int PathPlanningClass::__create_PotentialField()
     double map_ori_y = local_map_.info.origin.position.y;
     double map_res = local_map_.info.resolution;
 
-    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);
+    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);  //引数確認
 
     potential_field_.header = header_;
     potential_field_.header.frame_id = FRAME_ID_ROBOT_BASE;
