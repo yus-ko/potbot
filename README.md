@@ -12,5 +12,5 @@
 **Filter.launch**
 - アンセンテッドカルマンフィルタによる障害物に対する速度予測
   
-**boot0.launch**
+**robot_0.launch**
 - 上記をまとめて起動
