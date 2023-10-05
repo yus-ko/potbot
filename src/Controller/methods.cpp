@@ -129,7 +129,7 @@ void ControllerClass::__LineFollowing()
         done_init_pose_alignment_ = true;
         double yaw = get_Yaw(robot_.pose.pose.orientation);
         double alpha = atan2(sub_goal.y - robot_.pose.pose.position.y, sub_goal.x - robot_.pose.pose.position.x) - yaw;
-        cmd.linear.x = 0.2;
+        cmd.linear.x = MAX_LINEAR_VELOCITY;
         cmd.angular.z = 2*cmd.linear.x*sin(alpha)/l_d;
         cmd_ = cmd;
     } 
@@ -161,7 +161,7 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
 
 bool ControllerClass::__PathCollision()
 {
-    static int mode = 0;
+    static int mode = 1;
     if (mode == 0)
     {
         int path_size = robot_path_.poses.size();

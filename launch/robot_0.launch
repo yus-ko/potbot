@@ -9,7 +9,7 @@
   <arg name="FRAME_ID/ROBOT_BASE" default="robot_0"/>
   <arg name="FRAME_ID/LIDAR" default="robot_0_lidar"/>
   <arg name="TARGET/POSITION/X" default="6.0"/>
-  <arg name="TARGET/POSITION/Y" default="0.0"/>
+  <arg name="TARGET/POSITION/Y" default="-0.05"/>
   <arg name="TARGET/POSITION/YAW" default="0.0"/>
 
   <group ns="$(arg GROUP)">

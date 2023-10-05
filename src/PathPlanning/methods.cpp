@@ -10,7 +10,9 @@ void PathPlanningClass::mainloop()
     ros::Rate loop_rate(10);
 	while (ros::ok())
 	{
+        //if (sync_createpath_ || __PathCollision()) run();
         if (sync_createpath_) run();
+        
         loop_rate.sleep();
 		ros::spinOnce();
 	}
@@ -109,6 +111,7 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
             }
 
             nav_msgs::Odometry obs;
+            obs.header = robot_obstacle.header;
             // obs.pose.pose.position.x = obstacle_state_.data[i].xhat.data[0];
             // obs.pose.pose.position.y = obstacle_state_.data[i].xhat.data[1];
             obs.pose.pose.position.x = robot_obstacle.pose.position.x;
@@ -127,6 +130,7 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
             for (int j = 1; j < num; j++)
             {
                 nav_msgs::Odometry obs_add;
+                obs_add.header = obs.header;
                 
                 double l = k*obs.twist.twist.linear.x/num*j;
                 obs_add.pose.pose.position.x = l*cos(get_Yaw(obs.pose.pose.orientation)) + obs.pose.pose.position.x;
@@ -841,6 +845,39 @@ void PathPlanningClass::__create_PathFromCSV()
         pub_goal_.publish(goal_);
     }
     
+}
+
+bool PathPlanningClass::__PathCollision()
+{
+    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);
+    for (int i = 0; i < obstacles.size(); i++)
+    {
+        geometry_msgs::Pose world_obslacle_pose;
+        geometry_msgs::TransformStamped transform;
+        static tf2_ros::TransformListener tfListener(tf_buffer_);
+        try 
+        {
+            // ロボット座標系の障害物を世界座標系に変換
+            transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, obstacles[i].header.frame_id, ros::Time());
+            tf2::doTransform(obstacles[i].pose.pose, world_obslacle_pose, transform);
+        }
+        catch (tf2::TransformException &ex) 
+        {
+            ROS_ERROR("TF Ereor : %s", ex.what());
+            continue;
+        }
+
+        for (int j = 0; j < robot_path_.poses.size(); j++)
+        {
+
+            if (get_Distance(world_obslacle_pose.position,robot_path_.poses[j].pose.position) < 0.2)
+            {
+                return true;
+            }
+            
+        }
+    }
+    return false;
 }
 
 void PathPlanningClass::publishPathPlan()

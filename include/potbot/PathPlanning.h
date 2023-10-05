@@ -133,6 +133,7 @@ class PathPlanningClass{
         int __create_PotentialField();
         void __create_Path();
         void __create_PathFromCSV();
+        bool __PathCollision();
         void __set_Param();
 
         void run();

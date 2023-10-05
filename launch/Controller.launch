@@ -9,6 +9,7 @@
         <arg name="TARGET/POSITION/Y" default="0.0"/>
         <arg name="TARGET/POSITION/YAW" default="0.0"/>
         <arg name="CONTROLLER" default="pure_pursuit"/>
+        <arg name="MAX_LINEAR_VELOCITY" default="MAX_LINEAR_VELOCITY"/>
 
     <node pkg="potbot" name="potbot_co" type="potbot_co" output="screen">
         <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
@@ -21,5 +22,6 @@
         <param name="TARGET/POSITION/Y" value="$(arg TARGET/POSITION/Y)"/>
         <param name="TARGET/POSITION/YAW" value="$(arg TARGET/POSITION/YAW)"/>
         <param name="CONTROLLER" value="$(arg CONTROLLER)"/>
+        <param name="MAX_LINEAR_VELOCITY" value="$(arg MAX_LINEAR_VELOCITY)"/>
     </node>
 </launch>
