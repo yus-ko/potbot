@@ -1,0 +1,66 @@
+<launch>
+  <arg name="GROUP" default="/robot_0"/>
+  <arg name="ROBOT_NAME" default="beego"/>
+  <!--megarover turtlebot3 beego-->
+  <arg name="IS_SIMULATOR" default="false"/>
+  <arg name="USE_RVIZ" default="false"/>
+  <arg name="PUBLISH_COMMAND" default="true"/>
+  <arg name="FRAME_ID/GLOBAL" default="base_link"/>
+  <arg name="FRAME_ID/ROBOT_BASE" default="robot_0"/>
+  <arg name="FRAME_ID/LIDAR" default="robot_0_lidar"/>
+  <arg name="TARGET/POSITION/X" default="6.0"/>
+  <arg name="TARGET/POSITION/Y" default="0.0"/>
+  <arg name="TARGET/POSITION/YAW" default="0.0"/>
+
+  <group ns="$(arg GROUP)">
+
+    <node pkg="urg_node" type="urg_node" name="urg_node">
+      <param name="ip_address" value="172.16.0.10"/>
+      <param name="frame_id" value="$(arg GROUP)" />
+      <remap from="scan" to="scan" />
+    </node>
+
+    <include file="$(find potbot)/launch/Localization.launch">
+      <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
+      <arg name="IS_SIMULATOR" value="$(arg IS_SIMULATOR)"/>
+      <arg name="USE_RVIZ" value="$(arg USE_RVIZ)"/>
+      <arg name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
+      <arg name="FRAME_ID/LIDAR" value="$(arg FRAME_ID/LIDAR)"/>
+    </include>
+
+    <include file="$(find potbot)/launch/Controller.launch">
+      <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
+      <arg name="IS_SIMULATOR" value="$(arg IS_SIMULATOR)"/>
+      <arg name="PUBLISH_COMMAND" value="$(arg PUBLISH_COMMAND)"/>
+      <arg name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
+      <arg name="TARGET/POSITION/X" value="$(arg TARGET/POSITION/X)"/>
+      <arg name="TARGET/POSITION/Y" value="$(arg TARGET/POSITION/Y)"/>
+      <arg name="TARGET/POSITION/YAW" value="$(arg TARGET/POSITION/YAW)"/>
+    </include>
+
+    <include file="$(find potbot)/launch/Filter.launch">
+      <arg name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
+    </include>
+    
+    <include file="$(find potbot)/launch/PathPlanning.launch">
+      <arg name="USE_RVIZ" value="$(arg USE_RVIZ)"/>
+      <arg name="PATH_PLANNING_METHOD" value="potential_method"/>
+      <arg name="PATH_PLANNING_FILE" default="straight.csv"/>
+      <arg name="YAML_FILE" default="potbot.yaml"/>
+      <arg name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
+      <arg name="TARGET/POSITION/X" value="$(arg TARGET/POSITION/X)"/>
+      <arg name="TARGET/POSITION/Y" value="$(arg TARGET/POSITION/Y)"/>
+      <arg name="TARGET/POSITION/YAW" value="$(arg TARGET/POSITION/YAW)"/>
+    </include>
+    
+    <group if="$(arg USE_RVIZ)">
+      <include file="$(find potbot)/launch/rviz.launch"/>
+    </group>
+
+  </group>
+
+</launch>
