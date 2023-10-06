@@ -1,14 +1,12 @@
 <launch>
 	<env name="GAZEBO_MODEL_PATH" value="$(find potbot)/models:$(optenv GAZEBO_MODEL_PATH)"/>
-  <arg name="name" default="/"/>
-  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="name" default=""/>
   <arg name="x_pos" default="0.0"/>
   <arg name="y_pos" default="0.0"/>
   <arg name="z_pos" default="0.0"/>
   <arg name="roll" default="0.0"/>
   <arg name="pitch" default="0.0"/>
   <arg name="yaw" default="3.14"/>
-	<!-- <arg name="world_name" default="$(find turtlebot3_gazebo)/worlds/empty.world"/> -->
   <arg name="world_name" default="$(find potbot)/worlds/TDU_0113_0.world"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -20,9 +18,8 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
+  <include file="$(find potbot)/launch/gazebo/spawn_vmegarover.launch">
     <arg name="name" value="$(arg name)"/>
-    <arg name="model" value="$(arg model)"/>
     <arg name="x_pos" value="$(arg x_pos)"/>
     <arg name="y_pos" value="$(arg y_pos)"/>
     <arg name="z_pos" value="$(arg z_pos)"/>
