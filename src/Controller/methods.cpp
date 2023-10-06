@@ -62,7 +62,7 @@ void ControllerClass::__LineFollowing()
     }
 
     double procces = double(robot_path_index_)/double(robot_path_size);
-    //ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
+    ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
     if (procces > 0.8 && get_Distance(robot_path_.poses[robot_path_size-1].pose.position, goal_.pose.position) > 0.1)
     {
         __publish_path_request();
