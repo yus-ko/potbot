@@ -1,30 +1,24 @@
 <launch>
   <arg name="GROUP" default="/robot_0"/>
-  <arg name="ROBOT_NAME" default="megarover"/>
+  <arg name="ROBOT_NAME" default="beego"/>
   <!--megarover turtlebot3 beego-->
   <arg name="IS_SIMULATOR" default="false"/>
-  <arg name="USE_RVIZ" default="true"/>
+  <arg name="USE_RVIZ" default="false"/>
   <arg name="PUBLISH_COMMAND" default="true"/>
-  <arg name="FRAME_ID/GLOBAL" default="map"/>
+  <arg name="FRAME_ID/GLOBAL" default="base_link"/>
   <arg name="FRAME_ID/ROBOT_BASE" default="robot_0"/>
   <arg name="FRAME_ID/LIDAR" default="robot_0_lidar"/>
-  <arg name="TARGET/POSITION/X" default="2.0"/>
-  <arg name="TARGET/POSITION/Y" default="0"/>
+  <arg name="TARGET/POSITION/X" default="6.0"/>
+  <arg name="TARGET/POSITION/Y" default="0.0"/>
   <arg name="TARGET/POSITION/YAW" default="0.0"/>
 
   <group ns="$(arg GROUP)">
 
-    <!-- <node name="urg_node" pkg="urg_node" type="urg_node" output="screen"> -->
-      <!-- <param name="ip_address" value=""/> -->
-      <!-- <param name="serial_port" value="/dev/ttyACM0"/> -->
-      <!-- <param name="serial_baud" value="115200"/> -->
-      <!-- <param name="frame_id" value=""/> -->
-      <!-- <param name="calibrate_time" value="true"/>
-      <param name="publish_intensity" value="false"/>
-      <param name="publish_multiecho" value="false"/>
-      <param name="angle_min" value="-1.5707963"/>
-      <param name="angle_max" value="1.5707963"/> -->
-    <!-- </node> -->
+    <node pkg="urg_node" type="urg_node" name="urg_node">
+      <param name="ip_address" value="172.16.0.10"/>
+      <param name="frame_id" value="$(arg GROUP)" />
+      <remap from="scan" to="scan" />
+    </node>
 
     <include file="$(find potbot)/launch/Localization.launch">
       <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
