@@ -122,6 +122,7 @@ void ControllerClass::__LineFollowing()
         geometry_msgs::Pose target;
         target.position = robot_.pose.pose.position;
         target.orientation = alpha_quat;
+        print_Pose(target);
         __PoseAlignment(target);
     }
     else if (robot_path_index_ < robot_path_size)
@@ -132,6 +133,7 @@ void ControllerClass::__LineFollowing()
         cmd.linear.x = MAX_LINEAR_VELOCITY;
         cmd.angular.z = 2*cmd.linear.x*sin(alpha)/l_d;
         cmd_ = cmd;
+        //ROS_INFO("comannd v,omega: %f, %f", cmd_.linear.x, cmd_.angular.z);
     } 
 }
 
@@ -276,6 +278,7 @@ bool ControllerClass::__PathCollision()
 
 void ControllerClass::__publishcmd()
 {
+    //ROS_INFO("comannd v,omega: %f, %f", cmd_.linear.x, cmd_.angular.z);
     pub_cmd_.publish(cmd_);
 }
 
