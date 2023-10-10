@@ -27,7 +27,7 @@ LocalizationClass::LocalizationClass()
 		localization_method_id_ = PARTICLE_FILTER;
 	}
 
-	sub_scan_=nhSub_.subscribe("scan",1,&LocalizationClass::scan_callback,this);
+	sub_scan_=nhSub_.subscribe("/scan",1,&LocalizationClass::scan_callback,this);
 	sub_map_=nhSub_.subscribe("/map",1,&LocalizationClass::map_callback,this);
 	sub_inipose_=nhSub_.subscribe("/initialpose",1,&LocalizationClass::inipose_callback,this);
 	sub_goal_=nhSub_.subscribe("/move_base_simple/goal",1,&LocalizationClass::goal_callback,this);
