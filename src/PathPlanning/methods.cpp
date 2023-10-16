@@ -227,7 +227,7 @@ int PathPlanningClass::__create_PotentialField()
 
     // int break_cnt = 0;
     // while(!get_tf(world_goal ,robot_goal, tf_buffer_) || break_cnt > 1000){break_cnt++;}
-
+    
     for (int i = 0; i < map_size; i++)
     {
         double x = int(i%map_cols)*map_res + map_ori_x;
