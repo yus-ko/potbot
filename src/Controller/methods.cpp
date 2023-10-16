@@ -62,7 +62,7 @@ void ControllerClass::__LineFollowing()
     }
 
     double procces = double(robot_path_index_)/double(robot_path_size);
-    //ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
+    ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
     if (procces > 0.8 && get_Distance(robot_path_.poses[robot_path_size-1].pose.position, goal_.pose.position) > 0.1)
     {
         __publish_path_request();
@@ -122,6 +122,7 @@ void ControllerClass::__LineFollowing()
         geometry_msgs::Pose target;
         target.position = robot_.pose.pose.position;
         target.orientation = alpha_quat;
+        print_Pose(target);
         __PoseAlignment(target);
     }
     else if (robot_path_index_ < robot_path_size)
@@ -132,6 +133,7 @@ void ControllerClass::__LineFollowing()
         cmd.linear.x = MAX_LINEAR_VELOCITY;
         cmd.angular.z = 2*cmd.linear.x*sin(alpha)/l_d;
         cmd_ = cmd;
+        //ROS_INFO("comannd v,omega: %f, %f", cmd_.linear.x, cmd_.angular.z);
     } 
 }
 
@@ -276,6 +278,7 @@ bool ControllerClass::__PathCollision()
 
 void ControllerClass::__publishcmd()
 {
+    //ROS_INFO("comannd v,omega: %f, %f", cmd_.linear.x, cmd_.angular.z);
     pub_cmd_.publish(cmd_);
 }
 

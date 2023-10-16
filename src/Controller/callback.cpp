@@ -8,8 +8,10 @@ void ControllerClass::__odom_callback(const nav_msgs::Odometry& msg)
 void ControllerClass::path_callback(const nav_msgs::Path& msg)
 {
     //ROS_INFO("path_callback");
+    //ROS_INFO("%f",msg.header.stamp.toSec());
     if (robot_path_.header.stamp != msg.header.stamp)
     {
+        
         if (msg.header.frame_id != "/" + FRAME_ID_GLOBAL)
         {
             nav_msgs::Path init;
