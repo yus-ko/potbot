@@ -52,8 +52,6 @@ ControllerClass::ControllerClass()
 		}
 	}
 
-	publish_command_ = PUBLISH_COMMAND;
-
 	f_ = boost::bind(&ControllerClass::__param_callback, this, _1, _2);
 	server_.setCallback(f_);
 }

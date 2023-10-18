@@ -3,6 +3,7 @@
         <!--megarover turtlebot3 beego-->
         <arg name="IS_SIMULATOR" default="true"/>
         <arg name="PUBLISH_COMMAND" default="true"/>
+        <arg name="COLLISION_DETECTION" default="true"/>
         <arg name="FRAME_ID/GLOBAL" default="map"/>
         <arg name="FRAME_ID/ROBOT_BASE" default="potbot"/>
         <arg name="TARGET/POSITION/X" default="6.0"/>
@@ -15,6 +16,7 @@
         <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
         <param name="IS_SIMULATOR" value="$(arg IS_SIMULATOR)"/>
         <param name="PUBLISH_COMMAND" value="$(arg PUBLISH_COMMAND)"/>
+        <param name="COLLISION_DETECTION" value="$(arg COLLISION_DETECTION)"/>
         <param name="PATH_TRACKING_MARGIN" value="0.3"/>
         <param name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
         <param name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>

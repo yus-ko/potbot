@@ -45,15 +45,13 @@ class ControllerClass{
 
         visualization_msgs::MarkerArray obstacle_segment_;
 
-        bool publish_command_;
-
         dynamic_reconfigure::Server<potbot::ControllerConfig> server_;
   	    dynamic_reconfigure::Server<potbot::ControllerConfig>::CallbackType f_;
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
         std::string ROBOT_NAME, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE;
-        bool IS_SIMULATOR, PUBLISH_COMMAND;
+        bool IS_SIMULATOR, PUBLISH_COMMAND, COLLISION_DETECTION;
         double PATH_TRACKING_MARGIN, TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW, MAX_LINEAR_VELOCITY = 0.2;
 
         void __odom_callback(const nav_msgs::Odometry& msg);

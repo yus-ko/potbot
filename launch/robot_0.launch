@@ -8,8 +8,8 @@
   <arg name="FRAME_ID/GLOBAL" default="map"/>
   <arg name="FRAME_ID/ROBOT_BASE" default="robot_0"/>
   <arg name="FRAME_ID/LIDAR" default="robot_0_lidar"/>
-  <arg name="TARGET/POSITION/X" default="6.0"/>
-  <arg name="TARGET/POSITION/Y" default="-0.05"/>
+  <arg name="TARGET/POSITION/X" default="0"/>
+  <arg name="TARGET/POSITION/Y" default="0"/>
   <arg name="TARGET/POSITION/YAW" default="0.0"/>
 
   <group ns="$(arg GROUP)">
@@ -27,6 +27,7 @@
       <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
       <arg name="IS_SIMULATOR" value="$(arg IS_SIMULATOR)"/>
       <arg name="PUBLISH_COMMAND" value="$(arg PUBLISH_COMMAND)"/>
+      <arg name="COLLISION_DETECTION" value="false"/>
       <arg name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
       <arg name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
       <arg name="TARGET/POSITION/X" value="$(arg TARGET/POSITION/X)"/>
