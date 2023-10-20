@@ -132,6 +132,7 @@ class PathPlanningClass{
         int __get_PotentialFiledIndex(double x, double y);
         int __create_PotentialField();
         void __create_Path();
+        void __create_Path_used_weight();
         void __create_PathFromCSV();
         bool __PathCollision();
         void __set_Param();

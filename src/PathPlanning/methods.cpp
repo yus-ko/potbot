@@ -28,7 +28,8 @@ void PathPlanningClass::run()
     if (path_planning_id == POTENTIAL_METHOD)
     {
         __create_PotentialField();
-        __create_Path();
+        //__create_Path();
+        __create_Path_used_weight();
     }
     else if (path_planning_id == CSV_PATH)
     {
@@ -190,7 +191,7 @@ int PathPlanningClass::__create_PotentialField()
     double map_ori_y = local_map_.info.origin.position.y;
     double map_res = local_map_.info.resolution;
 
-    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);  //引数確認
+    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(0);  //引数確認
 
     potential_field_.header = header_;
     potential_field_.header.frame_id = FRAME_ID_ROBOT_BASE;
@@ -372,6 +373,172 @@ int PathPlanningClass::__get_PotentialFiledIndex(double x, double y)
     return index;
 }
 
+void PathPlanningClass::__create_Path_used_weight()
+{
+    nav_msgs::Path robot_path;
+    robot_path.header = header_;
+    robot_path.header.frame_id = FRAME_ID_ROBOT_BASE;
+
+    double center_x = 0;
+    double center_y = 0;
+    int index = -1;
+    double J_min_pre;
+    double map_res = local_map_.info.resolution;
+    while (true)
+    {
+        geometry_msgs::PoseStamped robot_pose;
+        robot_pose.header = header_;
+        robot_pose.header.frame_id = FRAME_ID_ROBOT_BASE;
+        
+        double J_min;
+        if (index > -1)
+        {
+            J_min = J_min_pre;
+        }
+        else
+        {
+            J_min = std::numeric_limits<double>::infinity();
+        }
+        
+        double x,y,wu=1,wtheta=0;;
+        bool breakflag = false;
+        bool local_minimum = true;
+
+        //if (index > -1) ROS_INFO("%f, %f",robot_path.poses[index].pose.position.x, robot_path.poses[index].pose.position.y);
+
+        for (int i = 0; i < 2; i++)
+        {
+            breakflag = false;
+            double J_min_local = 10000;
+            for (x = -2*map_res + center_x; x <= 2*map_res + center_x; x+=map_res)
+            {
+                for (y = -2*map_res + center_y; y <= 2*map_res + center_y; y+=map_res)
+                {
+                    
+                    int pf_idx = __get_PotentialFiledIndex(x,y);
+                    if (pf_idx == -1)
+                    {
+                        breakflag = true;
+                        break;
+                    }
+                    double PotentialValue = potential_field_.cells[pf_idx].z;
+
+                    double posediff;
+                    if (index > -1)
+                    {
+                        double x_pre = robot_path.poses[index].pose.position.x;
+                        double y_pre = robot_path.poses[index].pose.position.y;
+                        if (x == x_pre && y == y_pre) continue;
+                        double theta = get_Yaw(robot_path.poses[index].pose.orientation);
+                        posediff = abs(atan2(y-y_pre,x-x_pre) - theta);
+                    }
+                    else
+                    {
+                        posediff = abs(atan2(y,x));
+                    }
+
+                    //ROS_INFO("%f",posediff);
+                    double J = wu*PotentialValue + wtheta*posediff;
+
+                    if (i == 0)
+                    {
+                        if (J < J_min) 
+                        {
+                            local_minimum = false;
+                            robot_pose.pose.position.x = x;
+                            robot_pose.pose.position.y = y;
+                            J_min = J;
+                        }
+                    }
+                    else
+                    {
+                        if (J < J_min_local) 
+                        {
+                            local_minimum = false;
+                            robot_pose.pose.position.x = x;
+                            robot_pose.pose.position.y = y;
+                            J_min_local = J;
+                        }
+                    }
+                }
+                if (breakflag) break;
+            }
+
+            //重み変化
+            if (local_minimum)
+            {
+                //ROS_INFO("wu:%f, wtheta:%f",wu_, w_theta_);
+                wu = wu_;
+                wtheta = w_theta_;
+                //J_min = std::numeric_limits<double>::infinity();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (index > -1)
+        {
+            if (breakflag || local_minimum) break;
+            geometry_msgs::PoseStamped &pre = robot_path.poses.back();
+            robot_pose.pose.orientation = get_Quat(0,0,atan2(robot_pose.pose.position.y-pre.pose.position.y,robot_pose.pose.position.x-pre.pose.position.x));
+        }
+        else
+        {
+            robot_pose.pose.orientation = odom_.pose.pose.orientation;
+        }
+        robot_path.poses.push_back(robot_pose);
+
+        int idxtmp = __get_PotentialFiledIndex(robot_pose.pose.position.x,robot_pose.pose.position.y);
+        if (idxtmp != -1) potential_field_info_[idxtmp][IS_PLANNED_PATH] = true;
+        index++;
+        if (index > max_path_index_) break;
+        J_min_pre = J_min;
+        center_x = robot_pose.pose.position.x;
+        center_y = robot_pose.pose.position.y;
+    }
+
+    if (index > -1)
+    {
+        nav_msgs::Path world_path;
+        world_path.header = header_;
+        world_path.header.frame_id = FRAME_ID_GLOBAL;
+        for (int i = 0; i <= index; i++)
+        {
+            geometry_msgs::PoseStamped world_pose, target_point;
+            world_pose.header = world_path.header;
+
+            geometry_msgs::TransformStamped transform;
+            try 
+            {
+                // ロボット座標系の経路を世界座標系に変換
+                transform = tf_buffer_.lookupTransform(world_pose.header.frame_id, robot_path.poses[i].header.frame_id, ros::Time());
+                tf2::doTransform(robot_path.poses[i], world_pose, transform);
+            }
+            catch (tf2::TransformException &ex) 
+            {
+                ROS_ERROR("TF Ereor in 2: %s", ex.what());
+                return;
+            }
+
+            // int break_cnt = 0;
+            // while(!get_tf(robot_path.poses[i] ,world_pose, tf_buffer_) || break_cnt > 1000){break_cnt++;}
+            if (get_Distance(world_pose.pose.position,goal_.pose.position) > 0.06)
+            {
+                world_path.poses.push_back(world_pose);
+            }
+            else
+            {
+                break;
+            }
+        }
+        __bezier(world_path);
+        robot_path_ = world_path;
+    }
+    
+}
+
 void PathPlanningClass::__create_Path()
 {
     nav_msgs::Path robot_path;
@@ -399,9 +566,10 @@ void PathPlanningClass::__create_Path()
             J_min = std::numeric_limits<double>::infinity();
         }
         
-        double x,y;
+        double x,y,wu=1,wtheta=0;;
         bool breakflag = false;
         bool local_minimum = true;
+
         for (x = -2*map_res + center_x; x <= 2*map_res + center_x; x+=map_res)
         {
             for (y = -2*map_res + center_y; y <= 2*map_res + center_y; y+=map_res)
@@ -429,6 +597,7 @@ void PathPlanningClass::__create_Path()
                     posediff = abs(atan2(y,x));
                 }
 
+                //ROS_INFO("%f",posediff);
                 double J = wu_*PotentialValue + w_theta_*posediff;
 
                 if (J < J_min) 

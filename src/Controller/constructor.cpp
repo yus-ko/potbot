@@ -28,29 +28,30 @@ ControllerClass::ControllerClass()
 
 	pub_path_request_ = nhPub_.advertise<std_msgs::Empty>("create_path", 1);
 	
-
+	std::string cmd_topic_name = "invalid_cmd_vel";
 	if(PUBLISH_COMMAND)
 	{
 		if (robot_id_ == MEGAROVER)
 		{
 			if(IS_SIMULATOR)
 			{
-				pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("/vmegarover/diff_drive_controller/cmd_vel", 1);
+				cmd_topic_name = "/vmegarover/diff_drive_controller/cmd_vel";
 			}
 			else
 			{
-				pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("/rover_twist", 1);
+				cmd_topic_name = "/rover_twist";
 			}
 		}
 		else if (robot_id_ == TURTLEBOT3)
 		{
-			pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+			cmd_topic_name = "cmd_vel";
 		}
 		else if (robot_id_ == BEEGO)
 		{
-			pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>("/beego/cmd_vel", 1);
+			cmd_topic_name = "/beego/cmd_vel";
 		}
 	}
+	pub_cmd_ = nhPub_.advertise<geometry_msgs::Twist>(cmd_topic_name, 1);
 
 	f_ = boost::bind(&ControllerClass::__param_callback, this, _1, _2);
 	server_.setCallback(f_);

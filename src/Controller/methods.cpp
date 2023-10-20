@@ -41,7 +41,7 @@ void ControllerClass::controller()
     }
     else
     {
-        if (COLLISION_DETECTION && __PathCollision())
+        if (COLLISION_DETECTION && abs(robot_.twist.twist.angular.z) < 0.1 &&  __PathCollision())
         {
             ROS_INFO("PathCollision");
             __publish_path_request();
@@ -163,7 +163,7 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
 
 bool ControllerClass::__PathCollision()
 {
-    static int mode = 1;
+    static int mode = 0;
     if (mode == 0)
     {
         int path_size = robot_path_.poses.size();
