@@ -8,7 +8,11 @@
   <!-- <url type="website">http://wiki.ros.org/potbot</url> -->
   <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>potbot_pathplannig</exec_depend>
+  <exec_depend>potbot_pathplanner</exec_depend>
+  <exec_depend>potbot_controller</exec_depend>
+  <exec_depend>potbot_filter</exec_depend>
+  <exec_depend>potbot_pcl</exec_depend>
+  <exec_depend>potbot_description</exec_depend>
   <export><metapackage/></export>
 </package>
 
