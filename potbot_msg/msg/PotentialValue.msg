@@ -1,0 +1,12 @@
+float32[] potential_value
+int32[] path_plan
+int32 robot_position
+int32 min_potential_position
+float32 x_min
+float32 x_increment
+float32 x_max
+int32 rows
+float32 y_min
+float32 y_increment
+float32 y_max
+int32 cols
