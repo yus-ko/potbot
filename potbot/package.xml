@@ -1,18 +1,16 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>potbot</name>
-  <version>0.0.1</version>
+  <version>0.0.0</version>
   <description>The potbot package</description>
   <maintainer email="ubuntu@todo.todo">ubuntu</maintainer>
   <license>TODO</license>
-  <!-- <url type="website">http://wiki.ros.org/potbot</url> -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
-  <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>potbot_pathplanner</exec_depend>
-  <exec_depend>potbot_controller</exec_depend>
-  <exec_depend>potbot_filter</exec_depend>
-  <exec_depend>potbot_pcl</exec_depend>
-  <exec_depend>potbot_description</exec_depend>
-  <export><metapackage/></export>
+  <build_depend>potbot_lib</build_depend>
+  <build_depend>potbot_msgs</build_depend>
+  <build_depend>potbot_localization</build_depend>
+  <build_depend>potbot_pathplanner</build_depend>
+  <build_depend>potbot_controller</build_depend>
+  <build_depend>potbot_filter</build_depend>
+  <build_depend>potbot_pcl</build_depend>
+  <build_depend>potbot_description</build_depend>
 </package>
-

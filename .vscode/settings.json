@@ -7,5 +7,8 @@
         "/home/ros/catkin_ws/devel/lib/python2.7/dist-packages",
         "/opt/ros/melodic/lib/python2.7/dist-packages"
     ],
-    "cmake.sourceDirectory": "/home/ros/catkin_ws/src/potbot/potbot"
+    "files.associations": {
+        "ostream": "cpp",
+        "fstream": "cpp"
+    }
 }
