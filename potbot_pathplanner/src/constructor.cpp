@@ -46,11 +46,8 @@ PathPlanningClass::PathPlanningClass()
 	if (USE_AMCL) sub_encoder = nhSub.subscribe("/amcl_pose", 1, &PathPlanningClass::pwcs_callback, this);
 
 	pub_goal_ = nhPub.advertise<geometry_msgs::PoseStamped>("goal", 1);
-	if (USE_RVIZ)
-	{
-		sub_goal_ = nhSub.subscribe("/move_base_simple/goal", 1, &PathPlanningClass::goal_callback, this);
-	}
-	else
+	sub_goal_ = nhSub.subscribe("/move_base_simple/goal", 1, &PathPlanningClass::goal_callback, this);
+	if (!USE_RVIZ)
 	{
 		goal_.pose.position.x = TARGET_POSITION_X;
 		goal_.pose.position.y = TARGET_POSITION_Y;

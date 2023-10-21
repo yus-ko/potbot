@@ -217,7 +217,7 @@ void LocalizationClass::inipose_callback(const geometry_msgs::PoseWithCovariance
 void LocalizationClass::goal_callback(const geometry_msgs::PoseStamped& msg)
 {
     goal_ = msg;
-    ROS_INFO("subscribe goal");
+    ROS_INFO("subscribe goal: localization");
     //std::cout<< goal_ <<std::endl;
 }
 

@@ -1,0 +1,9 @@
+<launch>
+ <node pkg="potbot_rviz" name="potbot_rviz_rv" type="potbot_rviz_rv" output="log">
+  <!--<param name="ROBOT_NAME" value="turtlebot3"/>-->
+  <param name="POTENTIAL_VALUE_PLOT_LIMIT" value="4.0"/>
+  <param name="POTENTIAL_VALUE_PLOT_SHRINK_SCALE" value="10.0"/>
+ </node>
+<node pkg="rviz" type="rviz" name="rviz" required="true"
+        args="-d $(find potbot_description)/rviz/Localization.rviz"/>
+</launch>

@@ -45,8 +45,8 @@ class ControllerClass{
 
         visualization_msgs::MarkerArray obstacle_segment_;
 
-        dynamic_reconfigure::Server<potbot::ControllerConfig> server_;
-  	    dynamic_reconfigure::Server<potbot::ControllerConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_controller::ControllerConfig> server_;
+  	    dynamic_reconfigure::Server<potbot_controller::ControllerConfig>::CallbackType f_;
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
@@ -59,7 +59,7 @@ class ControllerClass{
         void __local_map_callback(const nav_msgs::OccupancyGrid& msg);
         void __scan_callback(const sensor_msgs::LaserScan& msg);
         void __segment_callback(const visualization_msgs::MarkerArray& msg);
-        void __param_callback(const potbot::ControllerConfig& param, uint32_t level);
+        void __param_callback(const potbot_controller::ControllerConfig& param, uint32_t level);
         void __publish_path_request();
         void __publishcmd();
 

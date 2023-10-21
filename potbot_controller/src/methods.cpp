@@ -5,7 +5,6 @@ void ControllerClass::mainloop()
     ros::Rate loop_rate(50);
 	while (ros::ok())
 	{
-        
         manage();
 		ros::spinOnce();
 		loop_rate.sleep();
@@ -21,6 +20,7 @@ void ControllerClass::manage()
     robot_ = odom_;
     // print_Pose(robot_.pose.pose);
     // ROS_INFO("path_size: %d", robot_path_.poses.size());
+    //potbot_lib::utility::print_Pose(goal_.pose);
     if (robot_path_.poses.size() > 0) controller();
     else __publish_path_request();
     if (PUBLISH_COMMAND) __publishcmd();

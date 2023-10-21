@@ -10,5 +10,6 @@
     "files.associations": {
         "ostream": "cpp",
         "fstream": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/ros/catkin_ws/src/potbot/potbot"
 }

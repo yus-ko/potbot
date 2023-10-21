@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find potbot)/launch/robot_0.launch"/>
+  <include file="$(find potbot)/launch/robot_1.launch"/>
+</launch>

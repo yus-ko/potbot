@@ -52,7 +52,7 @@ void ControllerClass::path_callback(const nav_msgs::Path& msg)
 void ControllerClass::__goal_callback(const geometry_msgs::PoseStamped& msg)
 {
     goal_ = msg;
-    ROS_INFO("subscribe goal");
+    ROS_INFO("subscribe goal: controller");
     __publish_path_request();
 }
 
@@ -71,7 +71,7 @@ void ControllerClass::__segment_callback(const visualization_msgs::MarkerArray& 
     obstacle_segment_ = msg;
 }
 
-void ControllerClass::__param_callback(const potbot::ControllerConfig& param, uint32_t level)
+void ControllerClass::__param_callback(const potbot_controller::ControllerConfig& param, uint32_t level)
 {
     PUBLISH_COMMAND = param.publish_control_command;
 }
