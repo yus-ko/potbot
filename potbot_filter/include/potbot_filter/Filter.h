@@ -16,6 +16,29 @@
 #include <Eigen/Geometry>
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/Vector3Stamped.h>
+#include <dynamic_reconfigure/server.h>
+#include <potbot_filter/FilterConfig.h>
+
+#define NO_SEGMENT -1
+
+typedef struct {
+                int index=0;
+                double x=0;
+                double y=0;
+                double r=0;
+                double theta=0;
+               } POINT;
+
+typedef struct {
+                std::vector<POINT> points;
+                int id=0;
+                int type=0;
+                double x=0;
+                double y=0;
+                double radius=0;
+                double width=0;
+                double height=0;
+               } SEGMENT;
 
 class KalmanFilter{
 	private:
@@ -250,10 +273,10 @@ class FilterClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub_;
-		ros::Subscriber sub_odom_, sub_obstacle_;
+		ros::Subscriber sub_odom_, sub_obstacle_, sub_scan_;
         //送信データ
         ros::NodeHandle nhPub_;
-		ros::Publisher pub_state_;
+		ros::Publisher pub_state_, pub_scan0_, pub_scan1_, pub_segment_;
 
         visualization_msgs::MarkerArray obstacles_;
         std::vector<KalmanFilter> states_;
@@ -264,17 +287,35 @@ class FilterClass{
 
         int robot_id_ = potbot_lib::MEGAROVER;
         
+		sensor_msgs::LaserScan scan_;
+        std::vector<sensor_msgs::LaserScan> scans_;
+        int Tn_=30;
+        double square_width_=0.1;
+
         geometry_msgs::Twist cmd_;
         double robot_pose_x_ = 0, robot_pose_y_ = 0, robot_pose_theta_ = 0;
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
+		
+		dynamic_reconfigure::Server<potbot_filter::FilterConfig> server_;
+  	    dynamic_reconfigure::Server<potbot_filter::FilterConfig>::CallbackType f_;
 
-		std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE;
+		std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, FRAME_ID_LIDAR, TOPIC_SCAN;
         double SIGMA_P, SIGMA_Q, SIGMA_R;
 
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __obstacle_callback(const visualization_msgs::MarkerArray& msg);
+		void __scan_callback(const sensor_msgs::LaserScan& msg);
+		
+		void __param_callback(const potbot_filter::FilterConfig& param, uint32_t level);
+
+		double __Median(std::vector<double> v);
+        void __MedianFilter(sensor_msgs::LaserScan &scan);
+        void __Segmentation(sensor_msgs::LaserScan &scan, std::vector<SEGMENT> &segments);
+        double __distanceToLineSegment(POINT o, POINT p, POINT q);
+        void __SplitSegments(std::vector<SEGMENT> &segments);
+        void __AssociateSegments(std::vector<SEGMENT> &segments);
 
     public:
         FilterClass();

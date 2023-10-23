@@ -11,6 +11,8 @@
   <arg name="TARGET/POSITION/X" default="0.0"/>
   <arg name="TARGET/POSITION/Y" default="0"/>
   <arg name="TARGET/POSITION/YAW" default="0.0"/>
+  <arg name="TOPIC/SCAN" default="/scan"/>
+  <arg name="TOPIC/ODOM" default="position"/>
 
   <group ns="$(arg GROUP)">
 
@@ -33,6 +35,8 @@
       <arg name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
       <arg name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
       <arg name="FRAME_ID/LIDAR" value="$(arg FRAME_ID/LIDAR)"/>
+      <arg name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
+      <arg name="TOPIC/ODOM" value="$(arg TOPIC/ODOM)"/>
     </include>
 
     <include file="$(find potbot_controller)/launch/Controller.launch">
@@ -49,6 +53,7 @@
     <include file="$(find potbot_filter)/launch/Filter.launch">
       <arg name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
       <arg name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
+      <arg name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
     </include>
     
     <include file="$(find potbot_pathplanner)/launch/PathPlanning.launch">

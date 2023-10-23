@@ -14,5 +14,6 @@ void LocalizationClass::setLaunchParam(){
     n.getParam("INITIAL_POSE_THETA",INITIAL_POSE_THETA);
     n.getParam("FRAME_ID/GLOBAL",FRAME_ID_GLOBAL);
     n.getParam("FRAME_ID/ROBOT_BASE",FRAME_ID_ROBOT_BASE);
-    n.getParam("FRAME_ID/LIDAR",FRAME_ID_LIDAR);
+    n.getParam("TOPIC/SCAN",TOPIC_SCAN);
+    n.getParam("TOPIC/ODOM",TOPIC_ODOM);
 }

@@ -27,7 +27,7 @@ LocalizationClass::LocalizationClass()
 		localization_method_id_ = potbot_lib::PARTICLE_FILTER;
 	}
 
-	sub_scan_=nhSub_.subscribe("scan",1,&LocalizationClass::scan_callback,this);
+	sub_scan_=nhSub_.subscribe(TOPIC_SCAN,1,&LocalizationClass::__scan_callback,this);
 	sub_map_=nhSub_.subscribe("/map",1,&LocalizationClass::map_callback,this);
 	sub_inipose_=nhSub_.subscribe("/initialpose",1,&LocalizationClass::inipose_callback,this);
 	sub_goal_=nhSub_.subscribe("/move_base_simple/goal",1,&LocalizationClass::goal_callback,this);
@@ -59,10 +59,7 @@ LocalizationClass::LocalizationClass()
 	}
 
 	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("Localmap", 1);
-	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>("position", 1);
-	pub_scan0_ = nhPub_.advertise<sensor_msgs::LaserScan>("scan0", 1);
-	pub_scan1_ = nhPub_.advertise<sensor_msgs::LaserScan>("scan1", 1);
-	pub_segment_ = nhPub_.advertise<visualization_msgs::MarkerArray>("segment", 1);
+	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>(TOPIC_ODOM, 1);
 
 	particles_.markers.resize(particle_num_);
 	weights_.resize(particle_num_);

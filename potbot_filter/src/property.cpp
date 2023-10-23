@@ -9,4 +9,6 @@ void FilterClass::setLaunchParam(){
     n.getParam("SIGMA_R",SIGMA_R);
     n.getParam("FRAME_ID/GLOBAL",FRAME_ID_GLOBAL);
     n.getParam("FRAME_ID/ROBOT_BASE",FRAME_ID_ROBOT_BASE);
+    n.getParam("FRAME_ID/LIDAR",FRAME_ID_LIDAR);
+    n.getParam("TOPIC/SCAN",TOPIC_SCAN);
 }

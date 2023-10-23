@@ -7,6 +7,10 @@ find_package(catkin REQUIRED COMPONENTS
   potbot_msgs
 )
 
+generate_dynamic_reconfigure_options(
+  cfg/Filter.cfg
+)
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} potbot_lib

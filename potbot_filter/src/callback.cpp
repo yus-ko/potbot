@@ -184,65 +184,118 @@ void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg
     
 }
 
-// void FilterClass::__obstacle_callback(const visualization_msgs::MarkerArray& msg)
-// {
-//     obstacles_ = msg;
-//     std::cout<<"-----------------"<<std::endl;
-//     for(int i =0; i < obstacles_.markers.size(); i++)
-//     {
+void FilterClass::__scan_callback(const sensor_msgs::LaserScan& msg)
+{
+    std::vector<std::vector<double>> color = {
+                                                {1,0,0},
+                                                {0,1,0},
+                                                {0,0,1},
+                                                {1,1,0},
+                                                {1,0,1},
+                                                {0,1,1},
+                                                {0,0,0}
+                                            };
+    //ROS_INFO("scan callback");
+
+    scan_ = msg;
+
+    scan_.header.frame_id = FRAME_ID_LIDAR;
+    pub_scan0_.publish(scan_);
+    __MedianFilter(scan_);
+    pub_scan1_.publish(scan_);
+    std::vector<SEGMENT> segments;
+    __Segmentation(scan_, segments);
+    __SplitSegments(segments);
+    __AssociateSegments(segments);
+
+    // for(int i = 0; i < segments.size(); i++) std::cout<<segments[i].id<<", ";
+    // std::cout<<std::endl;
+
+    visualization_msgs::MarkerArray seg;
+    for (int i = 0; i < segments.size(); i++)
+    {
+
+        visualization_msgs::Marker segment;
+        segment.header = scan_.header;
+        segment.header.frame_id = FRAME_ID_LIDAR;
+
+        segment.ns = "segments_display";
+        segment.id = segments[i].id;
+        segment.lifetime = ros::Duration(1);
+
+        segment.type = segments[i].type;
+        segment.action = visualization_msgs::Marker::MODIFY;
+
         
-//         if (obstacles_.markers[i].ns == "segments_display")
-//         {
-//             // double t_now = obstacles_.markers[i].header.stamp.toSec();
-//             double t_now = ros::Time::now().toSec();
-//             double x = obstacles_.markers[i].pose.position.x;
-//             double y = obstacles_.markers[i].pose.position.y;
-//             // ROS_INFO("%f, %f",x,y);
-//             static double x_pre = -1000;
-//             static double y_pre = -1000;
-//             static double t_pre = -1000;
-//             if (t_pre >= 0)
-//             {
-//                 double dt = t_now-t_pre;
-//                 double vx = (x-x_pre)/dt;
-//                 double vy = (y-y_pre)/dt;
-//                 Eigen::MatrixXd data(4,1);
-//                 data<< x, y, vx, vy;
-//                 states_[0].input_data(data,t_now);
-//                 states_[0].update();
-//                 potbot::State state_msg;
-//                 state_msg.header = obstacles_.markers[i].header;
+        segment.pose.position.x = segments[i].x;
+        segment.pose.position.y = segments[i].y;
+        segment.pose.position.z = 0;
 
-//                 state_msg.z.data.resize(4);
-//                 state_msg.xhat.data.resize(4);
-//                 state_msg.K.data.resize(16);
-//                 state_msg.P.data.resize(16);
+        segment.pose.orientation.x = 0;
+        segment.pose.orientation.y = 0;
+        segment.pose.orientation.z = 0;
+        segment.pose.orientation.w = 1;
 
-//                 matrixToDoubleArray(states_[0].get_z(), state_msg.z);
-//                 matrixToDoubleArray(states_[0].get_xhat(), state_msg.xhat);
-//                 matrixToDoubleArray(states_[0].get_K(), state_msg.K);
-//                 matrixToDoubleArray(states_[0].get_P(), state_msg.P);
-                
-//                 // state_msg.xhat = states_[0].get_xhat();
-//                 // state_msg.K = states_[0].get_K();
-//                 // state_msg.P = states_[0].get_P();
+        if (segment.type == visualization_msgs::Marker::SPHERE)
+        {
+            segment.scale.x = segments[i].radius*2;
+            segment.scale.y = segments[i].radius*2;
+        }
+        else if (segment.type == visualization_msgs::Marker::CUBE)
+        {
+            segment.scale.x = segments[i].width;
+            segment.scale.y = segments[i].height;
+        }
 
-//                 // double vxhat = states_[0].get_state()(2,0);
-//                 // double vyhat = states_[0].get_state()(3,0);
-//                 // state_msg.vector.x = vxhat;
-//                 // state_msg.vector.y = vyhat;
-//                 // ROS_INFO("%f, %f",vy,vyhat);
-//                 // ROS_INFO("%f, %f, %f",t_now, t_pre, dt);
+        segment.scale.z = 0.001;
 
-//                 std::cout<<states_[0].get_xhat().transpose()<<std::endl;
-//                 pub_state_.publish(state_msg);
-//             }
-//             x_pre = x;
-//             y_pre = y;
-//             t_pre = t_now;
+        segment.color.a = 0.3;
+
+        segment.color.r = color[i%color.size()][0];
+        segment.color.g = color[i%color.size()][1];
+        segment.color.b = color[i%color.size()][2];
+        
+        seg.markers.push_back(segment);
+
+        for (int j = 0; j < segments[i].points.size(); j++)
+        {
+            visualization_msgs::Marker point;
+            point.header = segment.header;
+
+            point.ns = "points_display";
+            point.id = segments[i].id;
+            point.lifetime = ros::Duration(1);
+
+            point.type = segment.type;
+            point.action = visualization_msgs::Marker::ADD;
+
             
-//             break;
+            point.pose.position.x = segments[i].points[j].x;
+            point.pose.position.y = segments[i].points[j].y;
+            point.pose.position.z = 0;
 
-//         }
-//     }
-// }
+            point.pose.orientation = segment.pose.orientation;
+
+            point.scale.x = 0.02;
+            point.scale.y = 0.02;
+            point.scale.z = 0.001;
+
+            point.color.a = 1;
+
+            point.color.r = segment.color.r;
+            point.color.g = segment.color.g;
+            point.color.b = segment.color.b;
+            
+            seg.markers.push_back(point);
+        }
+        
+    }
+    pub_segment_.publish(seg);
+}
+
+void FilterClass::__param_callback(const potbot_filter::FilterConfig& param, uint32_t level)
+{
+    // ROS_INFO("%d",level);
+    Tn_ = param.threshold_point_num;
+    square_width_ = param.squre_width;
+}

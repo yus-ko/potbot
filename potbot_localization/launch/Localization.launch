@@ -7,6 +7,8 @@
     <arg name="FRAME_ID/GLOBAL" default="map"/>
     <arg name="FRAME_ID/ROBOT_BASE" default="potbot"/>
     <arg name="FRAME_ID/LIDAR" default="lidar"/>
+    <arg name="TOPIC/SCAN" default="scan"/>
+    <arg name="TOPIC/ODOM" default="position"/>
 
     <node pkg="potbot_localization" name="potbot_localization_lo" type="potbot_localization_lo" output="screen">
         <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
@@ -26,5 +28,7 @@
         <param name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
         <param name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
         <param name="FRAME_ID/LIDAR" value="$(arg FRAME_ID/LIDAR)"/>
+        <param name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
+        <param name="TOPIC/ODOM" value="$(arg TOPIC/ODOM)"/>
     </node>
 </launch>

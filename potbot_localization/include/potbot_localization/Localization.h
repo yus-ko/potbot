@@ -19,27 +19,6 @@
 #include <dynamic_reconfigure/server.h>
 #include <potbot_localization/LocalizationConfig.h>
 
-#define NO_SEGMENT -1
-
-typedef struct {
-                int index=0;
-                double x=0;
-                double y=0;
-                double r=0;
-                double theta=0;
-               } POINT;
-
-typedef struct {
-                std::vector<POINT> points;
-                int id=0;
-                int type=0;
-                double x=0;
-                double y=0;
-                double radius=0;
-                double width=0;
-                double height=0;
-               } SEGMENT;
-
 //クラスの定義
 class LocalizationClass{
 
@@ -47,12 +26,14 @@ class LocalizationClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub_;
-		ros::Subscriber sub_encoder_, sub_scan_, sub_map_, sub_inipose_, sub_goal_, sub_point_;
+		ros::Subscriber sub_encoder_, sub_map_, sub_inipose_, sub_goal_, sub_point_, sub_scan_;
         //送信データ
         ros::NodeHandle nhPub_;
-		ros::Publisher pub_particle_, pub_localmap_, pub_odom_, pub_scan0_, pub_scan1_, pub_segment_;
+		ros::Publisher pub_particle_, pub_localmap_, pub_odom_;
 
         tf2_ros::TransformBroadcaster broadcaster_;
+
+        sensor_msgs::LaserScan scan_;
 
         nav_msgs::OccupancyGrid world_map_, local_map_;
 
@@ -69,10 +50,7 @@ class LocalizationClass{
 
         geometry_msgs::Twist encoder_value_;
         nav_msgs::Odometry odom_;
-        sensor_msgs::LaserScan scan_;
-        std::vector<sensor_msgs::LaserScan> scans_;
-        int Tn_=30;
-        double square_width_=0.1;
+        
         
         visualization_msgs::MarkerArray particles_;
         std::vector<double> weights_;
@@ -83,21 +61,18 @@ class LocalizationClass{
 
         int maximum_likefood_particle_id_ = 0;
 
+        int Tn_=30;
+        double square_width_=0.1;
+
         dynamic_reconfigure::Server<potbot_localization::LocalizationConfig> server_;
   	    dynamic_reconfigure::Server<potbot_localization::LocalizationConfig>::CallbackType f_;
 
-        std::string ROBOT_NAME, LOCALIZATION_METHOD, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, FRAME_ID_LIDAR;
+        std::string ROBOT_NAME, LOCALIZATION_METHOD, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, FRAME_ID_LIDAR, TOPIC_SCAN, TOPIC_ODOM;
         bool IS_SIMULATOR, USE_RVIZ;
         double COVARIANCE_VV, COVARIANCE_VOMEGA, COVARIANCE_OMEGAOMEGA, INITIAL_POSE_X, INITIAL_POSE_Y, INITIAL_POSE_THETA;
 
         void __param_callback(const potbot_localization::LocalizationConfig& param, uint32_t level);
-
-        double __Median(std::vector<double> v);
-        void __MedianFilter(sensor_msgs::LaserScan &scan);
-        void __Segmentation(sensor_msgs::LaserScan &scan, std::vector<SEGMENT> &segments);
-        double __distanceToLineSegment(POINT o, POINT p, POINT q);
-        void __SplitSegments(std::vector<SEGMENT> &segments);
-        void __AssociateSegments(std::vector<SEGMENT> &segments);
+        void __scan_callback(const sensor_msgs::LaserScan& msg);
 
     public:
         //in constracter.cpp
@@ -114,7 +89,6 @@ class LocalizationClass{
         void beego_encoder_callback(const potbot_msgs::beego_encoder& msg);
 	    void encoder_callback(const geometry_msgs::Twist& msg);
         void encoder_callback_sim(const nav_msgs::Odometry& msg);
-        void scan_callback(const sensor_msgs::LaserScan& msg);
         void map_callback(const nav_msgs::OccupancyGrid& msg);
         void inipose_callback(const geometry_msgs::PoseWithCovarianceStamped& msg);
         void goal_callback(const geometry_msgs::PoseStamped& msg);
