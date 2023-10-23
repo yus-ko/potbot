@@ -222,7 +222,7 @@ int PathPlanningClass::__create_PotentialField()
     }
     catch (tf2::TransformException &ex) 
     {
-        ROS_ERROR("TF Ereor in 1: %s", ex.what());
+        ROS_ERROR("TF Ereor in pathplan goal: %s", ex.what());
         return potbot_lib::FAIL;
     }
 

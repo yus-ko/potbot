@@ -1,6 +1,7 @@
 <launch>
     <arg name="FRAME_ID/GLOBAL" default="map"/>
     <arg name="FRAME_ID/ROBOT_BASE" default="potbot"/>
+    <arg name="FRAME_ID/LIDAR" default="lidar"/>
     <arg name="TOPIC/SCAN" default="scan"/>
 
     <node pkg="potbot_filter" name="potbot_filter_fi" type="potbot_filter_fi" output="screen">
@@ -9,6 +10,7 @@
         <param name="SIGMA_R" value="0.00001"/>    <!-- システムノイズ -->
         <param name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
         <param name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
+        <param name="FRAME_ID/LIDAR" value="$(arg FRAME_ID/LIDAR)"/>
         <param name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
     </node>
 </launch>

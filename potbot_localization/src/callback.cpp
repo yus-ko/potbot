@@ -109,6 +109,8 @@ void LocalizationClass::map_callback(const nav_msgs::OccupancyGrid& msg)
 
 void LocalizationClass::__scan_callback(const sensor_msgs::LaserScan& msg)
 {
+    scan_ = msg;
+
     local_map_.header = header_;
     local_map_.header.frame_id = FRAME_ID_LIDAR;
     local_map_.info = world_map_.info;
@@ -138,7 +140,8 @@ void LocalizationClass::__scan_callback(const sensor_msgs::LaserScan& msg)
     int size = scan_.ranges.size();
     for (int i = 0; i < size; i++)
     {
-        if (!std::isinf(scan_.ranges[i]) && !std::isnan(scan_.ranges[i]))
+        //if (!std::isinf(scan_.ranges[i]) && !std::isnan(scan_.ranges[i]))
+        if (scan_.range_min <= scan_.ranges[i] && scan_.ranges[i] <= scan_.range_max)
         {
             // double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
             double angle = i * scan_.angle_increment + scan_.angle_min;
@@ -147,7 +150,7 @@ void LocalizationClass::__scan_callback(const sensor_msgs::LaserScan& msg)
             // double y = distance * sin(angle) + odom_.pose.pose.position.y;
             double x = distance * cos(angle);
             double y = distance * sin(angle);
-            //ROS_INFO("%f, %f, %f, %f, %d",x,y,local_map_.info.origin.position.x,local_map_.info.origin.position.y, get_index(x,y,local_map_.info));
+            // ROS_INFO("%f, %f, %f, %f, %d",x,y,local_map_.info.origin.position.x,local_map_.info.origin.position.y, potbot_lib::utility::get_index(x,y,local_map_.info));
             local_map_.data[potbot_lib::utility::get_index(x,y,local_map_.info)] = 100;
         }
     }

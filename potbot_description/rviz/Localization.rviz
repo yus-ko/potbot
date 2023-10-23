@@ -127,7 +127,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: false
       Name: LocalMap
-      Topic: /Localmap
+      Topic: /robot_0/Localmap
       Unreliable: false
       Use Timestamp: false
       Value: false
