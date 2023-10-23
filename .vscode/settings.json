@@ -11,5 +11,5 @@
         "ostream": "cpp",
         "fstream": "cpp"
     },
-    "cmake.sourceDirectory": "/home/ros/catkin_ws/src/potbot/potbot"
+    "cmake.sourceDirectory": "/home/nvidia/catkin_ws/src/potbot/potbot"
 }
