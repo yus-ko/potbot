@@ -41,8 +41,12 @@ void ControllerClass::controller()
     }
     else
     {
+        static int collision_cnt = 0;
+        if (__PathCollision(0)) collision_cnt++;
+        else collision_cnt = 0;
+        ROS_INFO("collision_cnt: %d", collision_cnt);
         //ROS_INFO("%d, %f, %d, %d", COLLISION_DETECTION ,robot_.twist.twist.angular.z, __PathCollision(0), __PathCollision(1));
-        if (COLLISION_DETECTION && abs(robot_.twist.twist.angular.z) < 0.1 &&  __PathCollision(1))
+        if (COLLISION_DETECTION && abs(robot_.twist.twist.angular.z) < 0.1 && collision_cnt > 20)
         {
             ROS_INFO("PathCollision");
             __publish_path_request();
@@ -198,7 +202,7 @@ bool ControllerClass::__PathCollision(int mode)
             
             for (int p = robot_path_index_; p < path_size; p++)
             {
-                if (potbot_lib::utility::get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.30)
+                if (potbot_lib::utility::get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.15)
                 {
                     // geometry_msgs::Pose pose;
                     // pose.position = obs[i];
