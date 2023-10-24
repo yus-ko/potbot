@@ -48,6 +48,7 @@
       <arg name="TARGET/POSITION/X" value="$(arg TARGET/POSITION/X)"/>
       <arg name="TARGET/POSITION/Y" value="$(arg TARGET/POSITION/Y)"/>
       <arg name="TARGET/POSITION/YAW" value="$(arg TARGET/POSITION/YAW)"/>
+      <arg name="COLLISION_DETECTION" value="true"/>
     </include>
 
     <include file="$(find potbot_filter)/launch/Filter.launch">

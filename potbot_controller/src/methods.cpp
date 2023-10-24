@@ -41,7 +41,8 @@ void ControllerClass::controller()
     }
     else
     {
-        if (COLLISION_DETECTION && abs(robot_.twist.twist.angular.z) < 0.1 &&  __PathCollision())
+        //ROS_INFO("%d, %f, %d, %d", COLLISION_DETECTION ,robot_.twist.twist.angular.z, __PathCollision(0), __PathCollision(1));
+        if (COLLISION_DETECTION && abs(robot_.twist.twist.angular.z) < 0.1 &&  __PathCollision(1))
         {
             ROS_INFO("PathCollision");
             __publish_path_request();
@@ -122,7 +123,7 @@ void ControllerClass::__LineFollowing()
         geometry_msgs::Pose target;
         target.position = robot_.pose.pose.position;
         target.orientation = alpha_quat;
-        //print_Pose(target);
+        potbot_lib::utility::print_Pose(target);
         __PoseAlignment(target);
     }
     else if (robot_path_index_ < robot_path_size)
@@ -141,6 +142,8 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
 {
     double v=0,omega=0,yaw_target,yaw_err;
     double yaw_now = potbot_lib::utility::get_Yaw(robot_.pose.pose.orientation);
+    yaw_target = atan2(target.position.y - robot_.pose.pose.position.y ,target.position.x - robot_.pose.pose.position.x);
+    yaw_err = yaw_target - yaw_now;
     if (potbot_lib::utility::get_Distance(robot_.pose.pose.position, target.position) < 0.05)
     {
         if (abs(yaw_err) > 0.01)
@@ -152,8 +155,6 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
     }
     else
     {
-        yaw_target = atan2(target.position.y - robot_.pose.pose.position.y ,target.position.x - robot_.pose.pose.position.x);
-        yaw_err = yaw_target - yaw_now;
         v = 0.05;
         omega = yaw_err;
     }
@@ -161,9 +162,8 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
     cmd_.angular.z = omega;
 }
 
-bool ControllerClass::__PathCollision()
+bool ControllerClass::__PathCollision(int mode)
 {
-    static int mode = 0;
     if (mode == 0)
     {
         int path_size = robot_path_.poses.size();
@@ -178,7 +178,8 @@ bool ControllerClass::__PathCollision()
         int scan_size = scan_.ranges.size();
         for (int i = 0; i < scan_size; i++)
         {
-            if (!std::isinf(scan_.ranges[i]) && !std::isnan(scan_.ranges[i]))
+            //if (!std::isinf(scan_.ranges[i]) && !std::isnan(scan_.ranges[i]))
+            if (scan_.range_min <= scan_.ranges[i] && scan_.ranges[i] <= scan_.range_max)
             {
                 double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
                 double distance = scan_.ranges[i] + scan_.range_min;
@@ -197,7 +198,7 @@ bool ControllerClass::__PathCollision()
             
             for (int p = robot_path_index_; p < path_size; p++)
             {
-                if (potbot_lib::utility::get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.15)
+                if (potbot_lib::utility::get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.30)
                 {
                     // geometry_msgs::Pose pose;
                     // pose.position = obs[i];
