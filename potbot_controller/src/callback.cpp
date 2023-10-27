@@ -26,7 +26,7 @@ void ControllerClass::path_callback(const nav_msgs::Path& msg)
                 try 
                 {
                     // ロボット座標系の経路を世界座標系に変換
-                    transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, msg.header.frame_id, ros::Time());
+                    transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, msg.header.frame_id, msg.header.stamp);
                     tf2::doTransform(msg.poses[i], target_point, transform);
                 }
                 catch (tf2::TransformException &ex) 

@@ -50,7 +50,7 @@ class ControllerClass{
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
-        std::string ROBOT_NAME, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE;
+        std::string ROBOT_NAME, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN;
         bool IS_SIMULATOR, PUBLISH_COMMAND, COLLISION_DETECTION;
         double PATH_TRACKING_MARGIN, TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW, MAX_LINEAR_VELOCITY;
 

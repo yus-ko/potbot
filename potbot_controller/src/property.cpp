@@ -15,6 +15,7 @@ void ControllerClass::setLaunchParam(){
     n.getParam("TARGET/POSITION/Y",TARGET_POSITION_Y);
     n.getParam("TARGET/POSITION/YAW",TARGET_POSITION_YAW);
     n.getParam("MAX_LINEAR_VELOCITY",MAX_LINEAR_VELOCITY);
+    n.getParam("TOPIC/SCAN",TOPIC_SCAN);
 
     goal_.pose.position.x = TARGET_POSITION_X;
     goal_.pose.position.y = TARGET_POSITION_Y;

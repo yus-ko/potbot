@@ -46,7 +46,7 @@ void ControllerClass::controller()
         else collision_cnt = 0;
         ROS_INFO("collision_cnt: %d", collision_cnt);
         //ROS_INFO("%d, %f, %d, %d", COLLISION_DETECTION ,robot_.twist.twist.angular.z, __PathCollision(0), __PathCollision(1));
-        if (COLLISION_DETECTION && abs(robot_.twist.twist.angular.z) < 0.1 && collision_cnt > 20)
+        if (COLLISION_DETECTION && abs(robot_.twist.twist.angular.z) < 0.1 && collision_cnt > 0)
         {
             ROS_INFO("PathCollision");
             __publish_path_request();

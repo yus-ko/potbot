@@ -13,6 +13,7 @@
         <arg name="MAX_LINEAR_VELOCITY" default="0.2"/>
         <arg name="cmd_vel_topic" default="/cmd_vel" />
         <arg name="odom_topic" default="odom" />
+        <arg name="TOPIC/SCAN" default="scan"/>
 
     <node pkg="potbot_controller" name="potbot_controller_co" type="potbot_controller_co" output="screen">
         <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
@@ -27,5 +28,6 @@
         <param name="TARGET/POSITION/YAW" value="$(arg TARGET/POSITION/YAW)"/>
         <param name="CONTROLLER" value="$(arg CONTROLLER)"/>
         <param name="MAX_LINEAR_VELOCITY" value="$(arg MAX_LINEAR_VELOCITY)"/>
+        <param name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
     </node>
 </launch>
