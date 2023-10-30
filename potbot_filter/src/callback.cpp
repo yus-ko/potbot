@@ -201,7 +201,7 @@ void FilterClass::__scan_callback(const sensor_msgs::LaserScan& msg)
 
     scan_.header.frame_id = FRAME_ID_LIDAR;
     pub_scan0_.publish(scan_);
-    __MedianFilter(scan_);
+    //__MedianFilter(scan_);
     pub_scan1_.publish(scan_);
     std::vector<SEGMENT> segments;
     __Segmentation(scan_, segments);
