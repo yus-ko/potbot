@@ -42,8 +42,8 @@ double LocalizationClass::match_rate(nav_msgs::OccupancyGrid local,nav_msgs::Occ
         if (local.data[local_map_index] == 100)
         {
             max++;
-            geometry_msgs::Point point = potbot_lib::utility::get_coordinate(local_map_index, local.info);
-            int world_map_index = potbot_lib::utility::get_index(point.x, point.y, world.info);
+            geometry_msgs::Point point = potbot_lib::utility::get_MapCoordinate(local_map_index, local.info);
+            int world_map_index = potbot_lib::utility::get_MapIndex(point.x, point.y, world.info);
             if (world.data[world_map_index] == 100) sum++;
         }
     }

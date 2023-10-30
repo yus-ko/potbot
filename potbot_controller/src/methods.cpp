@@ -41,12 +41,7 @@ void ControllerClass::controller()
     }
     else
     {
-        static int collision_cnt = 0;
-        if (__PathCollision(0)) collision_cnt++;
-        else collision_cnt = 0;
-        ROS_INFO("collision_cnt: %d", collision_cnt);
-        //ROS_INFO("%d, %f, %d, %d", COLLISION_DETECTION ,robot_.twist.twist.angular.z, __PathCollision(0), __PathCollision(1));
-        if (COLLISION_DETECTION && abs(robot_.twist.twist.angular.z) < 0.1 && collision_cnt > 0)
+        if (COLLISION_DETECTION  && __PathCollision(0))
         {
             ROS_INFO("PathCollision");
             __publish_path_request();
@@ -68,7 +63,7 @@ void ControllerClass::__LineFollowing()
 
     double procces = double(robot_path_index_)/double(robot_path_size);
     //ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
-    if (procces > 0.8 && potbot_lib::utility::get_Distance(robot_path_.poses[robot_path_size-1].pose.position, goal_.pose.position) > 0.1)
+    if (procces > 0.9 && potbot_lib::utility::get_Distance(robot_path_.poses[robot_path_size-1].pose.position, goal_.pose.position) > 0.3)
     {
         __publish_path_request();
     }
@@ -122,8 +117,7 @@ void ControllerClass::__LineFollowing()
 
     if(!done_init_pose_alignment_ && abs(init_angle - potbot_lib::utility::get_Yaw(robot_.pose.pose.orientation)) > M_PI/6.0)
     {
-        geometry_msgs::Quaternion alpha_quat;
-        potbot_lib::utility::getQuat(0,0,init_angle,alpha_quat);
+        geometry_msgs::Quaternion alpha_quat = potbot_lib::utility::get_Quat(0,0,init_angle);
         geometry_msgs::Pose target;
         target.position = robot_.pose.pose.position;
         target.orientation = alpha_quat;
@@ -283,7 +277,9 @@ bool ControllerClass::__PathCollision(int mode)
 
 void ControllerClass::__publishcmd()
 {
-    //ROS_INFO("comannd v,omega: %f, %f", cmd_.linear.x, cmd_.angular.z);
+    ROS_INFO("comannd v,omega: %f / %f, %f / %f", cmd_.linear.x, MAX_LINEAR_VELOCITY, cmd_.angular.z, MAX_ANGULAR_VELOCITY);
+    if (cmd_.linear.x > MAX_LINEAR_VELOCITY) cmd_.linear.x = MAX_LINEAR_VELOCITY;
+    if (cmd_.angular.z > MAX_ANGULAR_VELOCITY) cmd_.angular.z = MAX_ANGULAR_VELOCITY;
     pub_cmd_.publish(cmd_);
 }
 

@@ -151,7 +151,7 @@ void LocalizationClass::__scan_callback(const sensor_msgs::LaserScan& msg)
             double x = distance * cos(angle);
             double y = distance * sin(angle);
             // ROS_INFO("%f, %f, %f, %f, %d",x,y,local_map_.info.origin.position.x,local_map_.info.origin.position.y, potbot_lib::utility::get_index(x,y,local_map_.info));
-            local_map_.data[potbot_lib::utility::get_index(x,y,local_map_.info)] = 100;
+            local_map_.data[potbot_lib::utility::get_MapIndex(x,y,local_map_.info)] = 100;
         }
     }
 

@@ -4,6 +4,7 @@
 #define IS_REPULSION_FIELD_EDGE 1
 #define IS_REPULSION_FIELD_EDGE_DUPLICATION 2
 #define IS_PLANNED_PATH 3
+#define IS_AROUND_GOAL 4
 
 void PathPlanningClass::mainloop()
 {
@@ -200,7 +201,7 @@ int PathPlanningClass::__create_PotentialField()
     potential_field_.cells.resize(map_size);
     potential_field_info_.resize(map_size);
 
-    std::vector<bool> potential_field_cell_info = {false,false,false,false};
+    std::vector<bool> potential_field_cell_info = {false,false,false,false,false};
     std::fill(potential_field_info_.begin(), potential_field_info_.end(), potential_field_cell_info);
 
     // 変換する座標
@@ -295,6 +296,7 @@ int PathPlanningClass::__create_PotentialField()
         }
 
         double distance_to_goal = sqrt(pow(x - robot_goal.pose.position.x,2)+pow(y - robot_goal.pose.position.y,2));
+        if (distance_to_goal < 0.3) potential_field_info_[i][IS_AROUND_GOAL] = true;
         double Ud = 0.5 * kp_ * pow(distance_to_goal, 2);
 
         double U = Ud + Uo;
@@ -493,7 +495,7 @@ void PathPlanningClass::__create_Path_used_weight()
         int idxtmp = __get_PotentialFiledIndex(robot_pose.pose.position.x,robot_pose.pose.position.y);
         if (idxtmp != -1) potential_field_info_[idxtmp][IS_PLANNED_PATH] = true;
         index++;
-        if (index > max_path_index_) break;
+        if (index > max_path_index_ || potential_field_info_[idxtmp][IS_AROUND_GOAL]) break;
         J_min_pre = J_min;
         center_x = robot_pose.pose.position.x;
         center_y = robot_pose.pose.position.y;

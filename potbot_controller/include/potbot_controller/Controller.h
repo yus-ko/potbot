@@ -52,7 +52,7 @@ class ControllerClass{
         nav_msgs::Odometry robot_, odom_;
         std::string ROBOT_NAME, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN;
         bool IS_SIMULATOR, PUBLISH_COMMAND, COLLISION_DETECTION;
-        double PATH_TRACKING_MARGIN, TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW, MAX_LINEAR_VELOCITY;
+        double PATH_TRACKING_MARGIN, TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW, MAX_LINEAR_VELOCITY = 0.2, MAX_ANGULAR_VELOCITY = 1.0;
 
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __goal_callback(const geometry_msgs::PoseStamped& msg);

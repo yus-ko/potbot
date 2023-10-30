@@ -195,7 +195,7 @@ void FilterClass::__scan_callback(const sensor_msgs::LaserScan& msg)
                                                 {0,1,1},
                                                 {0,0,0}
                                             };
-    ROS_INFO("scan callback: filter");
+    //ROS_INFO("scan callback: filter");
 
     scan_ = msg;
 
