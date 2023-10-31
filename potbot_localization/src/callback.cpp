@@ -138,6 +138,7 @@ void LocalizationClass::__scan_callback(const sensor_msgs::LaserScan& msg)
     // tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
     int size = scan_.ranges.size();
+    //ROS_INFO("range raw: %f, min: %f",scan_.ranges[540], scan_.range_min);
     for (int i = 0; i < size; i++)
     {
         //if (!std::isinf(scan_.ranges[i]) && !std::isnan(scan_.ranges[i]))

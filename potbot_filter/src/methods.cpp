@@ -54,10 +54,9 @@ void FilterClass::__MedianFilter(sensor_msgs::LaserScan &scan)
                 for (int j = -1; j <= 1; j++)
                 {
                     double data = scans_[t].ranges[i+j];
-                    if (std::isinf(data) || std::isnan(data))
-                    {
-                        data = std::numeric_limits<double>::infinity();
-                    }
+                    // if (std::isinf(data) || std::isnan(data)) data = std::numeric_limits<double>::infinity();
+                    if (data < scans_[t].range_min) data = scans_[t].range_min;
+                    else if (data > scans_[t].range_max) data = scans_[t].range_max;
                     scan_data.push_back(data);
                 }
             }
@@ -76,8 +75,8 @@ void FilterClass::__Segmentation(sensor_msgs::LaserScan &scan, std::vector<SEGME
     for (int i = 0; i < size; i++)
     {
         
-        double data = scan.ranges[i];
-        if (!std::isinf(data) && !std::isnan(data))
+        //if (!std::isinf(scan.ranges[i]) && !std::isnan(scan.ranges[i]))
+        if (scan_.range_min <= scan_.ranges[i] && scan_.ranges[i] <= scan_.range_max)
         {
             if(!start)
             {
