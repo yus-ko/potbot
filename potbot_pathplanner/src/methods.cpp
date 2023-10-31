@@ -192,7 +192,7 @@ int PathPlanningClass::__create_PotentialField()
     double map_ori_y = local_map_.info.origin.position.y;
     double map_res = local_map_.info.resolution;
 
-    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(0);  //引数確認
+    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(1);  //引数確認
 
     potential_field_.header = header_;
     potential_field_.header.frame_id = FRAME_ID_ROBOT_BASE;
@@ -411,7 +411,7 @@ void PathPlanningClass::__create_Path_used_weight()
         for (int i = 0; i < 2; i++)
         {
             breakflag = false;
-            double J_min_local = 10000;
+            double J_min_local = std::numeric_limits<double>::infinity();
             for (x = -2*map_res + center_x; x <= 2*map_res + center_x; x+=map_res)
             {
                 for (y = -2*map_res + center_y; y <= 2*map_res + center_y; y+=map_res)
