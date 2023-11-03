@@ -1,11 +1,5 @@
 #include<potbot_pathplanner/PathPlanning.h>
 
-void PathPlanningClass::encoder_callback(const geometry_msgs::Twist& msg)
-{
-    encoder_value = msg;
-    encoder_first = true;
-}
-
 void PathPlanningClass::pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg)
 {
     pwcs_msg = msg;
@@ -26,18 +20,7 @@ void PathPlanningClass::pwcs_callback(const geometry_msgs::PoseWithCovarianceSta
     encoder_first = true;
 }
 
-void PathPlanningClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
-{
-    header_ = msg.header;
-    odom_msg = msg;
-    odom = msg;
-    //odom_ = msg;
-    //ROS_INFO("%s",odom_.header.frame_id.c_str());
-    encoder_value = msg.twist.twist;
-    encoder_first = true;
-}
-
-void PathPlanningClass::scan_callback(const sensor_msgs::LaserScan& msg)
+void PathPlanningClass::__scan_callback(const sensor_msgs::LaserScan& msg)
 {
     scan = msg;
     scan_first = true;
@@ -51,7 +34,7 @@ void PathPlanningClass::coefficient_callback(const std_msgs::Float32& msg)
 void PathPlanningClass::goal_callback(const geometry_msgs::PoseStamped& msg)
 {
     goal_ = msg;
-    ROS_INFO("subscribe goal");
+    ROS_INFO("subscribe goal: path planner");
     //std::cout<< goal_ <<std::endl;
     potbot_lib::utility::print_Pose(goal_.pose);
     pub_goal_.publish(goal_);
@@ -67,7 +50,7 @@ void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
 void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)
 {
     odom_ = msg;
-    //header_ = odom_.header;
+    header_ = odom_.header;
     //header_.stamp = ros::Time();
 }
 

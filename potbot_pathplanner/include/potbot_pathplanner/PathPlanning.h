@@ -34,7 +34,7 @@ class PathPlanningClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub;
-		ros::Subscriber sub_encoder, sub_scan, sub_coefficient, sub_goal_, sub_local_map_, sub_odom_, sub_seg_, sub_state_, sub_run_;
+		ros::Subscriber sub_encoder, sub_scan_, sub_coefficient, sub_goal_, sub_local_map_, sub_odom_, sub_seg_, sub_state_, sub_run_;
         //送信データ
 		ros::NodeHandle nhPub;
         ros::Publisher pub_cmd, pub_odom, pub_PP, pub_goal_, pub_pf_, pub_cmd_, pub_potential_;
@@ -109,12 +109,13 @@ class PathPlanningClass{
         dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig> server_;
   	    dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig>::CallbackType f_;
 
-        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, YAML_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE;
+        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN, TOPIC_ODOM;
         bool USE_AMCL, USE_RVIZ;
         double TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW;
         double POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
         
         void __odom_callback(const nav_msgs::Odometry& msg);
+        void __scan_callback(const sensor_msgs::LaserScan& msg);
         void __param_callback(const potbot_pathplanner::PathPlanningConfig& param, uint32_t level);
         void __segment_callback(const visualization_msgs::MarkerArray& msg);
         void __state_callback(const potbot_msgs::StateArray& msg);
@@ -147,10 +148,7 @@ class PathPlanningClass{
         void setLaunchParam();//launchファイルから書き込み
         //in methods.cpp
         //--センサーデータ受信
-	    void encoder_callback(const geometry_msgs::Twist& msg);
-        void encoder_callback_sim(const nav_msgs::Odometry& msg);
         void pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg);
-        void scan_callback(const sensor_msgs::LaserScan& msg);
         void coefficient_callback(const std_msgs::Float32& msg);
         void goal_callback(const geometry_msgs::PoseStamped& msg);
         void local_map_callback(const nav_msgs::OccupancyGrid& msg);

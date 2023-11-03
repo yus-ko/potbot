@@ -8,7 +8,7 @@
     <arg name="FRAME_ID/ROBOT_BASE" default="potbot"/>
     <arg name="FRAME_ID/LIDAR" default="lidar"/>
     <arg name="TOPIC/SCAN" default="scan"/>
-    <arg name="TOPIC/ODOM" default="position"/>
+    <arg name="TOPIC/ODOM" default="odom"/>
 
     <node pkg="potbot_localization" name="potbot_localization_lo" type="potbot_localization_lo" output="screen">
         <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>

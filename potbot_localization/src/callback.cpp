@@ -1,48 +1,47 @@
 #include<potbot_localization/Localization.h>
 
-void LocalizationClass::encoder_callback(const geometry_msgs::Twist& msg)
-{
-    header_.frame_id = "/" + FRAME_ID_GLOBAL;
-    header_.stamp = ros::Time::now();
-    encoder_value_ = msg;
-    manage();
-}
+// void LocalizationClass::encoder_callback(const geometry_msgs::Twist& msg)
+// {
+//     header_.frame_id = "/" + FRAME_ID_GLOBAL;
+//     header_.stamp = ros::Time::now();
+//     encoder_value_ = msg;
+//     manage();
+// }
 
-void LocalizationClass::encoder_callback_sim(const nav_msgs::Odometry& msg)
+void LocalizationClass::__odom_callback(const nav_msgs::Odometry& msg)
 {
     //encoder_value.header = msg.header;
     odom_.pose = msg.pose;
     odom_.twist = msg.twist;
     encoder_value_ = msg.twist.twist;
     header_ = msg.header;
-    header_.frame_id = "/" + FRAME_ID_GLOBAL;
     //std::cout<<msg.header<<std::endl;
     manage();
 }
 
-void LocalizationClass::beego_encoder_callback(const potbot_msgs::beego_encoder& msg)
-{
-    header_ = msg.header;
-    // odom_.pose.pose.position.x = 0; //add
-    // odom_.pose.pose.position.y = 0; //add
+// void LocalizationClass::beego_encoder_callback(const potbot_msgs::beego_encoder& msg)
+// {
+//     header_ = msg.header;
+//     // odom_.pose.pose.position.x = 0; //add
+//     // odom_.pose.pose.position.y = 0; //add
 
-    // double yaw = 0; //add
-    // geometry_msgs::Quaternion quat;
-    // getQuat(0, 0, yaw, quat);
-    // odom_.pose.pose.orientation = quat;
+//     // double yaw = 0; //add
+//     // geometry_msgs::Quaternion quat;
+//     // getQuat(0, 0, yaw, quat);
+//     // odom_.pose.pose.orientation = quat;
 
-    // odom_.twist.twist.linear.x = 0;     //add
-    // odom_.twist.twist.angular.z = 0;    //add
+//     // odom_.twist.twist.linear.x = 0;     //add
+//     // odom_.twist.twist.angular.z = 0;    //add
 
-    double wheel_d = 0.275;
-    double v = (-msg.vel.r+msg.vel.l)/2.0;
-	double omega = (-msg.vel.r-msg.vel.l)/(wheel_d);
+//     double wheel_d = 0.275;
+//     double v = (-msg.vel.r+msg.vel.l)/2.0;
+// 	double omega = (-msg.vel.r-msg.vel.l)/(wheel_d);
 
-    encoder_value_.linear.x = v;        //add
-    encoder_value_.angular.z = omega;   //add
+//     encoder_value_.linear.x = v;        //add
+//     encoder_value_.angular.z = omega;   //add
 
-    manage();
-}
+//     manage();
+// }
 
 void LocalizationClass::inipose_callback(const geometry_msgs::PoseWithCovarianceStamped& msg)
 {
@@ -112,7 +111,6 @@ void LocalizationClass::__scan_callback(const sensor_msgs::LaserScan& msg)
     scan_ = msg;
 
     local_map_.header = header_;
-    local_map_.header.frame_id = FRAME_ID_LIDAR;
     local_map_.info = world_map_.info;
     local_map_.info.map_load_time = header_.stamp;
     local_map_.info.width = 240;

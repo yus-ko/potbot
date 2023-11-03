@@ -31,6 +31,11 @@ add_executable(${PROJECT_NAME}_lo
   src/property.cpp
 )
 
+add_executable(${PROJECT_NAME}_map_link
+  src/map_link.cpp
+)
+
 target_link_libraries(${PROJECT_NAME}_lo ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_map_link ${catkin_LIBRARIES})
 
 add_definitions(-std=c++14)

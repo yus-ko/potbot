@@ -27,8 +27,6 @@ class ControllerClass{
 		ros::Publisher pub_cmd_, pub_path_request_;
 
         tf2_ros::Buffer tf_buffer_;
-
-        int robot_id_ = potbot_lib::MEGAROVER;
         
         geometry_msgs::Twist cmd_;
         double robot_pose_x_ = 0, robot_pose_y_ = 0, robot_pose_theta_ = 0;
@@ -50,7 +48,7 @@ class ControllerClass{
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
-        std::string ROBOT_NAME, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN;
+        std::string ROBOT_NAME, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN, TOPIC_ODOM, TOPIC_CMD_VEL;
         bool IS_SIMULATOR, PUBLISH_COMMAND, COLLISION_DETECTION;
         double PATH_TRACKING_MARGIN, TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW, MAX_LINEAR_VELOCITY = 0.2, MAX_ANGULAR_VELOCITY = 1.0;
 

@@ -28,9 +28,11 @@ void PathPlanningClass::run()
     // odom_.pose.pose = robot_pose.pose;
     if (path_planning_id == potbot_lib::POTENTIAL_METHOD)
     {
-        __create_PotentialField();
-        //__create_Path();
-        __create_Path_used_weight();
+        if(__create_PotentialField())
+        {
+            //__create_Path();
+            __create_Path_used_weight();
+        }
     }
     else if (path_planning_id == potbot_lib::CSV_PATH)
     {

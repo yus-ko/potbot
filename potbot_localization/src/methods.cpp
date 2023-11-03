@@ -76,7 +76,7 @@ void LocalizationClass::manage()
         }
         else if(localization_method_id_ == potbot_lib::DEAD_RECKONING)
         {
-            if (((robot_id_ == potbot_lib::MEGAROVER) && !IS_SIMULATOR)  || robot_id_ == potbot_lib::BEEGO) odometry();
+            //if (((robot_id_ == potbot_lib::MEGAROVER) && !IS_SIMULATOR)  || robot_id_ == potbot_lib::BEEGO) odometry();
         }
         
         puclish_odom();
@@ -87,43 +87,43 @@ void LocalizationClass::manage()
         encoder_first_ = true;
     }
     header_pre_ = header_;
-    tf_broadcast();
+    // tf_broadcast();
 
 }
 
-void LocalizationClass::odometry()
-{
-    static double time_pre = 0;
-    if (time_pre != 0)
-    {
-        double vel = encoder_value_.linear.x;
-        double ang = encoder_value_.angular.z;
-        double dt = header_.stamp.toSec() - time_pre;
+// void LocalizationClass::odometry()
+// {
+//     static double time_pre = 0;
+//     if (time_pre != 0)
+//     {
+//         double vel = encoder_value_.linear.x;
+//         double ang = encoder_value_.angular.z;
+//         double dt = header_.stamp.toSec() - time_pre;
 
-        double roll, pitch, theta;
-        tf2::Quaternion quat;
-        tf2::convert(odom_.pose.pose.orientation, quat);
-        tf2::Matrix3x3(quat).getRPY(roll, pitch, theta);
+//         double roll, pitch, theta;
+//         tf2::Quaternion quat;
+//         tf2::convert(odom_.pose.pose.orientation, quat);
+//         tf2::Matrix3x3(quat).getRPY(roll, pitch, theta);
 
-        theta += ang*dt;
-        odom_.pose.pose.position.x += vel*cos(theta)*dt;
-        odom_.pose.pose.position.y += vel*sin(theta)*dt;
+//         theta += ang*dt;
+//         odom_.pose.pose.position.x += vel*cos(theta)*dt;
+//         odom_.pose.pose.position.y += vel*sin(theta)*dt;
         
-        geometry_msgs::Quaternion quat_msg;
-        quat.setRPY(0, 0, theta);
-        tf2::convert(quat, quat_msg);
+//         geometry_msgs::Quaternion quat_msg;
+//         quat.setRPY(0, 0, theta);
+//         tf2::convert(quat, quat_msg);
 
-        odom_.pose.pose.orientation = quat_msg;
-        odom_.twist.twist = encoder_value_;
-    }
+//         odom_.pose.pose.orientation = quat_msg;
+//         odom_.twist.twist = encoder_value_;
+//     }
 
-    // double x = odom_.pose.pose.position.x, 
-    //         y = odom_.pose.pose.position.y, 
-    //         theta = get_Yaw(odom_.pose.pose.orientation);
-    // ROS_INFO("x,y,theta = %f, %f, %f",x, y, theta*180/M_PI);
+//     // double x = odom_.pose.pose.position.x, 
+//     //         y = odom_.pose.pose.position.y, 
+//     //         theta = get_Yaw(odom_.pose.pose.orientation);
+//     // ROS_INFO("x,y,theta = %f, %f, %f",x, y, theta*180/M_PI);
 
-    time_pre = header_.stamp.toSec();
-}
+//     time_pre = header_.stamp.toSec();
+// }
 
 double LocalizationClass::draw_gaussian(double mu, double sigma)
 {
@@ -269,14 +269,14 @@ void LocalizationClass::resampling()
 void LocalizationClass::puclish_odom()
 {
     pub_odom_.publish(odom_);
-    tf_broadcast();
+    // tf_broadcast();
 }
 
 void LocalizationClass::tf_broadcast()
 {
     geometry_msgs::TransformStamped tf_map2robot;
     //std::string ns = ros::this_node::getNamespace();
-    std::string ns = FRAME_ID_ROBOT_BASE;
+    std::string ns = "FRAME_ID_ROBOT_BASE";
 
     tf_map2robot.header = odom_.header;
     tf_map2robot.child_frame_id = ns;
@@ -291,7 +291,7 @@ void LocalizationClass::tf_broadcast()
     geometry_msgs::TransformStamped tf_robot2lidar;
     tf_robot2lidar.header = odom_.header;
     tf_robot2lidar.header.frame_id = ns;
-    tf_robot2lidar.child_frame_id = FRAME_ID_LIDAR;
+    tf_robot2lidar.child_frame_id = "FRAME_ID_LIDAR";
     tf_robot2lidar.transform.translation.x = 0.0;
     tf_robot2lidar.transform.translation.y = 0.0;
     tf_robot2lidar.transform.translation.z = 0.1;

@@ -4,19 +4,6 @@ LocalizationClass::LocalizationClass()
 {
 	
 	setLaunchParam();	// lanchファイルの読み込み
-	
-	if (ROBOT_NAME == "megarover")
-	{
-		robot_id_ = potbot_lib::MEGAROVER;
-	}
-	else if (ROBOT_NAME == "turtlebot3")
-	{
-		robot_id_ = potbot_lib::TURTLEBOT3;
-	}
-	else if (ROBOT_NAME == "beego")
-	{
-		robot_id_ = potbot_lib::BEEGO;
-	}
 
 	if (LOCALIZATION_METHOD == "dead_reckoning")
 	{
@@ -33,25 +20,10 @@ LocalizationClass::LocalizationClass()
 	sub_goal_=nhSub_.subscribe("/move_base_simple/goal",1,&LocalizationClass::goal_callback,this);
 	sub_point_=nhSub_.subscribe("/clicked_point",1,&LocalizationClass::point_callback,this);
 
-	if (robot_id_ == potbot_lib::MEGAROVER)
-	{
-		if(IS_SIMULATOR)
-		{
-			sub_encoder_=nhSub_.subscribe("/vmegarover/diff_drive_controller/odom",1,&LocalizationClass::encoder_callback_sim,this);
-		}
-		else
-		{
-			sub_encoder_=nhSub_.subscribe("/rover_odo",1,&LocalizationClass::encoder_callback,this);
-		}
-	}
-	else if (robot_id_ == potbot_lib::TURTLEBOT3)
-	{
-		sub_encoder_ = nhSub_.subscribe("odom", 1, &LocalizationClass::encoder_callback_sim, this);
-	}
-	else if (robot_id_ == potbot_lib::BEEGO)
-	{
-		sub_encoder_ = nhSub_.subscribe("/encoder",1,&LocalizationClass::beego_encoder_callback,this);
-	}
+	// sub_odom_=nhSub_.subscribe(TOPIC_ODOM,1,&LocalizationClass::__odom_callback,this);
+		//sub_encoder_=nhSub_.subscribe("/rover_odo",1,&LocalizationClass::encoder_callback,this);
+		//sub_encoder_ = nhSub_.subscribe("/encoder",1,&LocalizationClass::beego_encoder_callback,this);
+		//pub_odom_= nhPub_.advertise<nav_msgs::Odometry>(TOPIC_ODOM, 1);
 
 	if (localization_method_id_ == potbot_lib::PARTICLE_FILTER)
 	{
@@ -59,8 +31,7 @@ LocalizationClass::LocalizationClass()
 	}
 
 	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("Localmap", 1);
-	pub_odom_= nhPub_.advertise<nav_msgs::Odometry>(TOPIC_ODOM, 1);
-
+	
 	particles_.markers.resize(particle_num_);
 	weights_.resize(particle_num_);
 	//reset_particle();
@@ -74,7 +45,7 @@ LocalizationClass::LocalizationClass()
 	odom_.header = initial_pose_.header;
     odom_.pose = initial_pose_.pose;
     if (localization_method_id_ == potbot_lib::PARTICLE_FILTER) set_pose(initial_pose_);
-    pub_odom_.publish(odom_);
+    // pub_odom_.publish(odom_);
 
 	f_ = boost::bind(&LocalizationClass::__param_callback, this, _1, _2);
 	server_.setCallback(f_);

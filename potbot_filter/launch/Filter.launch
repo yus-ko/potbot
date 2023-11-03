@@ -3,6 +3,7 @@
     <arg name="FRAME_ID/ROBOT_BASE" default="potbot"/>
     <arg name="FRAME_ID/LIDAR" default="lidar"/>
     <arg name="TOPIC/SCAN" default="scan"/>
+    <arg name="TOPIC/ODOM" default="odom"/>
 
     <node pkg="potbot_filter" name="potbot_filter_fi" type="potbot_filter_fi" output="screen">
         <param name="SIGMA_P" value="1"/>
@@ -12,5 +13,6 @@
         <param name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
         <param name="FRAME_ID/LIDAR" value="$(arg FRAME_ID/LIDAR)"/>
         <param name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
+        <param name="TOPIC/ODOM" value="$(arg TOPIC/ODOM)"/>
     </node>
 </launch>

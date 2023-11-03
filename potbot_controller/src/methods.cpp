@@ -277,7 +277,7 @@ bool ControllerClass::__PathCollision(int mode)
 
 void ControllerClass::__publishcmd()
 {
-    ROS_INFO("comannd v,omega: %f / %f, %f / %f", cmd_.linear.x, MAX_LINEAR_VELOCITY, cmd_.angular.z, MAX_ANGULAR_VELOCITY);
+    // ROS_INFO("comannd v,omega: %f / %f, %f / %f", cmd_.linear.x, MAX_LINEAR_VELOCITY, cmd_.angular.z, MAX_ANGULAR_VELOCITY);
     if (cmd_.linear.x > MAX_LINEAR_VELOCITY) cmd_.linear.x = MAX_LINEAR_VELOCITY;
     if (cmd_.angular.z > MAX_ANGULAR_VELOCITY) cmd_.angular.z = MAX_ANGULAR_VELOCITY;
     pub_cmd_.publish(cmd_);

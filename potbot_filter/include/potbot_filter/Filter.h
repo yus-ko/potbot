@@ -284,8 +284,6 @@ class FilterClass{
 
         //tf::TransformListener tflistener;
         tf2_ros::Buffer tf_buffer_;
-
-        int robot_id_ = potbot_lib::MEGAROVER;
         
 		sensor_msgs::LaserScan scan_;
         std::vector<sensor_msgs::LaserScan> scans_;
@@ -301,7 +299,7 @@ class FilterClass{
 		dynamic_reconfigure::Server<potbot_filter::FilterConfig> server_;
   	    dynamic_reconfigure::Server<potbot_filter::FilterConfig>::CallbackType f_;
 
-		std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, FRAME_ID_LIDAR, TOPIC_SCAN;
+		std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, FRAME_ID_LIDAR, TOPIC_SCAN, TOPIC_ODOM;
         double SIGMA_P, SIGMA_Q, SIGMA_R;
 
         void __odom_callback(const nav_msgs::Odometry& msg);

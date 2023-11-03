@@ -69,7 +69,8 @@
         "random": "cpp",
         "set": "cpp",
         "string": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "forward_list": "cpp"
     },
     "cmake.sourceDirectory": "/home/ros/catkin_ws/src/potbot/potbot"
 }
