@@ -15,21 +15,20 @@
     <color rgba="0.2 0.2 0.2 1" />
   </material>
 
-
-  <link name="horizontal_laser_link">
+  <link name="laser">
     <visual>
-      <origin xyz="0 0 -0.08" />
+      <origin xyz="0 0 -0.035" />
       <geometry>
-        <cylinder length="0.05" radius="0.03" />
+        <cylinder length="0.07" radius="0.0175" />
       </geometry>
       <material name="gray" />
     </visual>
   </link>
 
-  <joint name="horizontal_laser_link_joint" type="fixed">
+  <joint name="laser_joint" type="fixed">
     <parent link="base_link" />
-    <child link="horizontal_laser_link" />
-    <origin xyz="1 0 0.5"/>
+    <child link="laser" />
+    <origin xyz="0.09 0 0.234"/>
   </joint>
 
 </robot>

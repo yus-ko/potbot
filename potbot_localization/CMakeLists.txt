@@ -35,7 +35,12 @@ add_executable(${PROJECT_NAME}_map_link
   src/map_link.cpp
 )
 
+add_executable(${PROJECT_NAME}_twist_to_odometry
+  src/twist_to_odometry.cpp
+)
+
 target_link_libraries(${PROJECT_NAME}_lo ${catkin_LIBRARIES})
 target_link_libraries(${PROJECT_NAME}_map_link ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_twist_to_odometry ${catkin_LIBRARIES})
 
 add_definitions(-std=c++14)
