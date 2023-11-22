@@ -1,0 +1,155 @@
+<?xml version="1.0" ?>
+<robot name="megarover21" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find megarover_samples)/urdf/common.xacro"/>
+  <xacro:include filename="$(find turtlebot3_description)/urdf/common_properties.xacro"/>
+  <xacro:include filename="$(find potbot_description)/urdf/megarover21.gazebo.xacro"/>
+
+  <xacro:property name="wheel_radius" value="0.076"/>
+  <xacro:property name="wheel_length" value="0.03"/>
+  <xacro:property name="wheel_mass" value="0.823"/>
+
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://megarover_samples/meshes/dae/vmega_body.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://megarover_samples/meshes/stl/vmega_body.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.061 0 -0.002"/>
+      <mass value="13.754"/>
+      <inertia ixx="0.110655982" ixy="0" ixz="0"
+        iyy="0.20062619" iyz="0"
+        izz="0.269504336" />
+    </inertial>
+  </link>
+
+  <joint name="wheel_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_left_link"/>
+    <origin xyz="0 0.14199 0.074742"  rpy="0 0 ${M_PI}" />
+    <axis xyz="0 -1 0"/>
+  </joint>
+
+  <link name="wheel_left_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://megarover_samples/meshes/dae/vmega_wheel.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <xacro:cylinder_inertial mass="${wheel_mass}"
+        radius="${wheel_radius}" length="${wheel_length}"/>
+    </inertial>
+  </link>
+
+  <joint name="wheel_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_right_link"/>
+    <origin xyz="0 -0.14199 0.074742"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <link name="wheel_right_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://megarover_samples/meshes/dae/vmega_wheel.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <xacro:cylinder_inertial mass="${wheel_mass}"
+        radius="${wheel_radius}" length="${wheel_length}"/>
+    </inertial>
+  </link>
+
+  <joint name="scan_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_scan" />
+    <!-- <origin xyz="0.09 0 0.234"/> -->
+    <origin xyz="0.09 0 0.223" rpy="${M_PI} 0 0"/>
+  </joint>
+
+  <!-- <link name="base_scan">
+    <visual>
+      <origin xyz="0 0 -0.035" />
+      <geometry>
+        <cylinder length="0.07" radius="0.0175" />
+      </geometry>
+      <material name="gray" />
+    </visual>
+  </link> -->
+
+  <link name="base_scan">
+    <visual>
+      <geometry>
+        <mesh filename="package://megarover_samples/meshes/dae/lrf.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://megarover_samples/meshes/stl/lrf.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="0.218" height="0.07" width="0.05" depth="0.05"/>
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <origin xyz="0.06 0 0.455" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.03 0.165 0.03"/>
+      </geometry>
+      <material name="gray" />
+    </visual>
+  </link>
+
+  <joint name="camera_rgb_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="camera_link"/>
+    <child link="camera_rgb_frame"/>
+  </joint>
+  <link name="camera_rgb_frame"/>
+
+  <joint name="camera_rgb_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+    <parent link="camera_rgb_frame"/>
+    <child link="camera_rgb_optical_frame"/>
+  </joint>
+  <link name="camera_rgb_optical_frame"/>
+
+</robot>

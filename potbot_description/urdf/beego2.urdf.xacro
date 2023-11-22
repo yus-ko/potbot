@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
-<robot name="turtlebot3_waffle_pi" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="beego2" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="$(find megarover_samples)/urdf/common.xacro"/>
   <xacro:include filename="$(find turtlebot3_description)/urdf/common_properties.xacro"/>
-  <xacro:include filename="$(find potbot_description)/urdf/megarover_3.gazebo.xacro"/>
+  <xacro:include filename="$(find potbot_description)/urdf/beego2.gazebo.xacro"/>
 
   <xacro:property name="wheel_radius" value="0.076"/>
   <xacro:property name="wheel_length" value="0.03"/>
@@ -91,19 +91,8 @@
   <joint name="scan_joint" type="fixed">
     <parent link="base_link" />
     <child link="base_scan" />
-    <!-- <origin xyz="0.09 0 0.234"/> -->
     <origin xyz="0.09 0 0.223" rpy="${M_PI} 0 0"/>
   </joint>
-
-  <!-- <link name="base_scan">
-    <visual>
-      <origin xyz="0 0 -0.035" />
-      <geometry>
-        <cylinder length="0.07" radius="0.0175" />
-      </geometry>
-      <material name="gray" />
-    </visual>
-  </link> -->
 
   <link name="base_scan">
     <visual>
@@ -123,7 +112,7 @@
   </link>
 
   <joint name="camera_joint" type="fixed">
-    <origin xyz="0 0 0.3" rpy="0 0 0"/>
+    <origin xyz="0.06 0 0.455" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="camera_link"/>
   </joint>
@@ -132,14 +121,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.02 0.1 0.02"/>
+        <box size="0.03 0.165 0.03"/>
       </geometry>
       <material name="gray" />
     </visual>
   </link>
 
   <joint name="camera_rgb_joint" type="fixed">
-    <origin xyz="0.003 0.011 0.009" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
     <parent link="camera_link"/>
     <child link="camera_rgb_frame"/>
   </joint>
@@ -152,33 +141,15 @@
   </joint>
   <link name="camera_rgb_optical_frame"/>
 
-  <joint name="camera_joint" type="fixed">
-    <origin xyz="0.073 -0.011 0.084" rpy="0 0 0"/>
-    <parent link="base_link"/>
-    <child link="camera_link"/>
-  </joint>
-
-  <link name="camera_link">
-    <collision>
-      <origin xyz="0.005 0.011 0.013" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.015 0.030 0.027"/>
-      </geometry>
-    </collision>
-  </link>
-
-  <joint name="camera_rgb_joint" type="fixed">
-    <origin xyz="0.003 0.011 0.009" rpy="0 0 0"/>
-    <parent link="camera_link"/>
-    <child link="camera_rgb_frame"/>
-  </joint>
-  <link name="camera_rgb_frame"/>
-
-  <joint name="camera_rgb_optical_joint" type="fixed">
-    <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
-    <parent link="camera_rgb_frame"/>
-    <child link="camera_rgb_optical_frame"/>
-  </joint>
-  <link name="camera_rgb_optical_frame"/>
+  <transmission name="pan_motor_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="camera_joint">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="pan_motor">
+      <mechanicalReduction>30</mechanicalReduction>
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
 
 </robot>
