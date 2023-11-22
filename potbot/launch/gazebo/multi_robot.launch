@@ -12,21 +12,21 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
+  <!-- <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
     <arg name="tf_prefix" value="robot_0"/>
     <arg name="model" value="waffle_pi"/>
     <arg name="laser_visual" value="true"/>
     <arg name="camera_visual" value="true"/>
-  </include>
+  </include> -->
 
-  <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
+  <!-- <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
     <arg name="tf_prefix" value="robot_1"/>
     <arg name="model" value="burger"/>
     <arg name="x_pos" value="2"/>
     <arg name="y_pos" value="-4"/>
     <arg name="yaw" value="1.57"/>
     <arg name="laser_visual" value="true"/>
-  </include>
+  </include> -->
 
   <!-- <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
     <arg name="tf_prefix" value="robot_2"/>
@@ -44,6 +44,11 @@
     <arg name="yaw" value="3.14"/>
     <arg name="laser_visual" value="true"/>
   </include> -->
+
+  <include file="$(find potbot)/launch/gazebo/spawn_vmegarover.launch">
+    <arg name="tf_prefix" value="robot_0"/>
+    <arg name="model" value="$(find potbot_description)/urdf/megarover_3.urdf.xacro"/>
+  </include>
 
 
 </launch>

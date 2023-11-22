@@ -39,7 +39,7 @@
     </node> -->
 
     <include file="$(find potbot)/launch/potbot_remote.launch">
-      <arg name="model" value="vmegarover"/>
+      <arg name="model" value="megarover_3"/>
       <arg name="multi_robot_name" value="robot_0"/>
     </include>
 

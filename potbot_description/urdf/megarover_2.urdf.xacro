@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<robot name="megarover20" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find megarover_samples)/urdf/body/vbody.urdf.xacro"/>
+  <xacro:include filename="$(find megarover_samples)/urdf/wheel/vwheel.urdf.xacro"/>
+  <xacro:include filename="$(find megarover_samples)/urdf/lrf/lrf.urdf.xacro"/>
+
+  <link name="base_footprint"/>
+
+  <xacro:base_v0 parent="base_footprint">
+    <origin xyz="0 0 0"/>
+  </xacro:base_v0>
+
+  <xacro:wheel_v0 prefix="right" parent="base_link">
+    <origin xyz="0 -0.14199 0.074742"/>
+    <axis xyz="0 1 0"/>
+  </xacro:wheel_v0>
+  
+  <xacro:wheel_v0 prefix="left" parent="base_link">
+    <origin xyz="0 0.14199 0.074742"  rpy="0 0 ${M_PI}" />
+    <axis xyz="0 -1 0"/>
+  </xacro:wheel_v0>
+
+  <xacro:wheel_trans_v0 prefix="right"/>
+  <xacro:wheel_trans_v0 prefix="left"/>
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/vmegarover</robotNamespace>
+      <!-- <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometrySource>world</odometrySource>
+      <publishOdomTF>true</publishOdomTF>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
+      <publishWheelTF>false</publishWheelTF>
+      <publishTf>true</publishTf>
+      <publishWheelJointState>true</publishWheelJointState>
+      <legacyMode>false</legacyMode>
+      <updateRate>30</updateRate>
+      <leftJoint>left_wheel_joint</leftJoint>
+      <rightJoint>right_wheel_joint</rightJoint>
+      <wheelSeparation>0.287</wheelSeparation>
+      <wheelDiameter>0.066</wheelDiameter>
+      <wheelAcceleration>1</wheelAcceleration>
+      <wheelTorque>10</wheelTorque>
+      <rosDebugLevel>na</rosDebugLevel> -->
+    </plugin>
+  </gazebo>
+
+  <xacro:base_gazebo_v0/>
+
+  <xacro:wheel_gazebo_v0 prefix="right"/>
+  <xacro:wheel_gazebo_v0 prefix="left"/>
+
+
+
+
+
+  <material name="orange">
+    <color rgba="1.0 0.5 0.2 1" />
+  </material>
+  <material name="gray">
+    <color rgba="0.2 0.2 0.2 1" />
+  </material>
+
+  <link name="laser">
+    <visual>
+      <origin xyz="0 0 -0.035" />
+      <geometry>
+        <cylinder length="0.07" radius="0.0175" />
+      </geometry>
+      <material name="gray" />
+    </visual>
+  </link>
+
+  <joint name="laser_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="laser" />
+    <origin xyz="0.09 0 0.234"/>
+  </joint>
+
+  <joint name="camera_joint" type="fixed">
+    <origin xyz="0 0 0.3" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.1 0.02"/>
+      </geometry>
+      <material name="gray" />
+    </visual>
+  </link>
+
+  <joint name="camera_rgb_joint" type="fixed">
+    <origin xyz="0.003 0.011 0.009" rpy="0 0 0"/>
+    <parent link="camera_link"/>
+    <child link="camera_rgb_frame"/>
+  </joint>
+  <link name="camera_rgb_frame"/>
+
+  <joint name="camera_rgb_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+    <parent link="camera_rgb_frame"/>
+    <child link="camera_rgb_optical_frame"/>
+  </joint>
+  <link name="camera_rgb_optical_frame"/>
+
+  <gazebo reference="camera_rgb_frame">
+    <sensor type="camera" name="Pi Camera">
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <camera>
+          <horizontal_fov>1.085595</horizontal_fov>
+          <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+          </image>
+          <clip>
+              <near>0.03</near>
+              <far>100</far>
+          </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30.0</updateRate>
+        <cameraName>camera</cameraName>
+        <frameName>camera_rgb_optical_frame</frameName>
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
