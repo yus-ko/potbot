@@ -55,5 +55,28 @@
     <arg name="model" value="$(find potbot_description)/urdf/beego2.urdf.xacro"/>
   </include>
 
+  <rosparam>
+    robot_0:      
+      pan:
+        type: position_controllers/JointPositionController
+        joint: pan_joint
+        pid: {p: 2.0, i: 1.0, d: 0.1, i_clamp_min: -1.0, i_clamp_max: 1.0}
+      tilt:
+        type: position_controllers/JointPositionController
+        joint: tilt_joint
+        pid: {p: 2.0, i: 1.0, d: 0.1, i_clamp_min: -1.0, i_clamp_max: 1.0}
+      joint_state_controller:
+        type: joint_state_controller/JointStateController
+        publish_rate: 10  
+  </rosparam>
+  <node name="controller_spawner_pan" pkg="controller_manager"
+        type="spawner" respawn="false"
+        output="screen" ns="/robot_0"
+        args="pan joint_state_controller"/>
+
+  <node name="controller_spawner_tilt" pkg="controller_manager"
+        type="spawner" respawn="false"
+        output="screen" ns="/robot_0"
+        args="tilt joint_state_controller"/>
 
 </launch>

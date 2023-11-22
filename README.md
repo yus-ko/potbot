@@ -1,5 +1,21 @@
 # potbot
 
+# Installation
+ 
+はじめに以下のコマンドで必要なパッケージをインストールしてください
+ 
+```bash
+sudo apt install ros-melodic-gazebo-ros
+sudo apt install ros-melodic-gazebo-ros-control 
+sudo apt install ros-melodic-ros-control
+sudo apt install ros-melodic-ros-controllers 
+```
+```bash
+cd ~/catkin_ws/src
+git clone https://github.com/vstoneofficial/megarover_samples
+git clone https://github.com/ROBOTIS-GIT/turtlebot3
+```
+
 # 起動方法
 
 **Localization.launch**
