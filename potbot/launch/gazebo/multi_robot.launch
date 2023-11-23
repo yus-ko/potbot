@@ -66,8 +66,7 @@
         type: joint_state_controller/JointStateController
         publish_rate: 10  
   </rosparam>
-  <node name="controller_spawner_pan" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/robot_4" args="pan joint_state_controller"/>
-  <node name="controller_spawner_tilt" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/robot_4" args="tilt joint_state_controller"/>
+  <node name="controller_spawner_pan" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/robot_4" args="pan tilt joint_state_controller"/>
 
   <!-- megarover_ver2.1 -->
   <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
