@@ -505,40 +505,40 @@ void PathPlanningClass::__create_Path_used_weight()
 
     if (index > -1)
     {
-        nav_msgs::Path world_path;
-        world_path.header = header_;
-        world_path.header.frame_id = FRAME_ID_GLOBAL;
-        for (int i = 0; i <= index; i++)
-        {
-            geometry_msgs::PoseStamped world_pose, target_point;
-            world_pose.header = world_path.header;
+        // nav_msgs::Path world_path;
+        // world_path.header = header_;
+        // world_path.header.frame_id = FRAME_ID_GLOBAL;
+        // for (int i = 0; i <= index; i++)
+        // {
+        //     geometry_msgs::PoseStamped world_pose, target_point;
+        //     world_pose.header = world_path.header;
 
-            geometry_msgs::TransformStamped transform;
-            try 
-            {
-                // ロボット座標系の経路を世界座標系に変換
-                transform = tf_buffer_.lookupTransform(world_pose.header.frame_id, robot_path.poses[i].header.frame_id, ros::Time());
-                tf2::doTransform(robot_path.poses[i], world_pose, transform);
-            }
-            catch (tf2::TransformException &ex) 
-            {
-                ROS_ERROR("TF Ereor in 2: %s", ex.what());
-                return;
-            }
+        //     geometry_msgs::TransformStamped transform;
+        //     try 
+        //     {
+        //         // ロボット座標系の経路を世界座標系に変換
+        //         transform = tf_buffer_.lookupTransform(world_pose.header.frame_id, robot_path.poses[i].header.frame_id, ros::Time());
+        //         tf2::doTransform(robot_path.poses[i], world_pose, transform);
+        //     }
+        //     catch (tf2::TransformException &ex) 
+        //     {
+        //         ROS_ERROR("TF Ereor in 2: %s", ex.what());
+        //         return;
+        //     }
 
-            // int break_cnt = 0;
-            // while(!get_tf(robot_path.poses[i] ,world_pose, tf_buffer_) || break_cnt > 1000){break_cnt++;}
-            if (potbot_lib::utility::get_Distance(world_pose.pose.position,goal_.pose.position) > 0.06)
-            {
-                world_path.poses.push_back(world_pose);
-            }
-            else
-            {
-                break;
-            }
-        }
-        __bezier(world_path);
-        robot_path_ = world_path;
+        //     // int break_cnt = 0;
+        //     // while(!get_tf(robot_path.poses[i] ,world_pose, tf_buffer_) || break_cnt > 1000){break_cnt++;}
+        //     if (potbot_lib::utility::get_Distance(world_pose.pose.position,goal_.pose.position) > 0.06)
+        //     {
+        //         world_path.poses.push_back(world_pose);
+        //     }
+        //     else
+        //     {
+        //         break;
+        //     }
+        // }
+        __bezier(robot_path);
+        robot_path_ = robot_path;
     }
     
 }
@@ -668,40 +668,8 @@ void PathPlanningClass::__create_Path()
 
     if (index > -1)
     {
-        nav_msgs::Path world_path;
-        world_path.header = header_;
-        world_path.header.frame_id = FRAME_ID_GLOBAL;
-        for (int i = 0; i <= index; i++)
-        {
-            geometry_msgs::PoseStamped world_pose, target_point;
-            world_pose.header = world_path.header;
-
-            geometry_msgs::TransformStamped transform;
-            try 
-            {
-                // ロボット座標系の経路を世界座標系に変換
-                transform = tf_buffer_.lookupTransform(world_pose.header.frame_id, robot_path.poses[i].header.frame_id, ros::Time());
-                tf2::doTransform(robot_path.poses[i], world_pose, transform);
-            }
-            catch (tf2::TransformException &ex) 
-            {
-                ROS_ERROR("TF Ereor in 2: %s", ex.what());
-                return;
-            }
-
-            // int break_cnt = 0;
-            // while(!get_tf(robot_path.poses[i] ,world_pose, tf_buffer_) || break_cnt > 1000){break_cnt++;}
-            if (potbot_lib::utility::get_Distance(world_pose.pose.position,goal_.pose.position) > 0.06)
-            {
-                world_path.poses.push_back(world_pose);
-            }
-            else
-            {
-                break;
-            }
-        }
-        __bezier(world_path);
-        robot_path_ = world_path;
+        __bezier(robot_path);
+        robot_path_ = robot_path;
     }
     
 }

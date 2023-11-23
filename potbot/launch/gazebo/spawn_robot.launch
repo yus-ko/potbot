@@ -1,6 +1,6 @@
 <launch>
 	<env name="GAZEBO_MODEL_PATH" value="$(find potbot_description)/models:$(optenv GAZEBO_MODEL_PATH)"/>
-  <arg name="model" default="$(find megarover_samples)/robots/vmegarover.urdf.xacro"/>
+  <arg name="model" default="$(find potbot_description)/urdf/megarover21.urdf.xacro"/>
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
@@ -15,16 +15,17 @@
   <arg name="pitch" default="0.0"/>
   <arg name="yaw" default="0.0"/>
   <arg name="laser_visual" default="false"/>
+  <arg name="imu_visual" default="false"/>
+  <arg name="camera_visual" default="false"/>
   
   <group if="$(eval tf_prefix=='')">
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg model)'" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg model)' laser_visual:=$(arg laser_visual) imu_visual:=$(arg imu_visual) camera_visual:=$(arg camera_visual)" />
     <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model robot -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -param robot_description" />
   </group>
 
   <group unless="$(eval tf_prefix=='')" ns="$(arg tf_prefix)">
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg model)'" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg model)' laser_visual:=$(arg laser_visual) imu_visual:=$(arg imu_visual) camera_visual:=$(arg camera_visual)" />
     <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model $(arg tf_prefix) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -param robot_description" />
-    <!-- <include file="$(find megarover_samples)/launch/vmegarover_control.launch"/> -->
   </group>
 
 </launch>

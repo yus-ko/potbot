@@ -12,13 +12,16 @@
     <arg name="debug" value="false"/>
   </include>
 
+  <!-- turtlebot3 waffle_pi -->
   <!-- <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
     <arg name="tf_prefix" value="robot_0"/>
     <arg name="model" value="waffle_pi"/>
     <arg name="laser_visual" value="true"/>
+    <arg name="imu_visual" value="false"/>
     <arg name="camera_visual" value="true"/>
   </include> -->
 
+  <!-- turtlebot3 burger -->
   <!-- <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
     <arg name="tf_prefix" value="robot_1"/>
     <arg name="model" value="burger"/>
@@ -28,6 +31,7 @@
     <arg name="laser_visual" value="true"/>
   </include> -->
 
+  <!-- turtlebot3 waffle -->
   <!-- <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
     <arg name="tf_prefix" value="robot_2"/>
     <arg name="model" value="waffle"/>
@@ -38,25 +42,18 @@
     <arg name="camera_visual" value="true"/>
   </include> -->
 
-  <!-- <include file="$(find potbot)/launch/gazebo/spawn_vmegarover.launch">
-    <arg name="x_pos" value="6"/>
-    <arg name="y_pos" value="2"/>
-    <arg name="yaw" value="3.14"/>
-    <arg name="laser_visual" value="true"/>
-  </include> -->
-
-  <!-- <include file="$(find potbot)/launch/gazebo/spawn_vmegarover.launch">
-    <arg name="tf_prefix" value="robot_0"/>
-    <arg name="model" value="$(find potbot_description)/urdf/megarover21.urdf.xacro"/>
-  </include> -->
-
-  <include file="$(find potbot)/launch/gazebo/spawn_vmegarover.launch">
-    <arg name="tf_prefix" value="robot_0"/>
-    <arg name="model" value="$(find potbot_description)/urdf/beego2.urdf.xacro"/>
+  <!-- beego2(パンチルト) -->
+  <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
+    <arg name="tf_prefix"       value="robot_4"/>
+    <arg name="model"           value="$(find potbot_description)/urdf/beego2.urdf.xacro"/>
+    <arg name="x_pos"           value="3"/>
+    <arg name="y_pos"           value="-1"/>
+    <arg name="yaw"             value="3.14"/>
+    <arg name="laser_visual"    value="true"/>
+    <arg name="camera_visual"   value="true"/>
   </include>
-
   <rosparam>
-    robot_0:      
+    robot_4:      
       pan:
         type: position_controllers/JointPositionController
         joint: pan_joint
@@ -69,14 +66,15 @@
         type: joint_state_controller/JointStateController
         publish_rate: 10  
   </rosparam>
-  <node name="controller_spawner_pan" pkg="controller_manager"
-        type="spawner" respawn="false"
-        output="screen" ns="/robot_0"
-        args="pan joint_state_controller"/>
+  <node name="controller_spawner_pan" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/robot_4" args="pan joint_state_controller"/>
+  <node name="controller_spawner_tilt" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/robot_4" args="tilt joint_state_controller"/>
 
-  <node name="controller_spawner_tilt" pkg="controller_manager"
-        type="spawner" respawn="false"
-        output="screen" ns="/robot_0"
-        args="tilt joint_state_controller"/>
+  <!-- megarover_ver2.1 -->
+  <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
+    <arg name="tf_prefix"       value="robot_5"/>
+    <arg name="model"           value="$(find potbot_description)/urdf/megarover21.urdf.xacro"/>
+    <arg name="laser_visual"    value="true"/>
+    <arg name="camera_visual"   value="true"/>
+  </include>
 
 </launch>

@@ -7,7 +7,7 @@
   <xacro:property name="wheel_radius" value="0.076"/>
   <xacro:property name="wheel_length" value="0.03"/>
   <xacro:property name="wheel_mass" value="0.823"/>
-
+  
   <link name="base_footprint"/>
 
   <joint name="base_joint" type="fixed">
@@ -92,7 +92,7 @@
     <parent link="base_link" />
     <child link="base_scan" />
     <!-- <origin xyz="0.09 0 0.234"/> -->
-    <origin xyz="0.09 0 0.223" rpy="${M_PI} 0 0"/>
+    <origin xyz="0.09 0 0.223" rpy="0 0 0"/>
   </joint>
 
   <!-- <link name="base_scan">
@@ -101,12 +101,13 @@
       <geometry>
         <cylinder length="0.07" radius="0.0175" />
       </geometry>
-      <material name="gray" />
+      <material name="grey" />
     </visual>
   </link> -->
 
   <link name="base_scan">
     <visual>
+      <origin xyz="0 0 0" rpy="${M_PI} 0 0"/>
       <geometry>
         <mesh filename="package://megarover_samples/meshes/dae/lrf.dae"/>
       </geometry>
@@ -122,9 +123,31 @@
     </inertial>
   </link>
 
-  <joint name="camera_joint" type="fixed">
-    <origin xyz="0.06 0 0.455" rpy="0 0 0"/>
+  <joint name="camera_stay_joint" type="fixed">
+    <origin xyz="0.06 0 0.2275" rpy="0 0 0"/>
     <parent link="base_link"/>
+    <child link="camera_stay_link"/>
+  </joint>
+
+  <link name="camera_stay_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.455"/>
+      </geometry>
+      <material name="grey" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.455"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <origin xyz="0 0 0.2275" rpy="0 0 0"/>
+    <parent link="camera_stay_link"/>
     <child link="camera_link"/>
   </joint>
 
@@ -134,22 +157,22 @@
       <geometry>
         <box size="0.03 0.165 0.03"/>
       </geometry>
-      <material name="gray" />
+      <material name="white" />
     </visual>
   </link>
 
-  <joint name="camera_rgb_joint" type="fixed">
+  <joint name="stereo_camera_joint" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <parent link="camera_link"/>
-    <child link="camera_rgb_frame"/>
+    <child link="stereo_camera_frame"/>
   </joint>
-  <link name="camera_rgb_frame"/>
+  <link name="stereo_camera_frame"/>
 
-  <joint name="camera_rgb_optical_joint" type="fixed">
+  <joint name="stereo_camera_optical_joint" type="fixed">
     <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
-    <parent link="camera_rgb_frame"/>
-    <child link="camera_rgb_optical_frame"/>
+    <parent link="stereo_camera_frame"/>
+    <child link="stereo_camera_optical_frame"/>
   </joint>
-  <link name="camera_rgb_optical_frame"/>
+  <link name="stereo_camera_optical_frame"/>
 
 </robot>

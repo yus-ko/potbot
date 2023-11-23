@@ -5,6 +5,7 @@
   <xacro:arg name="imu_visual"    default="false"/>
 
   <gazebo reference="base_link">
+    <material>Gazebo/Grey</material>
     <selfCollide>false</selfCollide>
     <mu1 value="0.0" />
     <mu2 value="0.0" />
@@ -20,6 +21,22 @@
     <selfCollide>false</selfCollide>
     <mu1 value="1.0" />
     <mu2 value="1.0" />
+  </gazebo>
+
+  <gazebo reference="caster_back_link">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="camera_stay_link">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+
+  <gazebo reference="pan_link">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="tilt_link">
+    <material>Gazebo/Black</material>
   </gazebo>
 
   <gazebo>
@@ -48,7 +65,7 @@
   <gazebo reference="base_scan">
     <sensor type="ray" name="urg_lrf_sensor">
       <pose>0 0 0 0 0 0</pose>
-      <visualize>true</visualize>
+      <visualize>$(arg laser_visual)</visualize>
       <update_rate>40</update_rate>
       <ray>
         <scan>
@@ -77,35 +94,51 @@
     </sensor>
   </gazebo>
 
-  <gazebo reference="camera_rgb_frame">
+  <gazebo reference="stereo_camera_frame">
     <sensor type="camera" name="Pi Camera">
       <always_on>true</always_on>
-      <visualize>true</visualize>
+      <visualize>$(arg camera_visual)</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="stereo_camera_frame">
+    <sensor name="depth_camera" type="depth">
+      <update_rate>20</update_rate>
       <camera>
-          <horizontal_fov>1.085595</horizontal_fov>
-          <image>
-              <width>640</width>
-              <height>480</height>
-              <format>R8G8B8</format>
-          </image>
-          <clip>
-              <near>0.03</near>
-              <far>100</far>
-          </clip>
+        <horizontal_fov>1.047198</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>3</far>
+        </clip>
       </camera>
-      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+      <plugin name="depth_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+        <baseline>0.2</baseline>
         <alwaysOn>true</alwaysOn>
-        <updateRate>30.0</updateRate>
-        <cameraName>camera</cameraName>
-        <frameName>camera_rgb_optical_frame</frameName>
-        <imageTopicName>rgb/image_raw</imageTopicName>
-        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
-        <hackBaseline>0.07</hackBaseline>
-        <distortionK1>0.0</distortionK1>
-        <distortionK2>0.0</distortionK2>
-        <distortionK3>0.0</distortionK3>
-        <distortionT1>0.0</distortionT1>
-        <distortionT2>0.0</distortionT2>
+        <updateRate>1.0</updateRate>
+        <cameraName>realsense</cameraName>
+        <imageTopicName>color/image_raw</imageTopicName>
+        <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
+        <depthImageTopicName>depth/image_raw</depthImageTopicName>
+        <depthImageInfoTopicName>depth/camera_info</depthImageInfoTopicName>
+        <pointCloudTopicName>depth/points</pointCloudTopicName>
+        <frameName>stereo_camera_optical_frame</frameName>
+        <pointCloudCutoff>0.5</pointCloudCutoff>
+        <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+        <distortionK1>0.00000001</distortionK1>
+        <distortionK2>0.00000001</distortionK2>
+        <distortionK3>0.00000001</distortionK3>
+        <distortionT1>0.00000001</distortionT1>
+        <distortionT2>0.00000001</distortionT2>
+        <CxPrime>0</CxPrime>
+        <Cx>0</Cx>
+        <Cy>0</Cy>
+        <focalLength>0</focalLength>
+        <hackBaseline>0</hackBaseline>
       </plugin>
     </sensor>
   </gazebo>

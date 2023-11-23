@@ -22,6 +22,7 @@
       <geometry>
         <box size="0.2 0.2 0.2"/>
       </geometry>
+      <material name="grey" />
     </visual>
     <collision>
       <origin xyz="-0.08 0.1"/>
@@ -29,11 +30,10 @@
         <box size="0.2 0.2 0.2"/>
       </geometry>
     </collision>
-    <!-- <inertial>
-      <origin xyz="-0.08 0 0.1"/>
-      <mass value="5"/>
-      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
-    </inertial> -->
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="5" height="0.2" width="0.2" depth="0.2"/>
+    </inertial>
   </link>
 
   <joint name="wheel_left_joint" type="continuous">
@@ -49,6 +49,7 @@
       <geometry>
         <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
       </geometry>
+      <material name="white" />
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
@@ -75,6 +76,7 @@
       <geometry>
         <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
       </geometry>
+      <material name="white" />
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
@@ -100,6 +102,7 @@
       <geometry>
         <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
       </geometry>
+      <material name="black" />
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
@@ -109,7 +112,7 @@
     </collision>
     <inertial>
       <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
-      <xacro:cylinder_inertial mass="${wheel_mass}" radius="${wheel_radius}" length="${wheel_length}"/>
+      <xacro:cylinder_inertial mass="${wheel_mass*5}" radius="${wheel_radius}" length="${wheel_length}"/>
     </inertial>
   </link>
 
@@ -136,11 +139,37 @@
     </inertial>
   </link>
 
+  <joint name="camera_stay_joint" type="fixed">
+    <origin xyz="0.06 0 0.2275" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_stay_link"/>
+  </joint>
+
+  <link name="camera_stay_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.455"/>
+      </geometry>
+      <material name="grey" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.455"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="0.5" height="0.455" width="0.02" depth="0.02"/>
+    </inertial>
+  </link>
+
   <joint name="pan_joint" type="revolute">
     <axis xyz="0 0 1"/>
-    <origin xyz="0.06 0 0.455" rpy="0 0 0"/>
+    <origin xyz="0 0 0.2375" rpy="0 0 0"/>
     <limit lower="-1" upper="1" effort="100" velocity="100"/>
-    <parent link="base_link"/>
+    <parent link="camera_stay_link"/>
     <child link="pan_link"/>
   </joint>
 
@@ -164,9 +193,8 @@
       <material name="black" />
     </visual>
     <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="0.1" height="0.01" width="0.01" depth="0.01"/>
     </inertial>
   </link>
 
@@ -198,9 +226,8 @@
       <material name="black" />
     </visual>
     <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="0.1" height="0.01" width="0.01" depth="0.01"/>
     </inertial>
   </link>
 
@@ -216,7 +243,7 @@
       <geometry>
         <box size="0.03 0.165 0.03"/>
       </geometry>
-      <material name="gray" />
+      <material name="white" />
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -224,36 +251,20 @@
         <box size="0.03 0.165 0.03"/>
       </geometry>
     </collision>
-    <!-- <inertial>
-      <mass value="1.0"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
-    </inertial> -->
   </link>
 
-  <joint name="camera_rgb_joint" type="fixed">
+  <joint name="stereo_camera_joint" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <parent link="camera_link"/>
-    <child link="camera_rgb_frame"/>
+    <child link="stereo_camera_frame"/>
   </joint>
-  <link name="camera_rgb_frame"/>
+  <link name="stereo_camera_frame"/>
 
-  <joint name="camera_rgb_optical_joint" type="fixed">
+  <joint name="stereo_camera_optical_joint" type="fixed">
     <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
-    <parent link="camera_rgb_frame"/>
-    <child link="camera_rgb_optical_frame"/>
+    <parent link="stereo_camera_frame"/>
+    <child link="stereo_camera_optical_frame"/>
   </joint>
-  <link name="camera_rgb_optical_frame"/>
-
-  <!-- <transmission name="pan_motor_transmission">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="camera_joint">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </joint>
-    <actuator name="pan_motor">
-      <mechanicalReduction>1</mechanicalReduction>
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-    </actuator>
-  </transmission> -->
+  <link name="stereo_camera_optical_frame"/>
 
 </robot>

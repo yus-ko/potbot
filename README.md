@@ -14,6 +14,7 @@ sudo apt install ros-melodic-ros-controllers
 cd ~/catkin_ws/src
 git clone https://github.com/vstoneofficial/megarover_samples
 git clone https://github.com/ROBOTIS-GIT/turtlebot3
+git clone -b melodic https://github.com/ros-perception/image_pipeline
 ```
 
 # 起動方法
