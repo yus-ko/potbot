@@ -168,7 +168,7 @@
   <joint name="pan_joint" type="revolute">
     <axis xyz="0 0 1"/>
     <origin xyz="0 0 0.2375" rpy="0 0 0"/>
-    <limit lower="-1" upper="1" effort="100" velocity="100"/>
+    <limit lower="-0.87" upper="0.87" effort="100" velocity="100"/>
     <parent link="camera_stay_link"/>
     <child link="pan_link"/>
   </joint>
@@ -201,7 +201,7 @@
   <joint name="tilt_joint" type="revolute">
     <axis xyz="0 1 0"/>
     <origin xyz="0 -0.0825 0.015" rpy="0 0 0"/>
-    <limit lower="-1" upper="1" effort="100" velocity="100"/>
+    <limit lower="-0.87" upper="0.87" effort="100" velocity="100"/>
     <parent link="pan_link"/>
     <child link="tilt_link"/>
   </joint>

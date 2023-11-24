@@ -49,7 +49,7 @@
     <arg name="x_pos"           value="3"/>
     <arg name="y_pos"           value="-1"/>
     <arg name="yaw"             value="3.14"/>
-    <arg name="laser_visual"    value="true"/>
+    <!-- <arg name="laser_visual"    value="true"/> -->
     <arg name="camera_visual"   value="true"/>
   </include>
   <rosparam>
@@ -69,11 +69,11 @@
   <node name="controller_spawner_pan" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/robot_4" args="pan tilt joint_state_controller"/>
 
   <!-- megarover_ver2.1 -->
-  <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
+  <!-- <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
     <arg name="tf_prefix"       value="robot_5"/>
     <arg name="model"           value="$(find potbot_description)/urdf/megarover21.urdf.xacro"/>
     <arg name="laser_visual"    value="true"/>
     <arg name="camera_visual"   value="true"/>
-  </include>
+  </include> -->
 
 </launch>
