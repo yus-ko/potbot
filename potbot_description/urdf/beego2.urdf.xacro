@@ -18,21 +18,21 @@
 
   <link name="base_link">
     <visual>
-      <origin xyz="-0.08 0 0.1"/>
+      <origin xyz="-0.08 0 0.115"/>
       <geometry>
-        <box size="0.2 0.2 0.2"/>
+        <box size="0.2 0.2 0.23"/>
       </geometry>
       <material name="grey" />
     </visual>
     <collision>
-      <origin xyz="-0.08 0.1"/>
+      <origin xyz="-0.08 0.115"/>
       <geometry>
-        <box size="0.2 0.2 0.2"/>
+        <box size="0.2 0.2 0.23"/>
       </geometry>
     </collision>
     <inertial>
       <origin xyz="0 0 0"/>
-      <xacro:box_inertial mass="5" height="0.2" width="0.2" depth="0.2"/>
+      <xacro:box_inertial mass="5" height="0.2" width="0.2" depth="0.23"/>
     </inertial>
   </link>
 
@@ -119,7 +119,7 @@
   <joint name="scan_joint" type="fixed">
     <parent link="base_link" />
     <child link="base_scan" />
-    <origin xyz="0.09 0 0.223" rpy="${M_PI} 0 0"/>
+    <origin xyz="0.1 0 0.18" rpy="${M_PI} 0 0"/>
   </joint>
 
   <link name="base_scan">
@@ -140,7 +140,7 @@
   </link>
 
   <joint name="camera_stay_joint" type="fixed">
-    <origin xyz="0.06 0 0.2275" rpy="0 0 0"/>
+    <origin xyz="0.065 0 0.26" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="camera_stay_link"/>
   </joint>
@@ -149,25 +149,25 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.02 0.02 0.455"/>
+        <box size="0.02 0.02 0.29"/>
       </geometry>
       <material name="grey" />
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.02 0.02 0.455"/>
+        <box size="0.02 0.02 0.29"/>
       </geometry>
     </collision>
     <inertial>
       <origin xyz="0 0 0"/>
-      <xacro:box_inertial mass="0.5" height="0.455" width="0.02" depth="0.02"/>
+      <xacro:box_inertial mass="0.5" height="0.29" width="0.02" depth="0.02"/>
     </inertial>
   </link>
 
   <joint name="pan_joint" type="revolute">
     <axis xyz="0 0 1"/>
-    <origin xyz="0 0 0.2375" rpy="0 0 0"/>
+    <origin xyz="0.035 0 0.145" rpy="0 0 0"/>
     <limit lower="-0.87" upper="0.87" effort="100" velocity="100"/>
     <parent link="camera_stay_link"/>
     <child link="pan_link"/>
