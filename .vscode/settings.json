@@ -70,7 +70,9 @@
         "set": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "forward_list": "cpp"
+        "forward_list": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp"
     },
     "cmake.sourceDirectory": "/home/ros/catkin_ws/src/potbot/potbot"
 }

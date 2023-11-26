@@ -1,6 +1,7 @@
-// #include <iostream>
+#include <random>
 #include <ros/ros.h>
 // #include <ros/package.h>
+#include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/Odometry.h>
@@ -24,6 +25,20 @@ namespace potbot_lib{
 
     const int CSV_PATH = 0;
     const int POTENTIAL_METHOD = 1;
+
+    namespace color{
+        const int RED           = 0;
+        const int GREEN         = 1;
+        const int BLUE          = 2;
+        const int YELLOW        = 3;
+        const int LIGHT_BLUE    = 4;
+        const int PURPLE        = 5;
+        const int WHITE         = 6;
+        const int BLACK         = 7;
+
+        std_msgs::ColorRGBA get_msg(int color_id = potbot_lib::color::RED);
+        std_msgs::ColorRGBA get_msg(std::string color_name);
+    }
 
     namespace utility{
         void get_RPY(geometry_msgs::Quaternion orientation, double &roll, double &pitch, double &yaw);

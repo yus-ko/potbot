@@ -25,7 +25,7 @@
       <material name="grey" />
     </visual>
     <collision>
-      <origin xyz="-0.08 0.115"/>
+      <origin xyz="-0.08 0 0.115"/>
       <geometry>
         <box size="0.2 0.2 0.23"/>
       </geometry>

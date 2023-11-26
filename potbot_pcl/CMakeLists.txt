@@ -1,29 +1,44 @@
+
+
+
+
 cmake_minimum_required(VERSION 3.0.2)
 project(potbot_pcl)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  sensor_msgs
-  message_generation
-  cv_bridge
   pcl_ros
-  dynamic_reconfigure
-  # beego_control
-  #dynamixel_sdk
-  #dynamixel_sdk_examples
-  #obstacle_detection_2019
-  visualization_msgs
-  #autonomous_mobile_robot
+  potbot_lib
+  potbot_msgs
 )
-find_package(OpenCV REQUIRED)
-find_package(PCL REQUIRED)
+find_package(PCL 1.8 REQUIRED)
 
+generate_dynamic_reconfigure_options(
+  cfg/ClusteringParam.cfg
+)
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME} potbot_lib
+)
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
 )
+
+add_executable(         ${PROJECT_NAME}_main src/main_2.cpp)
+target_link_libraries(  ${PROJECT_NAME}_main ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_executable(         ${PROJECT_NAME}_tutorial src/tutorial.cpp)
+target_link_libraries(  ${PROJECT_NAME}_tutorial ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_executable(         ${PROJECT_NAME}_tutorial2 src/main.cpp)
+target_link_libraries(  ${PROJECT_NAME}_tutorial2 ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_executable(         ${PROJECT_NAME}_cl3d src/constructor.cpp src/debug_main.cpp src/methods.cpp src/property.cpp src/callback.cpp)
+target_link_libraries(  ${PROJECT_NAME}_cl3d ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+
 
 add_definitions(-std=c++14)

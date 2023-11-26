@@ -1,6 +1,99 @@
 #include <potbot_lib/Utility.h>
 
 namespace potbot_lib{
+    namespace color{
+        std_msgs::ColorRGBA get_msg(int color_id)
+        {
+            std_msgs::ColorRGBA color;
+            if(color_id < 0)
+            {
+                static std::random_device rd;
+                static std::mt19937 gen(rd());
+                static std::uniform_real_distribution<> dis(0.0, 1.0);
+                color.r = dis(gen);
+                color.g = dis(gen);
+                color.b = dis(gen);
+                color.a = 1;
+            }
+            else
+            {
+                int num = color_id%8;
+                if(num == potbot_lib::color::RED)
+                {
+                    color.r = 1; color.g = 0; color.b = 0; color.a = 1;
+                }
+                else if(num == potbot_lib::color::GREEN)
+                {
+                    color.r = 0; color.g = 1; color.b = 0; color.a = 1;
+                }else if(num == potbot_lib::color::BLUE)
+                {
+                    color.r = 0; color.g = 0; color.b = 1; color.a = 1;
+                }else if(num == potbot_lib::color::YELLOW)
+                {
+                    color.r = 1; color.g = 1; color.b = 0; color.a = 1;
+                }else if(num == potbot_lib::color::LIGHT_BLUE)
+                {
+                    color.r = 0; color.g = 1; color.b = 1; color.a = 1;
+                }else if(num == potbot_lib::color::PURPLE)
+                {
+                    color.r = 1; color.g = 0; color.b = 1; color.a = 1;
+                }else if(num == potbot_lib::color::BLACK)
+                {
+                    color.r = 0; color.g = 0; color.b = 0; color.a = 1;
+                }else if(num == potbot_lib::color::WHITE)
+                {
+                    color.r = 1; color.g = 1; color.b = 1; color.a = 1;
+                }
+            }
+            
+            return color;
+        }
+
+        std_msgs::ColorRGBA get_msg(std::string color_name)
+        {
+            if (color_name == "r" || color_name == "red")
+            {
+                return get_msg(potbot_lib::color::RED);
+            }
+            else if(color_name == "g" || color_name == "green")
+            {
+                return get_msg(potbot_lib::color::GREEN);
+            }
+            else if(color_name == "b" || color_name == "blue")
+            {
+                return get_msg(potbot_lib::color::BLUE);
+            }
+            else if(color_name == "y" || color_name == "yellow")
+            {
+                return get_msg(potbot_lib::color::YELLOW);
+            }
+            else if(color_name == "lb" || color_name == "light_blue")
+            {
+                return get_msg(potbot_lib::color::LIGHT_BLUE);
+            }
+            else if(color_name == "p" || color_name == "purple")
+            {
+                return get_msg(potbot_lib::color::PURPLE);
+            }
+            else if(color_name == "k" || color_name == "black")
+            {
+                return get_msg(potbot_lib::color::BLACK);
+            }
+            else if(color_name == "w" || color_name == "white")
+            {
+                return get_msg(potbot_lib::color::WHITE);
+            }
+            else if(color_name == "random")
+            {
+                return get_msg(-1);
+            }
+            else
+            {
+                return get_msg(potbot_lib::color::RED);
+            }
+        }
+    }
+
     namespace utility{
 
         void get_RPY(geometry_msgs::Quaternion orientation, double &roll, double &pitch, double &yaw)
@@ -185,6 +278,7 @@ namespace potbot_lib{
             }
             return total_length;
         }
+
     }
 
 }
