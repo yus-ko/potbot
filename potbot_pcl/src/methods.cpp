@@ -19,6 +19,12 @@ void Clustering3DClass::__DownSampling()
     vg.setLeafSize(DownSampling_voxel_size_, DownSampling_voxel_size_, DownSampling_voxel_size_);
     vg.filter (*cloud_filtered_);
     ROS_INFO("PointCloud after filtering has: %d data points.", cloud_filtered_->size());
+
+    pcl::PCLPointCloud2 cloud_pointcloud2;
+    pcl::toPCLPointCloud2(*cloud_filtered_, cloud_pointcloud2);
+    sensor_msgs::PointCloud2 cloud_ros;
+    pcl_conversions::fromPCL(cloud_pointcloud2, cloud_ros);
+    pub_cpl_0_.publish(cloud_ros);
 }
 
 void Clustering3DClass::__Plane_removal()
@@ -63,6 +69,11 @@ void Clustering3DClass::__Plane_removal()
         extract.filter (*cloud_f);
         *cloud_filtered_ = *cloud_f;
     }
+    pcl::PCLPointCloud2 cloud_pointcloud2;
+    pcl::toPCLPointCloud2(*cloud_filtered_, cloud_pointcloud2);
+    sensor_msgs::PointCloud2 cloud_ros;
+    pcl_conversions::fromPCL(cloud_pointcloud2, cloud_ros);
+    pub_pcl_1_.publish(cloud_ros);
 }
 
 void Clustering3DClass::__SuperVoxelClustering()

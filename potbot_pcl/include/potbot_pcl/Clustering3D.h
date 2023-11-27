@@ -34,7 +34,7 @@ class Clustering3DClass{
 		ros::Subscriber sub_pcl2_;
         //送信データ
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_marker_;
+        ros::Publisher pub_marker_, pub_pcl_0_, pub_pcl_1_;
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_raw_ {new pcl::PointCloud<pcl::PointXYZ>};
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered_ {new pcl::PointCloud<pcl::PointXYZ>};
