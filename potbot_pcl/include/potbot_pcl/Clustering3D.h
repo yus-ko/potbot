@@ -30,10 +30,10 @@ class Clustering3DClass{
         // tf2_ros::Buffer tf_buffer_;
         
         //センサーデータ
-		ros::NodeHandle nhSub;
+		ros::NodeHandle nhSub_;
 		ros::Subscriber sub_pcl2_;
         //送信データ
-		ros::NodeHandle nhPub;
+		ros::NodeHandle nhPub_;
         ros::Publisher pub_marker_, pub_pcl_0_, pub_pcl_1_;
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_raw_ {new pcl::PointCloud<pcl::PointXYZ>};

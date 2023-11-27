@@ -24,7 +24,7 @@ void Clustering3DClass::__DownSampling()
     pcl::toPCLPointCloud2(*cloud_filtered_, cloud_pointcloud2);
     sensor_msgs::PointCloud2 cloud_ros;
     pcl_conversions::fromPCL(cloud_pointcloud2, cloud_ros);
-    pub_cpl_0_.publish(cloud_ros);
+    pub_pcl_0_.publish(cloud_ros);
 }
 
 void Clustering3DClass::__Plane_removal()
@@ -113,54 +113,60 @@ void Clustering3DClass::__SuperVoxelClustering()
             adjacent_supervoxel_voxels = *(neighbor_supervoxel->voxels_);
         }
 
-
-        visualization_msgs::Marker marker;
-        marker.header = header_;
-        marker.ns = "cluster_display";
-        marker.id = marker_array.markers.size();
-        marker.lifetime = ros::Duration(0.2);
-
-        marker.type = visualization_msgs::Marker::CUBE_LIST;
-        marker.action = visualization_msgs::Marker::ADD;
-
-        marker.pose.position.x = 0;
-        marker.pose.position.y = 0;
-        marker.pose.position.z = 0;
-        marker.pose.orientation = potbot_lib::utility::get_Quat(0,0,0);
-
-        marker.scale.x = Supervoxel_voxel_resolution_;
-        marker.scale.y = Supervoxel_voxel_resolution_;
-        marker.scale.z = Supervoxel_voxel_resolution_;
-
-        std::vector<geometry_msgs::Point> points;
-        std::vector<std_msgs::ColorRGBA> colors;
+        visualization_msgs::Marker marker_centor;
+        marker_centor.header = header_;
+        marker_centor.ns = "SuperVoxel/centor";
+        marker_centor.lifetime = ros::Duration(0.2);
+        marker_centor.type = visualization_msgs::Marker::CUBE;
+        marker_centor.action = visualization_msgs::Marker::ADD;
+        marker_centor.pose.orientation = potbot_lib::utility::get_Quat(0,0,0);
+        pcl::PointXYZ minPt, maxPt;
+        pcl::getMinMax3D (adjacent_supervoxel_voxels, minPt, maxPt);
+        if(abs(maxPt.x - minPt.x) == 0) marker_centor.scale.x = Supervoxel_voxel_resolution_;
+        else                            marker_centor.scale.x = abs(maxPt.x - minPt.x);
+        if(abs(maxPt.y - minPt.y) == 0) marker_centor.scale.y = Supervoxel_voxel_resolution_;
+        else                            marker_centor.scale.y = abs(maxPt.y - minPt.y);  
+        if(abs(maxPt.z - minPt.z) == 0) marker_centor.scale.x = Supervoxel_voxel_resolution_;
+        else                            marker_centor.scale.z = abs(maxPt.z - minPt.z);
+        
         for(int i = 0; i < adjacent_supervoxel_centers.size(); i++)
         {
-            
-            geometry_msgs::Point point;
-            point.x = adjacent_supervoxel_centers[i].x;
-            point.y = adjacent_supervoxel_centers[i].y;
-            point.z = adjacent_supervoxel_centers[i].z;
-            
-            points.push_back(point);
-            colors.push_back(potbot_lib::color::get_msg(marker.id));
-        
+            marker_centor.id = marker_array.markers.size();
+            marker_centor.pose.position.x = adjacent_supervoxel_centers[i].x;
+            marker_centor.pose.position.y = adjacent_supervoxel_centers[i].y;
+            marker_centor.pose.position.z = adjacent_supervoxel_centers[i].z;
+            marker_centor.color = potbot_lib::color::get_msg(marker_centor.id);
+            marker_array.markers.push_back(marker_centor);
+
+            if(i == 0)
+            {
+                visualization_msgs::Marker marker_voxels = marker_centor;
+                marker_voxels.ns = "SuperVoxel/points";
+                marker_voxels.id = marker_array.markers.size();
+
+                marker_voxels.type = visualization_msgs::Marker::CUBE_LIST;
+
+                marker_voxels.pose.position.x = 0;
+                marker_voxels.pose.position.y = 0;
+                marker_voxels.pose.position.z = 0;
+
+                marker_voxels.scale.x = Supervoxel_voxel_resolution_;
+                marker_voxels.scale.y = Supervoxel_voxel_resolution_;
+                marker_voxels.scale.z = Supervoxel_voxel_resolution_;
+                
+                for(int i = 0; i < adjacent_supervoxel_voxels.size(); i++)
+                {
+                    geometry_msgs::Point point;
+                    point.x = adjacent_supervoxel_voxels[i].x;
+                    point.y = adjacent_supervoxel_voxels[i].y;
+                    point.z = adjacent_supervoxel_voxels[i].z;
+                    
+                    marker_voxels.points.push_back(point);
+                    marker_voxels.colors.push_back(marker_voxels.color);
+                }
+                marker_array.markers.push_back(marker_voxels);
+            }
         }
-        for(int i = 0; i < adjacent_supervoxel_voxels.size(); i++)
-        {
-            
-            geometry_msgs::Point point;
-            point.x = adjacent_supervoxel_voxels[i].x;
-            point.y = adjacent_supervoxel_voxels[i].y;
-            point.z = adjacent_supervoxel_voxels[i].z;
-            
-            points.push_back(point);
-            colors.push_back(potbot_lib::color::get_msg(marker.id));
-        
-        }
-        marker.points = points;
-        marker.colors = colors;
-        marker_array.markers.push_back(marker);
         
         //Move iterator forward to next label
         label_itr = supervoxel_adjacency.upper_bound (supervoxel_label);
@@ -215,27 +221,41 @@ void Clustering3DClass::__EuclideanClustering()
     visualization_msgs::MarkerArray marker_array;
     for(size_t i=0;i<clusters.size();i++)
     {
-        visualization_msgs::Marker marker;
+        visualization_msgs::Marker marker_centor;
 
-        marker.header = header_;
-        marker.ns = "cluster_display";
-        marker.id = marker_array.markers.size();
-        marker.lifetime = ros::Duration(0.2);
+        marker_centor.header = header_;
+        marker_centor.ns = "Euclidean/centor";
+        marker_centor.id = marker_array.markers.size();
+        marker_centor.lifetime = ros::Duration(0.2);
 
-        marker.type = visualization_msgs::Marker::SPHERE_LIST;
-        marker.action = visualization_msgs::Marker::ADD;
+        marker_centor.type = visualization_msgs::Marker::SPHERE;
+        marker_centor.action = visualization_msgs::Marker::ADD;
+        
+        pcl::PointXYZ minPt, maxPt;
+        pcl::getMinMax3D (*(clusters[i]), minPt, maxPt);
+        marker_centor.pose.position.x = (maxPt.x - minPt.x)/2 + minPt.x;
+        marker_centor.pose.position.y = (maxPt.y - minPt.y)/2 + minPt.y;
+        marker_centor.pose.position.z = (maxPt.z - minPt.z)/2 + minPt.z;
 
-        marker.pose.position.x = 0;
-        marker.pose.position.y = 0;
-        marker.pose.position.z = 0;
+        marker_centor.pose.orientation = potbot_lib::utility::get_Quat(0,0,0);
 
-        marker.pose.orientation = potbot_lib::utility::get_Quat(0,0,0);
+        marker_centor.scale.x = abs(maxPt.x - minPt.x);
+        marker_centor.scale.y = abs(maxPt.y - minPt.y);
+        marker_centor.scale.z = abs(maxPt.z - minPt.z);
 
-        marker.scale.x = DownSampling_voxel_size_;
-        marker.scale.y = DownSampling_voxel_size_;
-        marker.scale.z = DownSampling_voxel_size_;
+        marker_centor.color = potbot_lib::color::get_msg(marker_centor.id);
+        marker_array.markers.push_back(marker_centor);
 
-        marker.color = potbot_lib::color::get_msg(i);
+        visualization_msgs::Marker marker_points = marker_centor;
+        marker_points.ns = "Euclidean/points";
+        marker_points.id = marker_array.markers.size();
+        marker_points.type = visualization_msgs::Marker::SPHERE_LIST;
+        marker_points.pose.position.x = 0;
+        marker_points.pose.position.y = 0;
+        marker_points.pose.position.z = 0;
+        marker_points.scale.x = DownSampling_voxel_size_;
+        marker_points.scale.y = DownSampling_voxel_size_;
+        marker_points.scale.z = DownSampling_voxel_size_;
         
         for(int j = 0; j < clusters[i]->points.size(); j++)
         {
@@ -244,14 +264,15 @@ void Clustering3DClass::__EuclideanClustering()
             point.x = clusters[i]->points[j].x;
             point.y = clusters[i]->points[j].y;
             point.z = clusters[i]->points[j].z;
-
-            std_msgs::ColorRGBA color = potbot_lib::color::get_msg(i);
             
-            marker.points.push_back(point);
-            marker.colors.push_back(color);
+            marker_points.points.push_back(point);
+            marker_points.colors.push_back(marker_centor.color);
         
         }
-        marker_array.markers.push_back(marker);
+        marker_array.markers.push_back(marker_points);
+
+
+
     }
     if(!marker_array.markers.empty()) pub_marker_.publish(marker_array);
 
