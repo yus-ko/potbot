@@ -141,7 +141,8 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
     double v=0,omega=0,yaw_target,yaw_err;
     double yaw_now = potbot_lib::utility::get_Yaw(robot_.pose.pose.orientation);
     yaw_target = atan2(target.position.y - robot_.pose.pose.position.y ,target.position.x - robot_.pose.pose.position.x);
-    yaw_err = yaw_target - yaw_now;
+    ROS_INFO("__PoseAlignment target: %f", yaw_target);
+    potbot_lib::utility::print_Pose(target);
     if (potbot_lib::utility::get_Distance(robot_.pose.pose.position, target.position) < 0.05)
     {
         if (abs(yaw_err) > 0.01)
