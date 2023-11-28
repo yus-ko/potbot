@@ -1,0 +1,14 @@
+<launch>
+   <!-- <arg name="USE_RVIZ" default="false"/> -->
+
+   
+   <!-- <node pkg="potbot_pcl" name="potbot_pcl_tutorial" type="potbot_pcl_tutorial" output="screen"/> -->
+
+   <!-- <node pkg="potbot_pcl" name="potbot_pcl_main" type="potbot_pcl_main" output="screen"/> -->
+
+   <node pkg="potbot_pcl" name="potbot_pcl_cl3d" type="potbot_pcl_cl3d" output="screen">
+      <param name="TOPIC/PCL2" value="/robot_5/mynteye/points/data_raw"/>
+      <!-- Euclidean SuperVoxel -->
+      <param name="CLUSTERING_METHOD" value="Euclidean"/>
+   </node>
+</launch>
