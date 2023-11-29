@@ -9,7 +9,7 @@
    <node pkg="potbot_pcl" name="potbot_pcl_cl3d" type="potbot_pcl_cl3d" output="screen">
       <param name="TOPIC/PCL2" value="/robot_4/realsense/depth/points"/>
       <!-- Euclidean SuperVoxel -->
-      <param name="CLUSTERING_METHOD" value="SuperVoxel"/>
+      <param name="CLUSTERING_METHOD" value="Euclidean"/>
    </node>
 
    <group ns="robot_4">
