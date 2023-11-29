@@ -74,7 +74,7 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
         int size = obstacles_.markers.size();
         for (int i = 0; i < size; i++)
         {
-            if(obstacles_.markers[i].ns == "segments_display")
+            if(obstacles_.markers[i].ns.find("centor") != std::string::npos)
             {
                 nav_msgs::Odometry obs;
                 obs.pose.pose.position.x = obstacles_.markers[i].pose.position.x;
@@ -194,7 +194,7 @@ int PathPlanningClass::__create_PotentialField()
     double map_ori_y = local_map_.info.origin.position.y;
     double map_res = local_map_.info.resolution;
 
-    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(1);  //引数確認
+    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);  //引数確認
 
     potential_field_.header = header_;
     potential_field_.header.frame_id = FRAME_ID_ROBOT_BASE;

@@ -138,27 +138,40 @@ void ControllerClass::__LineFollowing()
 
 void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
 {
-    double v=0,omega=0,yaw_target,yaw_err;
-    double yaw_now = potbot_lib::utility::get_Yaw(robot_.pose.pose.orientation);
-    yaw_target = atan2(target.position.y - robot_.pose.pose.position.y ,target.position.x - robot_.pose.pose.position.x);
-    ROS_INFO("__PoseAlignment target: %f", yaw_target);
-    potbot_lib::utility::print_Pose(target);
-    if (potbot_lib::utility::get_Distance(robot_.pose.pose.position, target.position) < 0.05)
+    double v=0,omega=0;
+    double distance     = potbot_lib::utility::get_Distance(robot_.pose.pose.position, target.position);
+    double yaw_now      = potbot_lib::utility::get_Yaw(robot_.pose.pose.orientation);
+    double yaw_target   = potbot_lib::utility::get_Yaw(target.orientation);
+    // 
+    double yaw_err = yaw_target - yaw_now;
+    // potbot_lib::utility::print_Pose(target);
+    // ROS_INFO("__PoseAlignment target to: %f [m], %f [deg]",distance, yaw_err);
+    if (distance > 0.05)
     {
-        if (abs(yaw_err) > 0.01)
+        double yaw_to_target = atan2(target.position.y - robot_.pose.pose.position.y ,target.position.x - robot_.pose.pose.position.x);
+        double yaw_to_err = yaw_to_target - yaw_now;
+        if (abs(yaw_to_err) > 0.01)
         {
-            yaw_target = potbot_lib::utility::get_Yaw(target.orientation);
-            yaw_err = yaw_target - yaw_now;
-            omega = yaw_err;
+            // yaw_target = potbot_lib::utility::get_Yaw(target.orientation);
+            omega = yaw_to_err;
+        }
+        else
+        {
+            v = 0.05;
+            omega = yaw_to_err;
         }
     }
     else
     {
-        v = 0.05;
-        omega = yaw_err;
+        if(abs(yaw_err) > 0.01)
+        {
+            omega = yaw_err;
+        }
+        
     }
     cmd_.linear.x = v;
     cmd_.angular.z = omega;
+    // ROS_INFO("__PoseAlignment (v,omega) = (%f, %f)", cmd_.linear.x, cmd_.angular.z);
 }
 
 bool ControllerClass::__PathCollision(int mode)

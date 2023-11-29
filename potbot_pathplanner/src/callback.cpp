@@ -71,7 +71,8 @@ void PathPlanningClass::__state_callback(const potbot_msgs::StateArray& msg)
     //     double theta    = obstacle_state_.data[i].xhat.data[2];
     //     double v        = obstacle_state_.data[i].xhat.data[3];
     //     double omega    = obstacle_state_.data[i].xhat.data[4];
-    //     std::cout<< id << ":(" << v << ", " << omega << ")" <<std::endl;
+    //     ROS_INFO("id: %d (x,y,theta,v,omega) = (%f, %f, %f, %f, %f)",id,x,y,theta,v,omega);
+    //     // std::cout<< id << ":(" << v << ", " << omega << ")" <<std::endl;
     // }
     // std::cout<<std::endl;
 }

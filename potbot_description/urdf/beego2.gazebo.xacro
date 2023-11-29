@@ -40,7 +40,7 @@
   </gazebo>
 
   <gazebo>
-    <plugin name="megarover21_controller" filename="libgazebo_ros_diff_drive.so">
+    <plugin name="beego_controller" filename="libgazebo_ros_diff_drive.so">
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
@@ -54,8 +54,8 @@
       <updateRate>30</updateRate>
       <leftJoint>wheel_left_joint</leftJoint>
       <rightJoint>wheel_right_joint</rightJoint>
-      <wheelSeparation>0.284</wheelSeparation>
-      <wheelDiameter>0.076</wheelDiameter>
+      <wheelSeparation>0.22</wheelSeparation>
+      <wheelDiameter>0.06</wheelDiameter>
       <!-- <wheelAcceleration>1</wheelAcceleration> -->
       <!-- <wheelTorque>10</wheelTorque> -->
       <rosDebugLevel>na</rosDebugLevel>
