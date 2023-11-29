@@ -94,14 +94,14 @@
     </sensor>
   </gazebo>
 
-  <gazebo reference="stereo_camera_frame">
+  <gazebo reference="left_camera_frame">
     <sensor type="camera" name="Pi Camera">
       <always_on>true</always_on>
       <visualize>$(arg camera_visual)</visualize>
     </sensor>
   </gazebo>
 
-  <gazebo reference="stereo_camera_frame">
+  <gazebo reference="left_camera_frame">
     <sensor name="depth_camera" type="depth">
       <update_rate>20</update_rate>
       <camera>
@@ -126,7 +126,7 @@
         <depthImageTopicName>depth/image_raw</depthImageTopicName>
         <depthImageInfoTopicName>depth/camera_info</depthImageInfoTopicName>
         <pointCloudTopicName>depth/points</pointCloudTopicName>
-        <frameName>stereo_camera_optical_frame</frameName>
+        <frameName>left_camera_optical_frame</frameName>
         <pointCloudCutoff>0.5</pointCloudCutoff>
         <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
         <distortionK1>0.00000001</distortionK1>

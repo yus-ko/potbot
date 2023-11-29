@@ -8,9 +8,9 @@
   <arg name="FRAME_ID/GLOBAL" default="map"/>
   <arg name="FRAME_ID/ROBOT_BASE" default="robot_5/base_footprint"/>
   <arg name="FRAME_ID/LIDAR" default="robot_5/base_scan"/>
-  <arg name="TARGET/POSITION/X" default="3"/>
-  <arg name="TARGET/POSITION/Y" default="-2"/>
-  <arg name="TARGET/POSITION/YAW" default="-1.57"/>
+  <arg name="TARGET/POSITION/X" default="0"/>
+  <arg name="TARGET/POSITION/Y" default="0"/>
+  <arg name="TARGET/POSITION/YAW" default="0"/>
   <arg name="TOPIC/SCAN" default="/robot_5/scan"/>
   <arg name="TOPIC/ODOM" default="/robot_5/odom"/>
   <arg name="TOPIC/CMD_VEL" default="/robot_5/cmd_vel"/>
