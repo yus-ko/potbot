@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
-<robot name="r2d2" xmlns:xacro="http://ros.org/wiki/xacro">
-<xacro:include filename="$(find megarover_samples)/urdf/common.xacro"/>
+  <robot name="r2d2" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find megarover_samples)/urdf/common.xacro"/>
+
   
   <link name="base_footprint"/>
 
@@ -14,13 +15,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 1.57"/>
       <geometry>
-        <mesh filename="/home/ros/r2d2-flat-on-plate-1.stl" scale="0.01 0.01 0.01"/>
+        <mesh filename="$(env HOME)/gazebo/r2d2-flat-on-plate-1.stl" scale="0.01 0.01 0.01"/>
       </geometry>
+      <material name="blue" />
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 1.57"/>
       <geometry>
-        <mesh filename="/home/ros/r2d2-flat-on-plate-1.stl" scale="0.01 0.01 0.01"/>
+        <mesh filename="$(env HOME)/gazebo/r2d2-flat-on-plate-1.stl" scale="0.01 0.01 0.01"/>
       </geometry>
     </collision>
     <inertial>
