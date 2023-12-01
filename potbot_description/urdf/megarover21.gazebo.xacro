@@ -81,6 +81,17 @@
     </sensor>
   </gazebo>
 
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>imu_link</bodyName>
+      <topicName>imu</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <updateRate>20.0</updateRate>
+    </plugin>
+  </gazebo>
+
   <gazebo reference="left_camera_frame">
     <sensor type="camera" name="Pi Camera">
       <always_on>true</always_on>

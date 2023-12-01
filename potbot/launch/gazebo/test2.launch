@@ -19,6 +19,7 @@
     <arg name="laser_visual"    value="false"/>
     <arg name="camera_visual"   value="true"/>
     <arg name="y_pos"           value="3"/>
+    <arg name="yaw"           value="-1.57"/>
   </include>
   <include file="$(find potbot)/launch/potbot_remote.launch">
     <arg name="model" value="megarover21"/>
@@ -31,7 +32,7 @@
 
   <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
     <arg name="tf_prefix"       value="robot_6"/>
-    <arg name="model"           value="$(find potbot_description)/urdf/R2-D2.urdf.xacro"/>
+    <arg name="model"           value="$(find potbot_description)/urdf/bb-8.urdf.xacro"/>
   </include>
 
 </launch>
