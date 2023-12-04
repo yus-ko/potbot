@@ -15,14 +15,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="$(env HOME)/gazebo/BB-8.stl" scale="0.0025 0.0025 0.0025"/>
+        <mesh filename="$(env HOME)/gazebo/lumine.stl" scale="0.0025 0.0025 0.0025"/>
       </geometry>
       <material name="grey" />
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="$(env HOME)/gazebo/BB-8.stl" scale="0.0025 0.0025 0.0025"/>
+        <mesh filename="$(env HOME)/gazebo/lumine.stl" scale="0.0025 0.0025 0.0025"/>
       </geometry>
     </collision>
     <inertial>
