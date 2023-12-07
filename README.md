@@ -5,10 +5,8 @@
 はじめに以下のコマンドで必要なパッケージをインストールしてください
  
 ```bash
-sudo apt install ros-melodic-gazebo-ros
-sudo apt install ros-melodic-gazebo-ros-control 
-sudo apt install ros-melodic-ros-control
-sudo apt install ros-melodic-ros-controllers 
+sudo apt install ros-melodic-gazebo-ros ros-melodic-gazebo-ros-control ros-melodic-ros-control ros-melodic-ros-controllers
+sudo apt install ros-melodic-gmapping ros-melodic-amcl ros-melodic-map-server
 ```
 ```bash
 cd ~/catkin_ws/src
