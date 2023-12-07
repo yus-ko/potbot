@@ -1,0 +1,50 @@
+<launch>
+  <arg name="GROUP" default="/robot_5"/>
+  <arg name="ROBOT_NAME" default="megarover"/>
+  <!--megarover turtlebot3 beego-->
+  <arg name="IS_SIMULATOR" default="false"/>
+  <arg name="USE_RVIZ" default="true"/>
+  <arg name="PUBLISH_COMMAND" default="true"/>
+  <arg name="FRAME_ID/GLOBAL" default="map"/>
+  <arg name="FRAME_ID/ROBOT_BASE" default="robot_5/base_link"/>
+  <arg name="FRAME_ID/LIDAR" default="robot_5/base_scan"/>
+  <arg name="TARGET/POSITION/X" default="0"/>
+  <arg name="TARGET/POSITION/Y" default="0"/>
+  <arg name="TARGET/POSITION/YAW" default="0"/>
+  <arg name="TOPIC/SCAN" default="/robot_5/scan"/>
+  <arg name="TOPIC/ODOM" default="/robot_5/odom"/>
+  <arg name="TOPIC/CMD_VEL" default="/rover_twist"/>
+
+  <node pkg="potbot_localization" type="potbot_localization_twist_to_odometry" name="potbot_localization_twist_to_odometry" output="screen">
+    <param name="FRAME_ID/ODOM" value="robot_5/odom"/>
+    <param name="FRAME_ID/ROBOT_BASE" value="robot_5/base_link"/>
+    <param name="TOPIC/SUB/TWIST" value="/rover_odo"/>
+    <param name="TOPIC/PUB/ODOM" value="/gazebo_dead_reckoning"/>
+  </node>
+
+  <include file="$(find potbot)/launch/potbot_remote.launch">
+    <arg name="model" value="megarover21"/>
+    <arg name="multi_robot_name" value="robot_5"/>
+  </include>
+  <node pkg="potbot_localization" type="potbot_localization_map_link" name="potbot_localization_map_link1">
+    <param name="FRAME_ID/MAP" value="map"/>
+    <param name="FRAME_ID/ODOM" value="robot_5/odom"/>
+  </node>
+
+  <group ns="$(arg GROUP)">
+
+    <!-- <node pkg="potbot_localization" type="potbot_localization_map_link" name="potbot_localization_map_link">
+      <param name="FRAME_ID/MAP" value="map"/>
+      <param name="FRAME_ID/ODOM" value="robot_5/base_footprint"/>
+    </node> -->
+
+    <!-- <node pkg="potbot_localization" type="potbot_localization_twist_to_odometry" name="potbot_localization_twist_to_odometry" output="screen">
+      <param name="FRAME_ID/ODOM" value="robot_5/base_footprint"/>
+      <param name="FRAME_ID/ROBOT_BASE" value="robot_5/base_link"/>
+      <param name="TOPIC/SUB/TWIST" value="/rover_odo"/>
+      <param name="TOPIC/PUB/ODOM" value="$(arg TOPIC/ODOM)"/>
+    </node> -->
+
+  </group>
+
+</launch>

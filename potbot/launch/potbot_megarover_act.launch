@@ -68,8 +68,8 @@
     <node pkg="potbot_localization" type="potbot_localization_twist_to_odometry" name="potbot_localization_twist_to_odometry" output="screen">
       <param name="FRAME_ID/ODOM" value="robot_5/base_footprint"/>
       <param name="FRAME_ID/ROBOT_BASE" value="robot_5/base_link"/>
-      <param name="TOPIC/TWIST" value="/rover_odo"/>
-      <param name="TOPIC/ODOM" value="$(arg TOPIC/ODOM)"/>
+      <param name="TOPIC/SUB/TWIST" value="/rover_odo"/>
+      <param name="TOPIC/PUB/ODOM" value="$(arg TOPIC/ODOM)"/>
     </node>
 
     <include file="$(find potbot_localization)/launch/Localization.launch">

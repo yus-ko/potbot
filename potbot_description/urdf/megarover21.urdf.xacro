@@ -165,7 +165,7 @@
   <joint name="imu_joint" type="fixed">
     <parent link="camera_link"/>
     <child link="imu_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="3.14 0 0"/>
   </joint>
 
   <link name="imu_link"/>
@@ -178,7 +178,7 @@
   <link name="left_camera_frame"/>
 
   <joint name="left_camera_optical_joint" type="fixed">
-    <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+    <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}"/>
     <parent link="left_camera_frame"/>
     <child link="left_camera_optical_frame"/>
   </joint>
@@ -192,7 +192,7 @@
   <link name="right_camera_frame"/>
 
   <joint name="right_camera_optical_joint" type="fixed">
-    <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+    <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}"/>
     <parent link="right_camera_frame"/>
     <child link="right_camera_optical_frame"/>
   </joint>

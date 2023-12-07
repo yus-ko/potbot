@@ -30,11 +30,11 @@
     <param name="FRAME_ID/ODOM" value="robot_5/odom"/>
   </node>
 
-  <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
+  <!-- <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
     <arg name="tf_prefix"       value="robot_6"/>
     <arg name="model"           value="$(find potbot_description)/urdf/BB-8.urdf.xacro"/>
     <arg name="x_pos"           value="3"/>
     <arg name="yaw"           value="3.14"/>
-  </include>
+  </include> -->
 
 </launch>
