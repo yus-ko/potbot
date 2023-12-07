@@ -12,7 +12,8 @@ sudo apt install ros-melodic-gmapping ros-melodic-amcl ros-melodic-map-server
 cd ~/catkin_ws/src
 git clone https://github.com/vstoneofficial/megarover_samples
 git clone https://github.com/ROBOTIS-GIT/turtlebot3
-git clone -b melodic https://github.com/ros-perception/image_pipeline
+# git clone -b melodic https://github.com/ros-perception/image_pipeline
+git clone https://github.com/yus-ko/multiple_robots_slam
 ```
 
 # 起動方法

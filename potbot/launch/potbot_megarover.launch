@@ -17,36 +17,12 @@
 
   <group ns="$(arg GROUP)">
 
-    <!-- <node name="urg_node" pkg="urg_node" type="urg_node" output="screen"> -->
-      <!-- <param name="ip_address" value=""/> -->
-      <!-- <param name="serial_port" value="/dev/ttyACM0"/> -->
-      <!-- <param name="serial_baud" value="115200"/> -->
-      <!-- <param name="frame_id" value=""/> -->
-      <!-- <param name="calibrate_time" value="true"/>
-      <param name="publish_intensity" value="false"/>
-      <param name="publish_multiecho" value="false"/>
-      <param name="angle_min" value="-1.5707963"/>
-      <param name="angle_max" value="1.5707963"/> -->
-    <!-- </node> -->
-
-    <!-- <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
-      <param name="_serial_port" value="/dev/ttyACM0"/> 
-    </node> -->
-
-    <!-- <node name="rosserial_python" pkg="rosserial_python" type="serial_node.py" output="screen">
-      <param name="_port" value="/dev/ttyUSB0"/> 
-      <param name="_baud" value="115200"/>
-    </node> -->
-
     <include file="$(find potbot)/launch/potbot_remote.launch">
       <arg name="model" value="megarover21"/>
       <arg name="multi_robot_name" value="robot_5"/>
     </include>
 
-    <node pkg="potbot_localization" type="potbot_localization_map_link" name="potbot_localization_map_link">
-      <param name="FRAME_ID/MAP" value="map"/>
-      <param name="FRAME_ID/ODOM" value="robot_5/odom"/>
-    </node>
+    <node pkg="tf" type="static_transform_publisher" name="base_links_tf" args="0 0 0 0 0 0 map robot_5/odom 100" />
 
     <!-- <node pkg="potbot_localization" type="potbot_localization_twist_to_odometry" name="potbot_localization_twist_to_odometry" output="screen">
       <param name="FRAME_ID/ODOM" value="robot_5/base_footprint"/>
