@@ -1,8 +1,11 @@
 <launch>
-	<env name="GAZEBO_MODEL_PATH" value="$(find potbot_description)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+	<!-- <env name="GAZEBO_MODEL_PATH" value="$(find potbot_description)/models:$(optenv GAZEBO_MODEL_PATH)"/> -->
+  <env name="GAZEBO_MODEL_PATH" value="/home/ros/multiple_robots_slam/multi_turtlebot_gazebo/world/models:$(optenv GAZEBO_MODEL_PATH)" /> 
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
 	<!-- <arg name="world_name" default="$(find turtlebot3_gazebo)/worlds/empty.world"/> -->
-  <arg name="world_name" default="$(find potbot_description)/worlds/willowgarage.world"/>
+  <!-- <arg name="world_name" default="$(find potbot_description)/worlds/willowgarage.world"/> -->
+  <!-- <arg name="world_name" default="/home/ros/multiple_robots_slam/multi_turtlebot_gazebo/world/tdu_1-13_corridor.world"/> -->
+  <arg name="world_name" default="/home/ros/multiple_robots_slam/multi_turtlebot_gazebo/world/tdu_1-13_corridor_marker_rrt.world"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world_name)"/>
