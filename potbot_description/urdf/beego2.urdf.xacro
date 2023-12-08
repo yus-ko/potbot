@@ -1,0 +1,286 @@
+<?xml version="1.0" ?>
+<robot name="beego2" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find megarover_samples)/urdf/common.xacro"/>
+  <xacro:include filename="$(find turtlebot3_description)/urdf/common_properties.xacro"/>
+  <xacro:include filename="$(find potbot_description)/urdf/beego2.gazebo.xacro"/>
+
+  <xacro:property name="wheel_radius" value="0.03"/>
+  <xacro:property name="wheel_length" value="0.015"/>
+  <xacro:property name="wheel_mass" value="0.4"/>
+
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="-0.08 0 0.115" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.2 0.23"/>
+      </geometry>
+      <material name="grey" />
+    </visual>
+    <collision>
+      <origin xyz="-0.08 0 0.115" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.2 0.23"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <xacro:box_inertial mass="5" height="0.2" width="0.2" depth="0.23"/>
+    </inertial>
+  </link>
+
+  <joint name="wheel_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_left_link"/>
+    <origin xyz="0 0.11 ${wheel_radius/2}"  rpy="0 0 ${M_PI}" />
+    <axis xyz="0 -1 0"/>
+  </joint>
+
+  <link name="wheel_left_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+      </geometry>
+      <material name="white" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <xacro:cylinder_inertial mass="${wheel_mass}" radius="${wheel_radius}" length="${wheel_length}"/>
+    </inertial>
+  </link>
+
+  <joint name="wheel_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_right_link"/>
+    <origin xyz="0 -0.11 ${wheel_radius/2}"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <link name="wheel_right_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+      </geometry>
+      <material name="white" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+      <xacro:cylinder_inertial mass="${wheel_mass}" radius="${wheel_radius}" length="${wheel_length}"/>
+    </inertial>
+  </link>
+
+  <joint name="caster_back_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster_back_link"/>
+    <origin xyz="-0.18 0 ${wheel_radius/2}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="caster_back_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+      </geometry>
+      <material name="black" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
+      <xacro:cylinder_inertial mass="${wheel_mass*5}" radius="${wheel_radius}" length="${wheel_length}"/>
+    </inertial>
+  </link>
+
+  <joint name="scan_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_scan" />
+    <origin xyz="0.1 0 0.18" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_scan">
+    <visual>
+      <origin xyz="0 0 0" rpy="${M_PI} 0 0"/>
+      <geometry>
+        <mesh filename="package://megarover_samples/meshes/dae/lrf.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="${M_PI} 0 0"/>
+      <geometry>
+        <mesh filename="package://megarover_samples/meshes/stl/lrf.stl"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="0.218" height="0.07" width="0.05" depth="0.05"/>
+    </inertial>
+  </link>
+
+  <joint name="camera_stay_joint" type="fixed">
+    <origin xyz="0.065 0 0.26" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_stay_link"/>
+  </joint>
+
+  <link name="camera_stay_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.29"/>
+      </geometry>
+      <material name="grey" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.29"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="0.5" height="0.29" width="0.02" depth="0.02"/>
+    </inertial>
+  </link>
+
+  <joint name="pan_joint" type="revolute">
+    <axis xyz="0 0 1"/>
+    <origin xyz="0.035 0 0.145" rpy="0 0 0"/>
+    <limit lower="-0.87" upper="0.87" effort="100" velocity="100"/>
+    <parent link="camera_stay_link"/>
+    <child link="pan_link"/>
+  </joint>
+
+  <transmission name="pan_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="pan_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="pan_motor">
+       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+       <mechanismReduction>1</mechanismReduction>
+    </actuator>
+  </transmission>
+
+  <link name="pan_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black" />
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="0.1" height="0.01" width="0.01" depth="0.01"/>
+    </inertial>
+  </link>
+
+  <joint name="tilt_joint" type="revolute">
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 -0.0825 0.015" rpy="0 0 0"/>
+    <limit lower="-0.87" upper="0.87" effort="100" velocity="100"/>
+    <parent link="pan_link"/>
+    <child link="tilt_link"/>
+  </joint>
+
+  <transmission name="tilt_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="tilt_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="tilt_motor">
+       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+       <mechanismReduction>1</mechanismReduction>
+    </actuator>
+  </transmission>
+
+  <link name="tilt_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black" />
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <xacro:box_inertial mass="0.1" height="0.01" width="0.01" depth="0.01"/>
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <origin xyz="0 0.0825 0" rpy="0 0 0"/>
+    <parent link="tilt_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.03 0.165 0.03"/>
+      </geometry>
+      <material name="white" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.03 0.165 0.03"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_camera_joint" type="fixed">
+    <origin xyz="0 0.06 0" rpy="0 0 0"/>
+    <parent link="camera_link"/>
+    <child link="left_camera_frame"/>
+  </joint>
+  <link name="left_camera_frame"/>
+
+  <joint name="left_camera_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}"/>
+    <parent link="left_camera_frame"/>
+    <child link="left_camera_optical_frame"/>
+  </joint>
+  <link name="left_camera_optical_frame"/>
+
+  <joint name="right_camera_joint" type="fixed">
+    <origin xyz="0 -0.06 0" rpy="0 0 0"/>
+    <parent link="camera_link"/>
+    <child link="right_camera_frame"/>
+  </joint>
+  <link name="right_camera_frame"/>
+
+  <joint name="right_camera_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}"/>
+    <parent link="right_camera_frame"/>
+    <child link="right_camera_optical_frame"/>
+  </joint>
+  <link name="right_camera_optical_frame"/>
+
+</robot>

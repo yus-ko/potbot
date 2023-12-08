@@ -1,7 +1,0 @@
-<launch>
-    <node pkg="potbot" name="potbot_fi" type="potbot_fi" output="screen">
-        <param name="SIGMA_P" value="1"/>
-        <param name="SIGMA_Q" value="0.00001"/>    <!-- 観測ノイズ -->
-        <param name="SIGMA_R" value="0.00001"/>    <!-- システムノイズ -->
-    </node>
-</launch>

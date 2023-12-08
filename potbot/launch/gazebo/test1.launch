@@ -1,0 +1,111 @@
+<launch>
+	<env name="GAZEBO_MODEL_PATH" value="$(find potbot_description)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+	<!-- <arg name="world_name" default="$(find turtlebot3_gazebo)/worlds/empty.world"/> -->
+  <!-- <arg name="world_name" default="$(find potbot_description)/worlds/patern1.world"/> -->
+  <arg name="world_name" default="$(env HOME)/gazebo/test1.world"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <!-- turtlebot3 waffle_pi -->
+  <!-- <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
+    <arg name="tf_prefix" value="robot_0"/>
+    <arg name="model" value="waffle_pi"/>
+    <arg name="laser_visual" value="true"/>
+    <arg name="imu_visual" value="false"/>
+    <arg name="camera_visual" value="true"/>
+  </include> -->
+
+  <!-- turtlebot3 burger -->
+  <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
+    <arg name="tf_prefix" value="robot_1"/>
+    <arg name="model" value="burger"/>
+  </include>
+  <include file="$(find turtlebot3_bringup)/launch/includes/description.launch.xml">
+    <arg name="model" value="burger" />
+  </include>
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher1">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="tf_prefix" value="robot_1"/>
+  </node>
+  <node pkg="potbot_localization" type="potbot_localization_map_link" name="potbot_localization_map_link1">
+    <param name="FRAME_ID/MAP" value="map"/>
+    <param name="FRAME_ID/ODOM" value="robot_1/odom"/>
+  </node>
+
+  <include file="$(find potbot)/launch/gazebo/spawn_turtlebot3.launch">
+    <arg name="tf_prefix" value="robot_6"/>
+    <arg name="model" value="waffle"/>
+    <arg name="x_pos" value="3"/>
+    <arg name="yaw" value="3.14"/>
+  </include>
+  <include file="$(find turtlebot3_bringup)/launch/includes/description.launch.xml">
+    <arg name="model" value="waffle" />
+  </include>
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher6">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="tf_prefix" value="robot_6"/>
+  </node>
+  <node pkg="potbot_localization" type="potbot_localization_map_link" name="potbot_localization_map_link6">
+    <param name="FRAME_ID/MAP" value="map"/>
+    <param name="FRAME_ID/ODOM" value="robot_6/odom"/>
+  </node>
+
+
+
+  <!-- beego2(パンチルト) -->
+  <!-- <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
+    <arg name="tf_prefix"       value="robot_6"/>
+    <arg name="model"           value="$(find potbot_description)/urdf/beego2.urdf.xacro"/>
+    <arg name="x_pos"           value="3"/>
+    <arg name="yaw"             value="3.14"/>
+    <arg name="laser_visual"    value="false"/>
+    <arg name="camera_visual"   value="true"/>
+  </include>
+  <rosparam>
+    robot_6:      
+      pan:
+        type: position_controllers/JointPositionController
+        joint: pan_joint
+        pid: {p: 2.0, i: 1.0, d: 0.1, i_clamp_min: -1.0, i_clamp_max: 1.0}
+      tilt:
+        type: position_controllers/JointPositionController
+        joint: tilt_joint
+        pid: {p: 2.0, i: 1.0, d: 0.1, i_clamp_min: -1.0, i_clamp_max: 1.0}
+      joint_state_controller:
+        type: joint_state_controller/JointStateController
+        publish_rate: 10  
+  </rosparam>
+  <node name="controller_spawner_pan" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/robot_6" args="pan tilt joint_state_controller"/>
+  <include file="$(find potbot)/launch/potbot_remote.launch">
+    <arg name="model" value="beego2"/>
+    <arg name="multi_robot_name" value="robot_6"/>
+  </include>
+  <node pkg="potbot_localization" type="potbot_localization_map_link" name="potbot_localization_map_link6">
+    <param name="FRAME_ID/MAP" value="map"/>
+    <param name="FRAME_ID/ODOM" value="robot_6/odom"/>
+  </node>
+
+  <include file="$(find potbot)/launch/gazebo/spawn_robot.launch">
+    <arg name="tf_prefix"       value="robot_1"/>
+    <arg name="model"           value="$(find potbot_description)/urdf/megarover21.urdf.xacro"/>
+    <arg name="laser_visual"    value="false"/>
+    <arg name="camera_visual"   value="true"/>
+  </include>
+  <include file="$(find potbot)/launch/potbot_remote.launch">
+    <arg name="model" value="megarover21"/>
+    <arg name="multi_robot_name" value="robot_1"/>
+  </include>
+  <node pkg="potbot_localization" type="potbot_localization_map_link" name="potbot_localization_map_link1">
+    <param name="FRAME_ID/MAP" value="map"/>
+    <param name="FRAME_ID/ODOM" value="robot_1/odom"/>
+  </node> -->
+
+</launch>
