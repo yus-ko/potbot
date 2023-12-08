@@ -24,6 +24,10 @@
 
     <node pkg="tf" type="static_transform_publisher" name="base_links_tf" args="0 0 0 0 0 0 map robot_5/odom 100" />
 
+    <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
+      <rosparam command="load" file="$(find potbot_description)/config/megarover_robot_localization.yaml" />
+    </node>
+
     <!-- <node pkg="potbot_localization" type="potbot_localization_twist_to_odometry" name="potbot_localization_twist_to_odometry" output="screen">
       <param name="FRAME_ID/ODOM" value="robot_5/base_footprint"/>
       <param name="FRAME_ID/ROBOT_BASE" value="robot_5/base_link"/>
