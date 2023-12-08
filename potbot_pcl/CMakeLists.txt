@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   potbot_lib
   potbot_msgs
 )
-find_package(PCL 1.8 REQUIRED)
+find_package(PCL REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/ClusteringParam.cfg
@@ -33,8 +33,8 @@ target_link_libraries(  ${PROJECT_NAME}_main ${catkin_LIBRARIES} ${PCL_LIBRARIES
 add_executable(         ${PROJECT_NAME}_tutorial src/tutorial.cpp)
 target_link_libraries(  ${PROJECT_NAME}_tutorial ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
-add_executable(         ${PROJECT_NAME}_tutorial2 src/main.cpp)
-target_link_libraries(  ${PROJECT_NAME}_tutorial2 ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+#add_executable(         ${PROJECT_NAME}_tutorial2 src/main.cpp)
+#target_link_libraries(  ${PROJECT_NAME}_tutorial2 ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 add_executable(         ${PROJECT_NAME}_cl3d src/constructor.cpp src/debug_main.cpp src/methods.cpp src/property.cpp src/callback.cpp)
 target_link_libraries(  ${PROJECT_NAME}_cl3d ${catkin_LIBRARIES} ${PCL_LIBRARIES})
