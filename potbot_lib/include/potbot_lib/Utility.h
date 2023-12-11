@@ -1,3 +1,6 @@
+#ifndef _H_UTILITY_
+#define _H_UTILITY_
+
 #include <random>
 #include <ros/ros.h>
 // #include <ros/package.h>
@@ -67,5 +70,4 @@ namespace potbot_lib{
     }
 }
 
-
-
+#endif	// _H_UTILITY_

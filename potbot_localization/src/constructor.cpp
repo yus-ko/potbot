@@ -16,9 +16,9 @@ LocalizationClass::LocalizationClass()
 
 	sub_scan_=nhSub_.subscribe(TOPIC_SCAN,1,&LocalizationClass::__scan_callback,this);
 	sub_map_=nhSub_.subscribe("/map",1,&LocalizationClass::map_callback,this);
-	sub_inipose_=nhSub_.subscribe("/initialpose",1,&LocalizationClass::inipose_callback,this);
-	sub_goal_=nhSub_.subscribe("/move_base_simple/goal",1,&LocalizationClass::goal_callback,this);
-	sub_point_=nhSub_.subscribe("/clicked_point",1,&LocalizationClass::point_callback,this);
+	sub_inipose_=nhSub_.subscribe("initialpose",1,&LocalizationClass::inipose_callback,this);
+	sub_goal_=nhSub_.subscribe("move_base_simple/goal",1,&LocalizationClass::goal_callback,this);
+	sub_point_=nhSub_.subscribe("clicked_point",1,&LocalizationClass::point_callback,this);
 
 	// sub_odom_=nhSub_.subscribe(TOPIC_ODOM,1,&LocalizationClass::__odom_callback,this);
 		//sub_encoder_=nhSub_.subscribe("/rover_odo",1,&LocalizationClass::encoder_callback,this);

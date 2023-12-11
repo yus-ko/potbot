@@ -30,7 +30,6 @@ add_executable(${PROJECT_NAME}_pp
   src/callback.cpp
   src/property.cpp
 )
-
 target_link_libraries(${PROJECT_NAME}_pp ${catkin_LIBRARIES})
 
 add_definitions(-std=c++14)

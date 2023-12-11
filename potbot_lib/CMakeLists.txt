@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   # sensor_msgs
   # message_generation
   # cv_bridge
-  # pcl_ros
+  pcl_ros
   # dynamic_reconfigure
   # beego_control
   #dynamixel_sdk
@@ -32,6 +32,8 @@ include_directories(
 
 add_library(${PROJECT_NAME}
   src/utility.cpp
+  src/PotentialField.cpp
+  src/PathPlanner.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})

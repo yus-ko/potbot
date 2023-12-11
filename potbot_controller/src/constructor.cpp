@@ -8,7 +8,7 @@ ControllerClass::ControllerClass()
 
 	sub_odom_		= nhSub_.subscribe(TOPIC_ODOM,1,&ControllerClass::__odom_callback,this);
 	sub_path_		= nhSub_.subscribe("Path",1,&ControllerClass::path_callback,this);
-	sub_goal_		= nhSub_.subscribe("goal", 1, &ControllerClass::__goal_callback, this);
+	sub_goal_		= nhSub_.subscribe("move_base_simple/goal", 1, &ControllerClass::__goal_callback, this);
 	sub_local_map_	= nhSub_.subscribe("Localmap", 1, &ControllerClass::__local_map_callback, this);
 	sub_scan_		= nhSub_.subscribe(TOPIC_SCAN,1,&ControllerClass::__scan_callback,this);
 	sub_seg_		= nhSub_.subscribe("segment", 1, &ControllerClass::__segment_callback, this);

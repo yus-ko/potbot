@@ -40,28 +40,19 @@ PathPlanningClass::PathPlanningClass()
 	}
 
 	sub_scan_	= nhSub.subscribe(TOPIC_SCAN,1,&PathPlanningClass::__scan_callback,this);
-
-	if (USE_AMCL) sub_encoder = nhSub.subscribe("/amcl_pose", 1, &PathPlanningClass::pwcs_callback, this);
-
-	pub_goal_ = nhPub.advertise<geometry_msgs::PoseStamped>("goal", 1);
-	sub_goal_ = nhSub.subscribe("/move_base_simple/goal", 1, &PathPlanningClass::goal_callback, this);
-	if (!USE_RVIZ)
-	{
-		goal_.pose.position.x = TARGET_POSITION_X;
-		goal_.pose.position.y = TARGET_POSITION_Y;
-		pub_goal_.publish(goal_);
-	}
-
+	sub_goal_ = nhSub.subscribe("move_base_simple/goal", 1, &PathPlanningClass::goal_callback, this);
 	sub_odom_		= nhSub.subscribe(TOPIC_ODOM,1,&PathPlanningClass::__odom_callback,this);
-	sub_coefficient	= nhSub.subscribe("/potential_coefficient", 1, &PathPlanningClass::coefficient_callback, this);
 	sub_local_map_	= nhSub.subscribe("Localmap", 1, &PathPlanningClass::local_map_callback, this);
 	sub_run_		= nhSub.subscribe("create_path", 1, &PathPlanningClass::__create_path_callback, this);
 	sub_seg_		= nhSub.subscribe("segment", 1, &PathPlanningClass::__segment_callback, this);
 	sub_state_		= nhSub.subscribe("state",1,&PathPlanningClass::__state_callback,this);
 	
 	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
-	pub_pf_			= nhPub.advertise<nav_msgs::GridCells>("pot", 1);
-	pub_PP			= nhPub.advertise<nav_msgs::Path>("Path", 1);
+	pub_pf_					= nhPub.advertise<nav_msgs::GridCells>("pot", 1);
+	pub_PP					= nhPub.advertise<nav_msgs::Path>("Path", 1);
+	pub_attraction_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/attraction", 1);
+	pub_repulsion_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/repulsion", 1);
+	pub_potential_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/potential", 1);
 
 	f_ = boost::bind(&PathPlanningClass::__param_callback, this, _1, _2);
 	server_.setCallback(f_);

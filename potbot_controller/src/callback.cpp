@@ -2,7 +2,24 @@
 
 void ControllerClass::__odom_callback(const nav_msgs::Odometry& msg)
 {
-    odom_ = msg;
+    nav_msgs::Odometry odom = msg;
+    geometry_msgs::TransformStamped transform;
+    geometry_msgs::Pose target_point;
+    try 
+    {
+        // odom座標系の自己位置をmap座標系に変換
+        transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, odom.header.frame_id, odom.header.stamp);
+        tf2::doTransform(odom.pose.pose, target_point, transform);
+    }
+    catch (tf2::TransformException &ex) 
+    {
+        ROS_ERROR("TF Ereor in ControllerClass::__odom_callback: %s", ex.what());
+        return;
+    }
+
+    odom_ = odom;
+    odom_.header.frame_id = FRAME_ID_GLOBAL;
+    odom_.pose.pose = target_point;
 }
 
 void ControllerClass::path_callback(const nav_msgs::Path& msg)
@@ -12,7 +29,7 @@ void ControllerClass::path_callback(const nav_msgs::Path& msg)
     if (robot_path_.header.stamp != msg.header.stamp)
     {
         
-        if (msg.header.frame_id != "/" + FRAME_ID_GLOBAL)
+        if (msg.header.frame_id != FRAME_ID_GLOBAL)
         {
             nav_msgs::Path init;
             robot_path_ = init;

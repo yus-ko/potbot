@@ -1,0 +1,32 @@
+<launch>
+  <arg name="GROUP" default="/robot_5"/>
+  <arg name="ROBOT_NAME" default="megarover"/>
+  <!--megarover turtlebot3 beego-->
+  <arg name="IS_SIMULATOR" default="false"/>
+  <arg name="USE_RVIZ" default="true"/>
+  <arg name="PUBLISH_COMMAND" default="true"/>
+  <arg name="FRAME_ID/GLOBAL" default="map"/>
+  <arg name="FRAME_ID/ROBOT_BASE" default="robot_5/base_footprint"/>
+  <arg name="FRAME_ID/LIDAR" default="robot_5/base_scan"/>
+  <arg name="TARGET/POSITION/X" default="0"/>
+  <arg name="TARGET/POSITION/Y" default="0"/>
+  <arg name="TARGET/POSITION/YAW" default="0"/>
+  <arg name="TOPIC/SCAN" default="/robot_5/scan"/>
+  <arg name="TOPIC/ODOM" default="/robot_5/odom"/>
+  <arg name="TOPIC/CMD_VEL" default="/robot_5/cmd_vel"/>
+
+  <group ns="$(arg GROUP)">
+
+    <include file="$(find potbot)/launch/megarover_amcl.launch">
+      <!-- <arg name="map_file" value=""/> -->
+      <!-- <arg name="USE_RVIZ" value="false"/> -->
+    </include>
+
+    <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
+      <rosparam command="load" file="$(find potbot_description)/config/megarover_robot_localization.yaml" />
+      <remap from="odometry/filtered" to="odom/fusion"/>
+    </node>
+
+  </group>
+
+</launch>

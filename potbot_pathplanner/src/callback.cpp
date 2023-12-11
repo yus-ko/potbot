@@ -1,34 +1,9 @@
 #include<potbot_pathplanner/PathPlanning.h>
 
-void PathPlanningClass::pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg)
-{
-    pwcs_msg = msg;
-    odom.pose.pose.position = msg.pose.pose.position;
-
-    Eigen::Quaternionf quat(msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w);
-
-    Eigen::Matrix3f m2=quat.toRotationMatrix();
-	Eigen::Vector3f ea = m2.eulerAngles(1, 2, 0); 
-	// std::cout<<ea(0)*180.0/M_PI<<",";//roll
-	// std::cout<<ea(1)*180.0/M_PI<<",";//pitch
-	// std::cout<<ea(2)*180.0/M_PI<<std::endl;//yaw
-
-    odom.pose.pose.orientation.z = ea(2);
-
-    // std::cout<< "pwcs_callback = "<<std::endl;
-    // std::cout<< odom.pose.pose <<std::endl;
-    encoder_first = true;
-}
-
 void PathPlanningClass::__scan_callback(const sensor_msgs::LaserScan& msg)
 {
     scan = msg;
     scan_first = true;
-}
-
-void PathPlanningClass::coefficient_callback(const std_msgs::Float32& msg)
-{
-    coe_0 = msg.data;
 }
 
 void PathPlanningClass::goal_callback(const geometry_msgs::PoseStamped& msg)
@@ -37,7 +12,6 @@ void PathPlanningClass::goal_callback(const geometry_msgs::PoseStamped& msg)
     ROS_INFO("subscribe goal: path planner");
     //std::cout<< goal_ <<std::endl;
     potbot_lib::utility::print_Pose(goal_.pose);
-    pub_goal_.publish(goal_);
     run();
 }
 

@@ -2,6 +2,7 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <potbot_lib/Utility.h>
+#include <potbot_lib/PotentialField.h>
 #include <potbot_msgs/StateArray.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Twist.h>
@@ -23,6 +24,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <fstream>
+#include <sensor_msgs/PointCloud2.h>
 
 //クラスの定義
 class PathPlanningClass{
@@ -37,7 +39,7 @@ class PathPlanningClass{
 		ros::Subscriber sub_encoder, sub_scan_, sub_coefficient, sub_goal_, sub_local_map_, sub_odom_, sub_seg_, sub_state_, sub_run_;
         //送信データ
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_cmd, pub_odom, pub_PP, pub_goal_, pub_pf_, pub_cmd_, pub_potential_;
+        ros::Publisher pub_cmd, pub_odom, pub_PP, pub_pf_, pub_cmd_, pub_potential_, pub_attraction_field_, pub_repulsion_field_, pub_potential_field_;
 
         std_msgs::Header header_;
 
@@ -89,7 +91,6 @@ class PathPlanningClass{
         std::vector<double> scan_range_maximum_angle;
         int scan_range_maximum_angle_size = 10, scan_range_maximum_angle_index = 0;
         bool moving_average = false, wall_exists = false;
-        double coe_x, coe_y, coe_0;
 
         visualization_msgs::MarkerArray obstacles_;
 
@@ -148,8 +149,6 @@ class PathPlanningClass{
         void setLaunchParam();//launchファイルから書き込み
         //in methods.cpp
         //--センサーデータ受信
-        void pwcs_callback(const geometry_msgs::PoseWithCovarianceStamped& msg);
-        void coefficient_callback(const std_msgs::Float32& msg);
         void goal_callback(const geometry_msgs::PoseStamped& msg);
         void local_map_callback(const nav_msgs::OccupancyGrid& msg);
         

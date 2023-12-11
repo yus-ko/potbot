@@ -6,26 +6,33 @@
   <arg name="USE_RVIZ" default="true"/>
   <arg name="PUBLISH_COMMAND" default="true"/>
   <arg name="FRAME_ID/GLOBAL" default="map"/>
-  <arg name="FRAME_ID/ROBOT_BASE" default="robot_5/base_footprint"/>
+  <arg name="FRAME_ID/ROBOT_BASE" default="robot_5/base_link"/>
   <arg name="FRAME_ID/LIDAR" default="robot_5/base_scan"/>
   <arg name="TARGET/POSITION/X" default="0"/>
   <arg name="TARGET/POSITION/Y" default="0"/>
   <arg name="TARGET/POSITION/YAW" default="0"/>
   <arg name="TOPIC/SCAN" default="/robot_5/scan"/>
-  <arg name="TOPIC/ODOM" default="/robot_5/odom"/>
+  <arg name="TOPIC/ODOM" default="/robot_5/odom/fusion"/>
   <arg name="TOPIC/CMD_VEL" default="/robot_5/cmd_vel"/>
 
   <group ns="$(arg GROUP)">
 
-    <include file="$(find potbot)/launch/potbot_remote.launch">
+    <!-- <include file="$(find potbot)/launch/potbot_remote.launch">
       <arg name="model" value="megarover21"/>
       <arg name="multi_robot_name" value="robot_5"/>
-    </include>
+    </include> -->
 
-    <node pkg="tf" type="static_transform_publisher" name="base_links_tf" args="0 0 0 0 0 0 map robot_5/odom 100" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="odom_tf" args="0 0 0 0 0 0 map robot_5/odom 100" /> -->
+
+    <include file="$(find potbot)/launch/megarover_amcl.launch">
+      <!-- <arg name="map_file" value=""/> -->
+      <arg name="USE_RVIZ" value="false"/>
+      <!-- <arg name="initial_pose_y" value="0.3"/> -->
+    </include>
 
     <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
       <rosparam command="load" file="$(find potbot_description)/config/megarover_robot_localization.yaml" />
+      <remap from="odometry/filtered" to="odom/fusion"/>
     </node>
 
     <!-- <node pkg="potbot_localization" type="potbot_localization_twist_to_odometry" name="potbot_localization_twist_to_odometry" output="screen">

@@ -547,6 +547,7 @@ void PathPlanningClass::__create_Path()
 {
     nav_msgs::Path robot_path;
     robot_path.header = header_;
+    // robot_path.header.stamp = ros::Time(0);
     robot_path.header.frame_id = FRAME_ID_ROBOT_BASE;
 
     double center_x = 0;
@@ -558,6 +559,7 @@ void PathPlanningClass::__create_Path()
     {
         geometry_msgs::PoseStamped robot_pose;
         robot_pose.header = header_;
+        // robot_pose.header.stamp = ros::Time(0);
         robot_pose.header.frame_id = FRAME_ID_ROBOT_BASE;
         
         double J_min;
@@ -704,9 +706,9 @@ void PathPlanningClass::__bezier(nav_msgs::Path& points)
     for (double t = 0.0; t <= 1.0; t += inc)
     {
         points.poses.resize(bezier_idx+1);
+        points.poses[bezier_idx].header = points.header;
         for (double i = 0.0; i <= n-1.0; i++)
         {
-            
             points.poses[bezier_idx].pose.position.x += __nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original.poses[int(i)].pose.position.x;
             points.poses[bezier_idx].pose.position.y += __nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * points_original.poses[int(i)].pose.position.y;
         }
@@ -975,15 +977,6 @@ void PathPlanningClass::__create_PathFromCSV()
         point.pose.position.x = line_buf[0];
         point.pose.position.y = line_buf[1];
         robot_path_.poses.push_back(point);
-    }
-
-    static bool goal_published = false;
-    if(!goal_published)
-    {
-        goal_published = true;
-        goal_ = robot_path_.poses.back();
-        goal_.header = robot_path_.header;
-        pub_goal_.publish(goal_);
     }
     
 }

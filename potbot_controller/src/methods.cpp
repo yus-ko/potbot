@@ -299,6 +299,10 @@ void ControllerClass::__publishcmd()
 
 void ControllerClass::__publish_path_request()
 {
-    std_msgs::Empty empty;
-    pub_path_request_.publish(empty);
+    geometry_msgs::PoseStamped goal_init;
+    if(goal_init != goal_)
+    {
+        std_msgs::Empty empty;
+        pub_path_request_.publish(empty);
+    }
 }
