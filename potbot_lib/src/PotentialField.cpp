@@ -11,26 +11,26 @@ namespace potbot_lib{
 
         void Field::init_field(double width, double height, double resolution)
         {
-            this->width        = width;
-            this->height       = height;
-            this->resolution   = resolution;
+            header_.width        = width;
+            header_.height       = height;
+            header_.resolution   = resolution;
 
-            this->rows = ceil(height/resolution);
-            this->cols = ceil(width/resolution);
+            header_.rows = ceil(height/resolution);
+            header_.cols = ceil(width/resolution);
             
             size_t field_index  = 0;
 
-            this->x_min = -width/2.0;
-            this->x_max =  width/2.0;
-            this->y_min = -height/2.0;
-            this->y_max =  height/2.0;
+            header_.x_min = -width/2.0;
+            header_.x_max =  width/2.0;
+            header_.y_min = -height/2.0;
+            header_.y_max =  height/2.0;
 
-            for (size_t col = 0; col < cols; col++)
+            for (size_t col = 0; col < header_.cols; col++)
             {
-                double y = this->y_max - double(col*this->resolution);
-                for (size_t row = 0; row < rows; row++)
+                double y = header_.y_max - double(col*header_.resolution);
+                for (size_t row = 0; row < header_.rows; row++)
                 {
-                    double x = this->x_min + double(row*this->resolution);
+                    double x = header_.x_min + double(row*header_.resolution);
 
                     Potential::FieldGrid grid;
                     grid.index  = field_index;
@@ -38,22 +38,34 @@ namespace potbot_lib{
                     grid.y      = y;
                     grid.row    = row;
                     grid.col    = col;
-                    this->values.push_back(grid);
+                    values_.push_back(grid);
                     field_index++;
                 }
             }
-            // for (double y = this->y_max; y >= this->y_min; y -= this->resolution)
+            // for (double y = header_.y_max; y >= header_.y_min; y -= header_.resolution)
             // {
-            //     for (double x = this->x_min; x <= this->x_max; x += this->resolution)
+            //     for (double x = header_.x_min; x <= header_.x_max; x += header_.resolution)
             //     {
             //         Potential::FieldGrid grid;
             //         grid.index  = field_index;
             //         grid.x      = x;
             //         grid.y      = y;
-            //         this->values.push_back(grid);
+            //         values_.push_back(grid);
             //         field_index++;
             //     }
             // }
+        }
+
+        void Field::set_values(std::vector<FieldGrid>& values)
+        {
+            if (values_.size() == values.size()) values_ = values;
+        }
+
+        void Field::set_value(FieldGrid value)
+        {
+            size_t idx = value.index;
+            check_index(idx);
+            values_[idx] = value;
         }
 
         void Field::search_field_info(std::vector<size_t>& result, const std::vector<size_t> terms, const std::string mode)
@@ -62,18 +74,18 @@ namespace potbot_lib{
 
             if (terms.size() == 1)
             {
-                for (auto value : this->values)
+                for (auto value : values_)
                 {
-                    if (value.info[terms[0]]) result.push_back(value.index);
+                    if (value.states[terms[0]]) result.push_back(value.index);
                 }
             }
             else if (mode == "or")
             {
-                for (auto value : this->values)
+                for (auto value : values_)
                 {
                     for (auto term : terms)
                     {
-                        if (value.info[term])
+                        if (value.states[term])
                         {
                             result.push_back(value.index);
                             break;
@@ -84,12 +96,12 @@ namespace potbot_lib{
             }
             else if (mode == "and")
             {
-                for (auto value : this->values)
+                for (auto value : values_)
                 {
                     bool logic_and = true;
                     for (auto term : terms)
                     {
-                        logic_and *= value.info[term];
+                        logic_and *= value.states[term];
                         if (!logic_and) break;
                     }
                     if (logic_and) result.push_back(value.index);
@@ -102,62 +114,89 @@ namespace potbot_lib{
             search_field_info(result, {term}, "or");
         }
 
+        int Field::check_index(auto index)
+        {
+            if(index < 0 || index >= values_.size()) throw std::out_of_range("invalid index argument");
+            return 0;
+        }
+
+        FieldHeader Field::get_header()
+        {
+            return header_;
+        }
+
+        void Field::get_values(std::vector<FieldGrid>& values)
+        {
+            values = values_;
+        }
+
+        FieldGrid Field::get_value(size_t index)
+        {
+            check_index(index);
+            return values_[index];
+        }
+
+        FieldGrid Field::get_value(double x, double y)
+        {
+            return get_value(get_field_index(x,y));
+        }
+
         size_t Field::get_field_index(double x, double y)
         {
-            if(x > this->x_max || x < this->x_min)
+            if(x > header_.x_max || x < header_.x_min)
             {
                 throw std::out_of_range("invalid coordinate x argument");
             }
-            else if (y > this->y_max || y < this->y_min)
+            else if (y > header_.y_max || y < header_.y_min)
             {
                 throw std::out_of_range("invalid coordinate y argument");
             }
 
-            // size_t xnum = this->width/this->resolution;
+            // size_t xnum = header_.width/header_.resolution;
             // // size_t ynum = field_.height/field_.resolution;
-            // size_t idx = abs((y-this->y_max)/this->resolution) * (xnum+1) + abs((x-this->x_min)/this->resolution);
+            // size_t idx = abs((y-header_.y_max)/header_.resolution) * (xnum+1) + abs((x-header_.x_min)/header_.resolution);
             // return idx;
 
-            size_t col = abs((x-this->x_min)/this->resolution);
-            size_t row = abs((y-this->y_max)/this->resolution);
+            size_t col = abs((x-header_.x_min)/header_.resolution);
+            size_t row = abs((y-header_.y_max)/header_.resolution);
             size_t idx = get_field_index(row, col);
             return idx;
         }
 
         size_t Field::get_field_index(size_t row, size_t col)
         {
-            if (row >= this->rows)
+            if (row >= header_.rows)
             {
 
                 throw std::out_of_range("invalid row argument");
             }
-            else if (col >= this->cols)
+            else if (col >= header_.cols)
             {
                 throw std::out_of_range("invalid col argument");
             }
-            size_t idx = row*cols + col;
+            size_t idx = row*header_.cols + col;
             return idx;
         }
 
         std::vector<double> Field::get_field_coordinate(size_t index)
         {
-            if(index < 0 || index >= this->values.size()) throw std::out_of_range("invalid index argument");
+            check_index(index);
             std::vector<double> coord(2);
-            coord[0] = this->values[index].x;
-            coord[1] = this->values[index].y;
+            coord[0] = values_[index].x;
+            coord[1] = values_[index].y;
             return coord;
         }
 
         void Field::set_field_info(size_t index, size_t meta, bool value)
         {
-            if(index < this->values.size()) this->values[index].info[meta] = value;
+            if(index < values_.size()) values_[index].states[meta] = value;
         }
 
         void Field::to_pcl2(sensor_msgs::PointCloud2& pcl_msg)
         {
             // std::vector<pcl::PointXYZ> を作成
             std::vector<pcl::PointXYZ> pointVector;
-            for (auto value : this->values)
+            for (auto value : values_)
             {
                 double x = value.x;
                 double y = value.y;
@@ -183,7 +222,7 @@ namespace potbot_lib{
             search_field_info(filterd_index, terms, mode);
             for (auto idx : filterd_index)
             {
-                field.values.push_back(values[idx]);
+                field.values_.push_back(values_[idx]);
             }
         }
 
@@ -196,7 +235,8 @@ namespace potbot_lib{
 
 namespace potbot_lib{
 
-    APF::APF(double width, double height, double resolution, double weight_attraction_field, double weight_repulsion_field, double distance_threshold_repulsion_field)
+    APF::APF(double width, double height, double resolution, double weight_attraction_field, double weight_repulsion_field, double distance_threshold_repulsion_field) : 
+    Potential::Field::Field(width, height, resolution)
     {
         weight_attraction_field_                = weight_attraction_field;
         weight_repulsion_field_                 = weight_repulsion_field;
@@ -279,6 +319,21 @@ namespace potbot_lib{
         catch(...){}
     }
 
+    void APF::get_attraction_field(Potential::Field& field)
+    {
+        field = attraction_;
+    }
+
+    void APF::get_repulsion_field(Potential::Field& field)
+    {
+        field = repulsion_;
+    }
+
+    void APF::get_potential_field(Potential::Field& field)
+    {
+        field = potential_;
+    }
+
     size_t APF::get_goal_index(Potential::Field& field)
     {
         std::vector<size_t> result;
@@ -303,22 +358,27 @@ namespace potbot_lib{
     void APF::create_attraction_field()
     {
         double weight_attraction_field = weight_attraction_field_;
-        for(auto& value : attraction_.values)
+        std::vector<Potential::FieldGrid> attraction_values;
+        attraction_.get_values(attraction_values);
+        for(auto& value : attraction_values)
         {
             double x = value.x;
             double y = value.y;
             double distance_to_goal = sqrt(pow(x - goal_[0],2)+pow(y - goal_[1],2));
             double attraction_value = 0.5 * weight_attraction_field * pow(distance_to_goal, 2);
             value.value = attraction_value;
-            value.info[Potential::GridInfo::IS_AROUND_GOAL] = bool(distance_to_goal < 0.3);
+            value.states[Potential::GridInfo::IS_AROUND_GOAL] = bool(distance_to_goal < 0.3);
         }
+        attraction_.set_values(attraction_values);
     }
 
     void APF::create_repulsion_field()
     {
         double distance_threshold_repulsion_field   = distance_threshold_repulsion_field_;
         double weight_repulsion_field               = weight_repulsion_field_;
-        for(auto& value : repulsion_.values)
+        std::vector<Potential::FieldGrid> repulsion_values;
+        repulsion_.get_values(repulsion_values);
+        for(auto& value : repulsion_values)
         {
             double x = value.x;
             double y = value.y;
@@ -330,7 +390,7 @@ namespace potbot_lib{
                 double distance_to_obstacle = sqrt(pow(x-x_obstacle,2) + pow(y-y_obstacle,2));
                 if (distance_to_obstacle <= distance_threshold_repulsion_field)
                 {
-                    value.info[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE] = true;
+                    value.states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE] = true;
                     repulsion_value += 0.5 * weight_repulsion_field * pow(1.0/(distance_to_obstacle + 1e-100) - 1.0/(distance_threshold_repulsion_field + 1e-100), 2);
                 }
                 else
@@ -341,9 +401,9 @@ namespace potbot_lib{
             value.value = repulsion_value;
         }
 
-        for(auto& value : repulsion_.values)
+        for(auto& value : repulsion_values)
         {
-            if (value.info[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
+            if (value.states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
             {
                 size_t rowc   = value.row;
                 size_t colc   = value.col;
@@ -353,9 +413,9 @@ namespace potbot_lib{
                     for(size_t row = rowc - 1; row <= rowc + 1; row++)
                     {
                         size_t next = repulsion_.get_field_index(col,row);
-                        if (!repulsion_.values[next].info[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
+                        if (!repulsion_values[next].states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
                         {
-                            value.info[Potential::GridInfo::IS_REPULSION_FIELD_EDGE] = true;
+                            value.states[Potential::GridInfo::IS_REPULSION_FIELD_EDGE] = true;
                             brakeflag = true;
                         }
                     }
@@ -363,25 +423,30 @@ namespace potbot_lib{
                 }
             }
         }
+
+        repulsion_.set_values(repulsion_values);
     }
 
     void APF::create_potential_field()
     {
-        for(auto& value : potential_.values)
+        std::vector<Potential::FieldGrid> potential_values;
+        potential_.get_values(potential_values);
+        for(auto& value : potential_values)
         {
             size_t idx = value.index;
-            double Ua = attraction_.values[idx].value;
-            double Uo = repulsion_.values[idx].value;
+            double Ua = attraction_.get_value(idx).value;
+            double Uo = repulsion_.get_value(idx).value;
             double Utotal = Ua + Uo;
             value.value = Utotal;
             size_t i = 0;
-            for(auto info : value.info)
+            for(auto info : value.states)
             {
-                info = (info || attraction_.values[idx].info[i] || repulsion_.values[idx].info[i]);
+                info = (info || attraction_.get_value(idx).states[i] || repulsion_.get_value(idx).states[i]);
                 i++;
             }
             
         }
+        potential_.set_values(potential_values);
     }
 
 }
