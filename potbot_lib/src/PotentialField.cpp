@@ -125,9 +125,9 @@ namespace potbot_lib{
             return header_;
         }
 
-        void Field::get_values(std::vector<FieldGrid>& values)
+        std::vector<FieldGrid>* Field::get_values()
         {
-            values = values_;
+            return &values_;
         }
 
         FieldGrid Field::get_value(size_t index)
@@ -358,9 +358,9 @@ namespace potbot_lib{
     void APF::create_attraction_field()
     {
         double weight_attraction_field = weight_attraction_field_;
-        std::vector<Potential::FieldGrid> attraction_values;
-        attraction_.get_values(attraction_values);
-        for(auto& value : attraction_values)
+        std::vector<Potential::FieldGrid>* attraction_values;
+        attraction_values = attraction_.get_values();
+        for(auto& value : (*attraction_values))
         {
             double x = value.x;
             double y = value.y;
@@ -369,16 +369,15 @@ namespace potbot_lib{
             value.value = attraction_value;
             value.states[Potential::GridInfo::IS_AROUND_GOAL] = bool(distance_to_goal < 0.3);
         }
-        attraction_.set_values(attraction_values);
     }
 
     void APF::create_repulsion_field()
     {
         double distance_threshold_repulsion_field   = distance_threshold_repulsion_field_;
         double weight_repulsion_field               = weight_repulsion_field_;
-        std::vector<Potential::FieldGrid> repulsion_values;
-        repulsion_.get_values(repulsion_values);
-        for(auto& value : repulsion_values)
+        std::vector<Potential::FieldGrid>* repulsion_values;
+        repulsion_values = repulsion_.get_values();
+        for(auto& value : (*repulsion_values))
         {
             double x = value.x;
             double y = value.y;
@@ -401,7 +400,7 @@ namespace potbot_lib{
             value.value = repulsion_value;
         }
 
-        for(auto& value : repulsion_values)
+        for(auto& value : (*repulsion_values))
         {
             if (value.states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
             {
@@ -413,7 +412,7 @@ namespace potbot_lib{
                     for(size_t row = rowc - 1; row <= rowc + 1; row++)
                     {
                         size_t next = repulsion_.get_field_index(col,row);
-                        if (!repulsion_values[next].states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
+                        if (!(*repulsion_values)[next].states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
                         {
                             value.states[Potential::GridInfo::IS_REPULSION_FIELD_EDGE] = true;
                             brakeflag = true;
@@ -423,15 +422,13 @@ namespace potbot_lib{
                 }
             }
         }
-
-        repulsion_.set_values(repulsion_values);
     }
 
     void APF::create_potential_field()
     {
-        std::vector<Potential::FieldGrid> potential_values;
-        potential_.get_values(potential_values);
-        for(auto& value : potential_values)
+        std::vector<Potential::FieldGrid>* potential_values;
+        potential_values = potential_.get_values();
+        for(auto& value : (*potential_values))
         {
             size_t idx = value.index;
             double Ua = attraction_.get_value(idx).value;
@@ -446,7 +443,6 @@ namespace potbot_lib{
             }
             
         }
-        potential_.set_values(potential_values);
     }
 
 }

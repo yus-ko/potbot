@@ -4,7 +4,10 @@ namespace potbot_lib{
 
     namespace PathPlanner{
         // void get_search_index_APF(Field& field, std::vector<size_t>, )
-
+        APFPathPlanner::APFPathPlanner(double width, double height, double resolution, double weight_attraction_field, double weight_repulsion_field, double distance_threshold_repulsion_field) : 
+        APF::APF(width, height, resolution,weight_attraction_field, weight_repulsion_field, distance_threshold_repulsion_field){}
+        APFPathPlanner::~APFPathPlanner(){}
+        
         void APFPathPlanner::create_path(std::vector<std::vector<double>> &path, double init_robot_pose, double max_path_length, size_t path_search_range)
         {
             size_t center_row   = 0;
@@ -15,11 +18,11 @@ namespace potbot_lib{
             double J_min_pre;
             double path_length  = 0;
             size_t range        = path_search_range;
-            std::vector<Potential::FieldGrid> field_values;
+            std::vector<Potential::FieldGrid>* field_values;
             Field& field = potential_;
-            field.get_values(field_values);
+            field_values = field.get_values();
 
-            for (auto value : field_values)
+            for (auto value : (*field_values))
             {
                 if (value.states[Potential::GridInfo::IS_ROBOT])
                 {
@@ -33,9 +36,9 @@ namespace potbot_lib{
                 }
             }
             path.push_back({center_x, center_y});
-            field_values[pf_idx_min].states[Potential::GridInfo::IS_PLANNED_PATH] = true;
+            (*field_values)[pf_idx_min].states[Potential::GridInfo::IS_PLANNED_PATH] = true;
 
-            while (field_values[pf_idx_min].states[Potential::GridInfo::IS_AROUND_GOAL] == false && path_length <= max_path_length)
+            while ((*field_values)[pf_idx_min].states[Potential::GridInfo::IS_AROUND_GOAL] == false && path_length <= max_path_length)
             {
                 double J_min                    = J_min_pre;
                 bool breakflag                  = false;
@@ -53,13 +56,13 @@ namespace potbot_lib{
 
                             int pf_idx = potential_.get_field_index(col,row);
 
-                            if (field_values[pf_idx].states[Potential::GridInfo::IS_PLANNED_PATH] == true) continue;
+                            if ((*field_values)[pf_idx].states[Potential::GridInfo::IS_PLANNED_PATH] == true) continue;
 
                             if (solve_local_minimum  == false)
                             {
-                                double PotentialValue   = field_values[pf_idx].value;
-                                double x                = field_values[pf_idx].x;
-                                double y                = field_values[pf_idx].y;
+                                double PotentialValue   = (*field_values)[pf_idx].value;
+                                double x                = (*field_values)[pf_idx].x;
+                                double y                = (*field_values)[pf_idx].y;
 
                                 static double theta_pre = init_robot_pose;
                                 static double x_pre     = path.back()[0];
@@ -84,8 +87,8 @@ namespace potbot_lib{
                             {
                                 //現在のJ_minを下回るまで斥力場のエッジを進んでいく処理に変更する
 
-                                bool is_edge        = field_values[pf_idx].states[Potential::GridInfo::IS_REPULSION_FIELD_EDGE];
-                                bool is_planned     = field_values[pf_idx].states[Potential::GridInfo::IS_PLANNED_PATH];
+                                bool is_edge        = (*field_values)[pf_idx].states[Potential::GridInfo::IS_REPULSION_FIELD_EDGE];
+                                bool is_planned     = (*field_values)[pf_idx].states[Potential::GridInfo::IS_PLANNED_PATH];
                                 bool is_dupe        = std::find(checked.begin(), checked.end(), pf_idx) != checked.end();
                                 if ((is_edge && !is_planned) || is_dupe)
                                 {
@@ -102,15 +105,15 @@ namespace potbot_lib{
                     if (found_min_potential_point == false) solve_local_minimum = true;
                 }
                 
-                double px   = field_values[pf_idx_min].x;
-                double py   = field_values[pf_idx_min].y;
+                double px   = (*field_values)[pf_idx_min].x;
+                double py   = (*field_values)[pf_idx_min].y;
                 path_length += sqrt(pow(px - path.back()[0],2) + pow(py - path.back()[1],2));
-                center_row  = field_values[pf_idx_min].row;
-                center_col  = field_values[pf_idx_min].col;
-                J_min_pre   = field_values[pf_idx_min].value;
+                center_row  = (*field_values)[pf_idx_min].row;
+                center_col  = (*field_values)[pf_idx_min].col;
+                J_min_pre   = (*field_values)[pf_idx_min].value;
 
                 path.push_back({px, py});
-                field_values[pf_idx_min].states[Potential::GridInfo::IS_PLANNED_PATH] = true;
+                (*field_values)[pf_idx_min].states[Potential::GridInfo::IS_PLANNED_PATH] = true;
 
                 // if (index > -1)
                 // {
@@ -132,7 +135,17 @@ namespace potbot_lib{
                 // center_x = robot_pose.pose.position.x;
                 // center_y = robot_pose.pose.position.y;
             }
-            field.set_values(field_values);
+        }
+
+        void APFPathPlanner::__get_search_index(std::vector<size_t>& search_indexes, size_t centor_col, size_t centor_row, size_t range)
+        {
+            for (size_t col = centor_col-range; col <= centor_col+range; col++)
+            {
+                for (size_t row = centor_row-range; row <= centor_row+range; row++)
+                {
+                    
+                }
+            }
         }
     }
 }

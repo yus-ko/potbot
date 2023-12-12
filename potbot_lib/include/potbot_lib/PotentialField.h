@@ -86,7 +86,7 @@ namespace potbot_lib{
                 int check_index(auto index);
 
                 FieldHeader get_header();
-                void get_values(std::vector<FieldGrid>& values);
+                std::vector<FieldGrid>* get_values();
                 FieldGrid get_value(size_t index = 0);
                 FieldGrid get_value(double x = 0, double y = 0);
 
