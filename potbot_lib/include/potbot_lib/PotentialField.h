@@ -19,28 +19,9 @@ namespace potbot_lib{
             IS_REPULSION_FIELD_INSIDE,
             IS_REPULSION_FIELD_EDGE,
             IS_PLANNED_PATH,
-            IS_AROUND_GOAL
+            IS_AROUND_GOAL,
+            IS_LOCAL_MINIMUM
         };
-
-        // namespace GridInfo{
-            
-        //     const uint8_t IS_OBSTACLE                           = 0;
-        //     const uint8_t IS_GOAL                               = 1;
-        //     const uint8_t IS_ROBOT                              = 2;
-        //     const uint8_t IS_REPULSION_FIELD_INSIDE             = 3;
-        //     const uint8_t IS_REPULSION_FIELD_EDGE               = 4;
-        //     const uint8_t IS_PLANNED_PATH                       = 5;
-        //     const uint8_t IS_AROUND_GOAL                        = 6;
-
-        //     const std::vector<bool> info = {
-        //                                                         false,      // IS_OBSTACLE
-        //                                                         false,      // IS_GOAL
-        //                                                         false,      // IS_ROBOT
-        //                                                         false,      // IS_REPULSION_FIELD_INSIDE
-        //                                                         false,      // IS_REPULSION_FIELD_EDGE
-        //                                                         false,      // IS_PLANNED_PATH
-        //                                                         false};     // IS_AROUND_GOAL
-        // }
 
         typedef struct {
                 size_t index                = 0;
@@ -49,19 +30,21 @@ namespace potbot_lib{
                 double value                = 0;
                 size_t row                  = 0;
                 size_t col                  = 0;
-                std::vector<bool> states    = {false, false, false, false, false, false, false};
+                std::vector<bool> states    = {false, false, false, false, false, false, false, false};
             } FieldGrid;
         
         typedef struct {
-                double height           = 0;                //単位:メートル
                 double width            = 0;                //単位:メートル
+                double height           = 0;                //単位:メートル
                 double resolution       = 1.0;              //単位:メートル
-                size_t rows             = 0;
-                size_t cols             = 0;
+                size_t rows             = 3;
+                size_t cols             = 3;
+                double x_shift          = 0;             
+                double y_shift          = 0;
                 double x_min            = 0;
-                double x_max            = 0;
-                double y_min            = 0;
-                double y_max            = 0;
+                double x_max            = 0; 
+                double y_min            = 0; 
+                double y_max            = 0; 
             } FieldHeader;
 
         class Field{
@@ -71,10 +54,10 @@ namespace potbot_lib{
                 std::vector<FieldGrid> values_;
 
             public:
-                Field(double width = 0, double height = 0, double resolution = 1.0);
+                Field(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
                 ~Field();
 
-                void init_field(double width = 0, double height = 0, double resolution = 1.0);
+                void init_field(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
 
                 void set_values(std::vector<FieldGrid>& values);
                 void set_value(FieldGrid value);
@@ -118,16 +101,16 @@ namespace potbot_lib{
 
         public:
             
-            APF(double width = 0, double height = 0, double resolution = 1.0,
+            APF(size_t rows = 3, size_t cols = 3, double resolution = 1.0,
                 double weight_attraction_field              = 0.1,
                 double weight_repulsion_field               = 0.1,
                 double distance_threshold_repulsion_field   = 0.3);
             ~APF();
 
-            void init_attraction_field(double width = 0, double height = 0, double resolution = 1.0);
-            void init_repulsion_field(double width = 0, double height = 0, double resolution = 1.0);
-            void init_potential_field(double width = 0, double height = 0, double resolution = 1.0);
-            void init_all_fields(double width = 0, double height = 0, double resolution = 1.0);
+            void init_attraction_field(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
+            void init_repulsion_field(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
+            void init_potential_field(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
+            void init_all_fields(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
 
             void set_goal(size_t index = 0);
             void set_robot(size_t index = 0);

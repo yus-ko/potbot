@@ -3,41 +3,49 @@
 namespace potbot_lib{
     namespace Potential{
 
-        Field::Field(double width, double height, double resolution)
+        Field::Field(size_t rows, size_t cols, double resolution)
         {
-            init_field(width, height, resolution);
+            init_field(rows, cols, resolution);
         }
         Field::~Field(){}
 
-        void Field::init_field(double width, double height, double resolution)
+        void Field::init_field(size_t rows, size_t cols, double resolution)
         {
-            header_.width        = width;
-            header_.height       = height;
-            header_.resolution   = resolution;
+            values_.clear();
 
-            header_.rows = ceil(height/resolution);
-            header_.cols = ceil(width/resolution);
+            header_.rows            = rows;
+            header_.cols            = cols;
+
+            header_.width           = resolution*(double)cols;
+            header_.height          = resolution*(double)rows;
+            header_.resolution      = resolution;
             
-            size_t field_index  = 0;
+            size_t field_index      = 0;
 
-            header_.x_min = -width/2.0;
-            header_.x_max =  width/2.0;
-            header_.y_min = -height/2.0;
-            header_.y_max =  height/2.0;
+            // header_.x_shift    = -header_.resolution/2.0 - header_.width/2.0;
+            // header_.y_shift    = -header_.resolution/2.0 - header_.height/2.0;
 
-            for (size_t col = 0; col < header_.cols; col++)
+            header_.x_shift         = -header_.width/2.0;
+            header_.y_shift         = -header_.height/2.0;
+
+            header_.x_min           = -header_.width/2.0 + header_.x_shift;
+            header_.x_max           = header_.width/2.0 + header_.x_shift;
+            header_.y_min           = -header_.height/2.0 + header_.y_shift;
+            header_.y_max           = header_.height/2.0 + header_.y_shift;
+
+            for (size_t row = 0; row < header_.rows; row++)
             {
-                double y = header_.y_max - double(col*header_.resolution);
-                for (size_t row = 0; row < header_.rows; row++)
+                double y            = (double)row*header_.resolution + header_.y_shift;
+                for (size_t col = 0; col < header_.cols; col++)
                 {
-                    double x = header_.x_min + double(row*header_.resolution);
-
+                    double x        = (double)col*header_.resolution + header_.x_shift;
+                    
                     Potential::FieldGrid grid;
-                    grid.index  = field_index;
-                    grid.x      = x;
-                    grid.y      = y;
-                    grid.row    = row;
-                    grid.col    = col;
+                    grid.index      = field_index;
+                    grid.x          = x;
+                    grid.y          = y;
+                    grid.row        = row;
+                    grid.col        = col;
                     values_.push_back(grid);
                     field_index++;
                 }
@@ -151,14 +159,9 @@ namespace potbot_lib{
             {
                 throw std::out_of_range("invalid coordinate y argument");
             }
-
-            // size_t xnum = header_.width/header_.resolution;
-            // // size_t ynum = field_.height/field_.resolution;
-            // size_t idx = abs((y-header_.y_max)/header_.resolution) * (xnum+1) + abs((x-header_.x_min)/header_.resolution);
-            // return idx;
-
-            size_t col = abs((x-header_.x_min)/header_.resolution);
-            size_t row = abs((y-header_.y_max)/header_.resolution);
+            
+            size_t col = (x - header_.x_shift)/header_.resolution;
+            size_t row = (y - header_.y_shift)/header_.resolution;
             size_t idx = get_field_index(row, col);
             return idx;
         }
@@ -218,6 +221,7 @@ namespace potbot_lib{
 
         void Field::info_filter(Field& field, const std::vector<size_t> terms, const std::string mode)
         {
+            field.values_.clear();
             std::vector<size_t> filterd_index;
             search_field_info(filterd_index, terms, mode);
             for (auto idx : filterd_index)
@@ -235,36 +239,36 @@ namespace potbot_lib{
 
 namespace potbot_lib{
 
-    APF::APF(double width, double height, double resolution, double weight_attraction_field, double weight_repulsion_field, double distance_threshold_repulsion_field) : 
-    Potential::Field::Field(width, height, resolution)
+    APF::APF(size_t rows, size_t cols, double resolution, double weight_attraction_field, double weight_repulsion_field, double distance_threshold_repulsion_field) : 
+    Potential::Field::Field(rows, cols, resolution)
     {
         weight_attraction_field_                = weight_attraction_field;
         weight_repulsion_field_                 = weight_repulsion_field;
         distance_threshold_repulsion_field_     = distance_threshold_repulsion_field;
-        init_all_fields(width, height, resolution);
+        init_all_fields(rows, cols, resolution);
     }
     APF::~APF(){}
 
-    void APF::init_attraction_field(double width, double height, double resolution)
+    void APF::init_attraction_field(size_t rows, size_t cols, double resolution)
     {
-        attraction_.init_field(width, height, resolution);
+        attraction_.init_field(rows, cols, resolution);
     }
 
-    void APF::init_repulsion_field(double width, double height, double resolution)
+    void APF::init_repulsion_field(size_t rows, size_t cols, double resolution)
     {
-        repulsion_.init_field(width, height, resolution);
+        repulsion_.init_field(rows, cols, resolution);
     }
 
-    void APF::init_potential_field(double width, double height, double resolution)
+    void APF::init_potential_field(size_t rows, size_t cols, double resolution)
     {
-        potential_.init_field(width, height, resolution);
+        potential_.init_field(rows, cols, resolution);
     }
 
-    void APF::init_all_fields(double width, double height, double resolution)
+    void APF::init_all_fields(size_t rows, size_t cols, double resolution)
     {
-        init_attraction_field(width, height, resolution);
-        init_repulsion_field(width, height, resolution);
-        init_potential_field(width, height, resolution);
+        init_attraction_field(rows, cols, resolution);
+        init_repulsion_field(rows, cols, resolution);
+        init_potential_field(rows, cols, resolution);
     }
 
     void APF::set_goal(size_t index)
@@ -407,15 +411,23 @@ namespace potbot_lib{
                 size_t rowc   = value.row;
                 size_t colc   = value.col;
                 bool brakeflag = false;
-                for(size_t col = colc - 1; col <= colc + 1; col++)
+                for(size_t row = rowc - 1; row <= rowc + 1; row++)
                 {
-                    for(size_t row = rowc - 1; row <= rowc + 1; row++)
+                    for(size_t col = colc - 1; col <= colc + 1; col++)
                     {
-                        size_t next = repulsion_.get_field_index(col,row);
-                        if (!(*repulsion_values)[next].states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
+                        if (row == rowc && col == colc) continue;
+                        try 
                         {
-                            value.states[Potential::GridInfo::IS_REPULSION_FIELD_EDGE] = true;
-                            brakeflag = true;
+                            size_t next = repulsion_.get_field_index(row,col);
+                            if ((*repulsion_values)[next].states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE] == false)
+                            {
+                                value.states[Potential::GridInfo::IS_REPULSION_FIELD_EDGE] = true;
+                                brakeflag = true;
+                            }
+                        }
+                        catch(std::out_of_range& oor) 
+                        {
+                            continue;
                         }
                     }
                     if (brakeflag) break;
@@ -442,6 +454,40 @@ namespace potbot_lib{
                 i++;
             }
             
+        }
+
+        for(auto& value : (*potential_values))
+        {
+            if (value.states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
+            {
+                size_t rowc   = value.row;
+                size_t colc   = value.col;
+                bool local_minimum = false;
+                for(size_t row = rowc - 1; row <= rowc + 1; row++)
+                {
+                    for(size_t col = colc - 1; col <= colc + 1; col++)
+                    {
+                        if (row == rowc && col == colc) continue;
+                        try 
+                        {
+                            size_t next = potential_.get_field_index(row,col);
+                            if ((*potential_values)[next].value < value.value)
+                            {
+                                local_minimum = true;
+                            }
+                        }
+                        catch(std::out_of_range& oor) 
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                if(!local_minimum && !value.states[Potential::GridInfo::IS_GOAL])
+                {
+                    value.states[Potential::GridInfo::IS_LOCAL_MINIMUM] = true;
+                }
+            }
         }
     }
 

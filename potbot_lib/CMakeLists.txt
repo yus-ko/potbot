@@ -31,7 +31,7 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}
-  src/utility.cpp
+  src/Utility.cpp
   src/PotentialField.cpp
   src/PathPlanner.cpp
 )

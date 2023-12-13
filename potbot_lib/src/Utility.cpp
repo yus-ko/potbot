@@ -279,6 +279,93 @@ namespace potbot_lib{
             return total_length;
         }
 
+        void Timer::start(const std::string timer_name, const double time)
+        {
+            if (time < 0)
+            {
+                times_[timer_name].begin_time = ros::Time::now().toSec();
+            }
+            else
+            {
+                times_[timer_name].begin_time = time;
+            }
+            times_[timer_name].running = true;
+        }
+
+        void Timer::start(const std::vector<std::string> timer_names)
+        {
+            double time_now = ros::Time::now().toSec();
+            for (auto timer_name : timer_names)
+            {
+                start(timer_name, time_now);
+            }
+        }
+
+        void Timer::stop(const std::string timer_name, const double time)
+        {
+            if (!times_[timer_name].running) return;
+
+            if (time < 0)
+            {
+                times_[timer_name].end_time = ros::Time::now().toSec();
+            }
+            else
+            {
+                times_[timer_name].end_time = time;
+            }
+            times_[timer_name].running = false;
+            times_[timer_name].duration = times_[timer_name].end_time - times_[timer_name].begin_time;
+        }
+
+        void Timer::stop(const std::vector<std::string> timer_names)
+        {
+            std::vector<std::string> stop_times = timer_names;
+            if(stop_times.empty())
+            {
+                for (auto it = times_.begin(); it != times_.end(); ++it) 
+                {
+                    stop_times.push_back(it->first);
+                }
+            }
+
+            double time_now = ros::Time::now().toSec();
+            for (auto timer_name : stop_times)
+            {
+                stop(timer_name, time_now);
+            }
+        }
+
+        void Timer::print_time(const std::vector<std::string> timer_names)
+        {
+            std::vector<std::string> print_times = timer_names;
+            if(print_times.empty())
+            {
+                for (auto it = times_.begin(); it != times_.end(); ++it) 
+                {
+                    print_times.push_back(it->first);
+                }
+            }
+            
+            for(std::string timer_name : print_times)
+            {
+                std::cout<< timer_name <<": ";
+                if (times_[timer_name].running)
+                {
+                    std::cout<< "running ";
+                }
+                else
+                {
+                    std::cout<< times_[timer_name].duration << " [s] ";
+                }
+            }
+            std::cout<<std::endl;
+        }
+
+        void Timer::print_time(const std::string timer_name)
+        {
+            print_time((std::vector<std::string>){timer_name});  
+        }
+
     }
 
 }

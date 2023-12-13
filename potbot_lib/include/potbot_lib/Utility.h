@@ -67,6 +67,25 @@ namespace potbot_lib{
         int get_PathIndex(nav_msgs::Path path, geometry_msgs::Pose position);
         int get_PathIndex(nav_msgs::Path path, geometry_msgs::PoseStamped position);
         int get_PathIndex(nav_msgs::Path path, nav_msgs::Odometry position);
+
+        typedef struct {
+            bool running                = false;
+            double begin_time           = 0.0;
+            double end_time             = 0.0;
+            double duration             = 0.0;
+        } TimerInfo;
+
+        class Timer{
+            protected:
+                std::map<std::string, TimerInfo> times_;
+            public:
+                void start(const std::string timer_name, const double time = -1);
+                void start(const std::vector<std::string> timer_names);
+                void stop(const std::string timer_name, const double time = -1);
+                void stop(const std::vector<std::string> timer_names = {});
+                void print_time(const std::string timer_names);
+                void print_time(const std::vector<std::string> timer_names = {});
+        };
     }
 }
 
