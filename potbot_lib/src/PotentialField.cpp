@@ -28,10 +28,10 @@ namespace potbot_lib{
             header_.x_shift         = -header_.width/2.0;
             header_.y_shift         = -header_.height/2.0;
 
-            header_.x_min           = -header_.width/2.0 + header_.x_shift;
-            header_.x_max           = header_.width/2.0 + header_.x_shift;
-            header_.y_min           = -header_.height/2.0 + header_.y_shift;
-            header_.y_max           = header_.height/2.0 + header_.y_shift;
+            header_.x_min           = -header_.width/2.0;
+            header_.x_max           = header_.width/2.0;
+            header_.y_min           = -header_.height/2.0;
+            header_.y_max           = header_.height/2.0;
 
             for (size_t row = 0; row < header_.rows; row++)
             {
@@ -50,18 +50,6 @@ namespace potbot_lib{
                     field_index++;
                 }
             }
-            // for (double y = header_.y_max; y >= header_.y_min; y -= header_.resolution)
-            // {
-            //     for (double x = header_.x_min; x <= header_.x_max; x += header_.resolution)
-            //     {
-            //         Potential::FieldGrid grid;
-            //         grid.index  = field_index;
-            //         grid.x      = x;
-            //         grid.y      = y;
-            //         values_.push_back(grid);
-            //         field_index++;
-            //     }
-            // }
         }
 
         void Field::set_values(std::vector<FieldGrid>& values)
@@ -195,6 +183,28 @@ namespace potbot_lib{
             if(index < values_.size()) values_[index].states[meta] = value;
         }
 
+        void Field::get_square_index(std::vector<size_t>& search_indexes, size_t centor_row, size_t centor_col, size_t range)
+        {
+            for (size_t row = centor_row-range; row <= centor_row+range; row++)
+            {
+                for (size_t col = centor_col-range; col <= centor_col+range; col++)
+                {
+                    if (row == centor_row && col == centor_col) continue;
+                    try 
+                    {
+                        int pf_idx = get_field_index(row,col);
+                        search_indexes.push_back(pf_idx);
+                    }
+                    catch(std::out_of_range& oor) 
+                    {
+                        search_indexes.clear();
+                        return;
+                    }
+                    
+                }
+            }
+        }
+
         void Field::to_pcl2(sensor_msgs::PointCloud2& pcl_msg)
         {
             // std::vector<pcl::PointXYZ> を作成
@@ -245,51 +255,28 @@ namespace potbot_lib{
         weight_attraction_field_                = weight_attraction_field;
         weight_repulsion_field_                 = weight_repulsion_field;
         distance_threshold_repulsion_field_     = distance_threshold_repulsion_field;
-        init_all_fields(rows, cols, resolution);
+        init_potential_field(rows, cols, resolution);
     }
     APF::~APF(){}
 
-    void APF::init_attraction_field(size_t rows, size_t cols, double resolution)
-    {
-        attraction_.init_field(rows, cols, resolution);
-    }
-
-    void APF::init_repulsion_field(size_t rows, size_t cols, double resolution)
-    {
-        repulsion_.init_field(rows, cols, resolution);
-    }
-
     void APF::init_potential_field(size_t rows, size_t cols, double resolution)
     {
-        potential_.init_field(rows, cols, resolution);
-    }
-
-    void APF::init_all_fields(size_t rows, size_t cols, double resolution)
-    {
-        init_attraction_field(rows, cols, resolution);
-        init_repulsion_field(rows, cols, resolution);
-        init_potential_field(rows, cols, resolution);
+        potential_field_.init_field(rows, cols, resolution);
     }
 
     void APF::set_goal(size_t index)
     {
-        attraction_.set_field_info(index, Potential::GridInfo::IS_GOAL, true);
-        repulsion_.set_field_info(index, Potential::GridInfo::IS_GOAL, true);
-        potential_.set_field_info(index, Potential::GridInfo::IS_GOAL, true);
+        potential_field_.set_field_info(index, Potential::GridInfo::IS_GOAL, true);
     }
 
     void APF::set_robot(size_t index)
     {
-        attraction_.set_field_info(index, Potential::GridInfo::IS_ROBOT, true);
-        repulsion_.set_field_info(index, Potential::GridInfo::IS_ROBOT, true);
-        potential_.set_field_info(index, Potential::GridInfo::IS_ROBOT, true);
+        potential_field_.set_field_info(index, Potential::GridInfo::IS_ROBOT, true);
     }
 
     void APF::set_obstacle(size_t index)
     {
-        attraction_.set_field_info(index, Potential::GridInfo::IS_OBSTACLE, true);
-        repulsion_.set_field_info(index, Potential::GridInfo::IS_OBSTACLE, true);
-        potential_.set_field_info(index, Potential::GridInfo::IS_OBSTACLE, true);
+        potential_field_.set_field_info(index, Potential::GridInfo::IS_OBSTACLE, true);
     }
 
     void APF::set_goal(double x, double y)
@@ -297,7 +284,7 @@ namespace potbot_lib{
         goal_ = {x,y};
         try 
         {
-            set_goal(potential_.get_field_index(x,y));
+            set_goal(potential_field_.get_field_index(x,y));
         }
         catch(...){}
         
@@ -308,7 +295,7 @@ namespace potbot_lib{
         robot_ = {x,y};
         try 
         {
-            set_robot(potential_.get_field_index(x,y));
+            set_robot(potential_field_.get_field_index(x,y));
         }
         catch(...){}
     }
@@ -318,172 +305,123 @@ namespace potbot_lib{
         obstacles_.push_back({x,y});
         try 
         {
-            set_obstacle(potential_.get_field_index(x,y));
+            set_obstacle(potential_field_.get_field_index(x,y));
         }
         catch(...){}
     }
 
     void APF::get_attraction_field(Potential::Field& field)
     {
-        field = attraction_;
+        field = potential_field_;
+        std::vector<Potential::FieldGrid>* potential_values;
+        potential_values = field.get_values();
+        for(auto& value : (*potential_values))
+        {
+            value.value = value.attraction;
+        }
     }
 
     void APF::get_repulsion_field(Potential::Field& field)
     {
-        field = repulsion_;
+        field = potential_field_;
+        std::vector<Potential::FieldGrid>* potential_values;
+        potential_values = field.get_values();
+        for(auto& value : (*potential_values))
+        {
+            value.value = value.repulsion;
+        }
     }
 
     void APF::get_potential_field(Potential::Field& field)
     {
-        field = potential_;
+        field = potential_field_;
     }
 
-    size_t APF::get_goal_index(Potential::Field& field)
+    std::vector<double> APF::get_goal()
     {
-        std::vector<size_t> result;
-        field.search_field_info(result, Potential::GridInfo::IS_GOAL);
-        return result[0];
+        return goal_;
     }
     
-    size_t APF::get_robot_index(Potential::Field& field)
+    std::vector<double> APF::get_robot()
     {
-        std::vector<size_t> result;
-        field.search_field_info(result, Potential::GridInfo::IS_ROBOT);
-        return result[0];
+        return robot_;
     }
     
-    std::vector<size_t> APF::get_obstacle_indexes(Potential::Field& field)
+    std::vector<std::vector<double>> APF::get_obstacles()
     {
-        std::vector<size_t> result;
-        field.search_field_info(result, Potential::GridInfo::IS_OBSTACLE);
-        return result;
-    }
-
-    void APF::create_attraction_field()
-    {
-        double weight_attraction_field = weight_attraction_field_;
-        std::vector<Potential::FieldGrid>* attraction_values;
-        attraction_values = attraction_.get_values();
-        for(auto& value : (*attraction_values))
-        {
-            double x = value.x;
-            double y = value.y;
-            double distance_to_goal = sqrt(pow(x - goal_[0],2)+pow(y - goal_[1],2));
-            double attraction_value = 0.5 * weight_attraction_field * pow(distance_to_goal, 2);
-            value.value = attraction_value;
-            value.states[Potential::GridInfo::IS_AROUND_GOAL] = bool(distance_to_goal < 0.3);
-        }
-    }
-
-    void APF::create_repulsion_field()
-    {
-        double distance_threshold_repulsion_field   = distance_threshold_repulsion_field_;
-        double weight_repulsion_field               = weight_repulsion_field_;
-        std::vector<Potential::FieldGrid>* repulsion_values;
-        repulsion_values = repulsion_.get_values();
-        for(auto& value : (*repulsion_values))
-        {
-            double x = value.x;
-            double y = value.y;
-            double repulsion_value = 0;
-            for(auto& coord_obstacle : obstacles_)
-            {
-                double x_obstacle = coord_obstacle[0];
-                double y_obstacle = coord_obstacle[1];
-                double distance_to_obstacle = sqrt(pow(x-x_obstacle,2) + pow(y-y_obstacle,2));
-                if (distance_to_obstacle <= distance_threshold_repulsion_field)
-                {
-                    value.states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE] = true;
-                    repulsion_value += 0.5 * weight_repulsion_field * pow(1.0/(distance_to_obstacle + 1e-100) - 1.0/(distance_threshold_repulsion_field + 1e-100), 2);
-                }
-                else
-                {
-                    repulsion_value += 0;
-                }
-            }
-            value.value = repulsion_value;
-        }
-
-        for(auto& value : (*repulsion_values))
-        {
-            if (value.states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
-            {
-                size_t rowc   = value.row;
-                size_t colc   = value.col;
-                bool brakeflag = false;
-                for(size_t row = rowc - 1; row <= rowc + 1; row++)
-                {
-                    for(size_t col = colc - 1; col <= colc + 1; col++)
-                    {
-                        if (row == rowc && col == colc) continue;
-                        try 
-                        {
-                            size_t next = repulsion_.get_field_index(row,col);
-                            if ((*repulsion_values)[next].states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE] == false)
-                            {
-                                value.states[Potential::GridInfo::IS_REPULSION_FIELD_EDGE] = true;
-                                brakeflag = true;
-                            }
-                        }
-                        catch(std::out_of_range& oor) 
-                        {
-                            continue;
-                        }
-                    }
-                    if (brakeflag) break;
-                }
-            }
-        }
+        return obstacles_;
     }
 
     void APF::create_potential_field()
     {
+        double weight_attraction_field = weight_attraction_field_;
+        double distance_threshold_repulsion_field   = distance_threshold_repulsion_field_;
+        double weight_repulsion_field               = weight_repulsion_field_;
+
         std::vector<Potential::FieldGrid>* potential_values;
-        potential_values = potential_.get_values();
+        potential_values = potential_field_.get_values();
         for(auto& value : (*potential_values))
         {
-            size_t idx = value.index;
-            double Ua = attraction_.get_value(idx).value;
-            double Uo = repulsion_.get_value(idx).value;
-            double Utotal = Ua + Uo;
-            value.value = Utotal;
-            size_t i = 0;
-            for(auto info : value.states)
+
+            double x                    = value.x;
+            double y                    = value.y;
+
+            double distance_to_goal     = sqrt(pow(x - goal_[0],2)+pow(y - goal_[1],2));
+            double attraction_value     = 0.5 * weight_attraction_field * pow(distance_to_goal, 2);
+            value.attraction            = attraction_value;
+
+            if (distance_to_goal < 0.3) value.states[Potential::GridInfo::IS_AROUND_GOAL] = true;
+
+
+
+            double repulsion_value              = 0;
+            for(auto& coord_obstacle : obstacles_)
             {
-                info = (info || attraction_.get_value(idx).states[i] || repulsion_.get_value(idx).states[i]);
-                i++;
+                double x_obstacle               = coord_obstacle[0];
+                double y_obstacle               = coord_obstacle[1];
+                double distance_to_obstacle     = sqrt(pow(x-x_obstacle,2) + pow(y-y_obstacle,2));
+                if (distance_to_obstacle        <= distance_threshold_repulsion_field)
+                {
+                    value.states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE] = true;
+                    repulsion_value += 0.5 * weight_repulsion_field * pow(1.0/(distance_to_obstacle + 1e-100) - 1.0/(distance_threshold_repulsion_field + 1e-100), 2);
+                }
             }
+            value.repulsion                     = repulsion_value;
+
+            value.potensial                     = value.attraction + value.repulsion;
+            value.value                         = value.potensial;
             
         }
 
         for(auto& value : (*potential_values))
         {
+
             if (value.states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE])
             {
-                size_t rowc   = value.row;
-                size_t colc   = value.col;
-                bool local_minimum = false;
-                for(size_t row = rowc - 1; row <= rowc + 1; row++)
+                bool local_minimum              = true;
+                std::vector<size_t> serch_indexes;
+                potential_field_.get_square_index(serch_indexes, value.row, value.col, 1);
+                for (auto idx : serch_indexes)
                 {
-                    for(size_t col = colc - 1; col <= colc + 1; col++)
+                    try 
                     {
-                        if (row == rowc && col == colc) continue;
-                        try 
+                        if ((*potential_values)[idx].value < value.value)
                         {
-                            size_t next = potential_.get_field_index(row,col);
-                            if ((*potential_values)[next].value < value.value)
-                            {
-                                local_minimum = true;
-                            }
+                            local_minimum   = false;
                         }
-                        catch(std::out_of_range& oor) 
+
+                        if ((*potential_values)[idx].states[Potential::GridInfo::IS_REPULSION_FIELD_INSIDE] == false)
                         {
-                            continue;
+                            value.states[Potential::GridInfo::IS_REPULSION_FIELD_EDGE] = true;
                         }
+                    }
+                    catch(std::out_of_range& oor) 
+                    {
+                        continue;
                     }
                 }
 
-                if(!local_minimum && !value.states[Potential::GridInfo::IS_GOAL])
+                if(local_minimum && !value.states[Potential::GridInfo::IS_GOAL])
                 {
                     value.states[Potential::GridInfo::IS_LOCAL_MINIMUM] = true;
                 }

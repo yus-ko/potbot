@@ -28,6 +28,9 @@ namespace potbot_lib{
                 double x                    = 0;
                 double y                    = 0;
                 double value                = 0;
+                double attraction           = 0;
+                double repulsion            = 0;
+                double potensial            = 0;
                 size_t row                  = 0;
                 size_t col                  = 0;
                 std::vector<bool> states    = {false, false, false, false, false, false, false, false};
@@ -77,6 +80,8 @@ namespace potbot_lib{
                 size_t get_field_index(size_t row = 0, size_t col = 0);
                 std::vector<double> get_field_coordinate(size_t index = 0);
 
+                void get_square_index(std::vector<size_t>& search_indexes, size_t centor_row = 0, size_t centor_col = 0, size_t range = 1);
+
                 void to_pcl2(sensor_msgs::PointCloud2& pcl_msg);
 
                 void info_filter(Field& field, const std::vector<size_t> terms, const std::string mode = "and");
@@ -95,9 +100,7 @@ namespace potbot_lib{
             std::vector<double> goal_                   = {0,0};
             std::vector<std::vector<double>> obstacles_;
 
-            Potential::Field attraction_;
-            Potential::Field repulsion_;
-            Potential::Field potential_;
+            Potential::Field potential_field_;
 
         public:
             
@@ -107,10 +110,7 @@ namespace potbot_lib{
                 double distance_threshold_repulsion_field   = 0.3);
             ~APF();
 
-            void init_attraction_field(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
-            void init_repulsion_field(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
             void init_potential_field(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
-            void init_all_fields(size_t rows = 3, size_t cols = 3, double resolution = 1.0);
 
             void set_goal(size_t index = 0);
             void set_robot(size_t index = 0);
@@ -124,12 +124,10 @@ namespace potbot_lib{
             void get_repulsion_field(Potential::Field& field);
             void get_potential_field(Potential::Field& field);
 
-            size_t get_goal_index(Potential::Field& field);
-            size_t get_robot_index(Potential::Field& field);
-            std::vector<size_t> get_obstacle_indexes(Potential::Field& field);
+            std::vector<double> get_goal();
+            std::vector<double> get_robot();
+            std::vector<std::vector<double>> get_obstacles();
 
-            void create_attraction_field();
-            void create_repulsion_field();
             void create_potential_field();
     };
 }
