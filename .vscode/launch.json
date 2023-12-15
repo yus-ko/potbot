@@ -8,7 +8,8 @@
             "name":"ROS: Launch",
             "type": "ros",
             "request": "launch",
-            "target": "/home/ros/catkin_ws/src/apf_pathplanner_tutorial/launch/apf_pathplanner_tutorial.launch"
+            // "target": "/home/ros/catkin_ws/src/apf_pathplanner_tutorial/launch/apf_pathplanner_tutorial.launch"
+            "target": "/home/ros/catkin_ws/src/potbot/potbot/launch/potbot_megarover.launch"
         }
     ]
 }

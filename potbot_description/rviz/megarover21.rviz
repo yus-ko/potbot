@@ -62,8 +62,6 @@ Visualization Manager:
       Value: true
     - Class: rviz/TF
       Enabled: false
-      Filter (blacklist): ""
-      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
@@ -407,7 +405,7 @@ Visualization Manager:
           Topic: field/potential
           Unreliable: false
           Use Fixed Frame: true
-          Use rainbow: false
+          Use rainbow: true
           Value: true
         - Alpha: 0.5
           Autocompute Intensity Bounds: false
@@ -437,7 +435,7 @@ Visualization Manager:
           Topic: field/attraction
           Unreliable: false
           Use Fixed Frame: true
-          Use rainbow: false
+          Use rainbow: true
           Value: false
         - Alpha: 0.5
           Autocompute Intensity Bounds: false
@@ -467,9 +465,9 @@ Visualization Manager:
           Topic: field/repulsion
           Unreliable: false
           Use Fixed Frame: true
-          Use rainbow: false
+          Use rainbow: true
           Value: false
-      Enabled: false
+      Enabled: true
       Name: Potential Field
   Enabled: true
   Global Options:

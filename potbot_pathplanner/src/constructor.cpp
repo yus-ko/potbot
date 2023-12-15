@@ -48,7 +48,6 @@ PathPlanningClass::PathPlanningClass()
 	sub_state_		= nhSub.subscribe("state",1,&PathPlanningClass::__state_callback,this);
 	
 	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
-	pub_pf_					= nhPub.advertise<nav_msgs::GridCells>("pot", 1);
 	pub_PP					= nhPub.advertise<nav_msgs::Path>("Path", 1);
 	pub_attraction_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/attraction", 1);
 	pub_repulsion_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/repulsion", 1);

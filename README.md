@@ -6,7 +6,7 @@
  
 ```bash
 sudo apt install ros-melodic-gazebo-ros ros-melodic-gazebo-ros-control ros-melodic-ros-control ros-melodic-ros-controllers
-sudo apt install ros-melodic-gmapping ros-melodic-amcl ros-melodic-map-server
+sudo apt install ros-melodic-gmapping ros-melodic-amcl ros-melodic-map-server ros-melodic-robot-localization
 ```
 ```bash
 cd ~/catkin_ws/src

@@ -299,6 +299,7 @@ void ControllerClass::__publishcmd()
 
 void ControllerClass::__publish_path_request()
 {
+    return;
     geometry_msgs::PoseStamped goal_init;
     if(goal_init != goal_)
     {

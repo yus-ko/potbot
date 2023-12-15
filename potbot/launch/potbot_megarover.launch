@@ -27,7 +27,7 @@
     <include file="$(find potbot)/launch/megarover_amcl.launch">
       <!-- <arg name="map_file" value=""/> -->
       <arg name="USE_RVIZ" value="false"/>
-      <!-- <arg name="initial_pose_y" value="0.3"/> -->
+      <arg name="initial_pose_y" value="0.3"/>
     </include>
 
     <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
