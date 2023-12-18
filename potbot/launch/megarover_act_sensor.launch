@@ -1,0 +1,34 @@
+<launch>
+  <arg name="set_base_frame" default="robot_5/base_footprint"/>
+  <arg name="set_odom_frame" default="robot_5/odom"/>
+  <arg name="set_map_frame"  default="map"/>
+
+  <include file="$(find mynt_eye_ros_wrapper)/launch/mynteye.launch">
+    <arg name="mynteye" value="robot_5/mynteye"/>
+    <arg name="base_frame_id" value="robot_5/camera_link" />
+  </include>
+
+
+    <include file="$(find potbot)/launch/potbot_remote.launch">
+      <arg name="model" value="megarover21"/>
+      <arg name="multi_robot_name" value="robot_5"/>
+    </include>
+
+    <!-- <node pkg="tf" type="static_transform_publisher" name="odom_tf" args="0 0 0 0 0 0 map robot_5/base_footprint 100" /> -->
+
+    <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+      <param name="serial_port" value="/dev/ttyACM0"/> 
+      <param name="frame_id" value="base_scan"/>
+      <param name="tf_prefix" value="/robot_5"/>
+    </node>
+
+     <node pkg="potbot_localization" type="potbot_localization_twist_to_odometry" name="potbot_localization_twist_to_odometry" output="screen">
+      <param name="FRAME_ID/ODOM" value="robot_5/odom"/>
+      <param name="FRAME_ID/ROBOT_BASE" value="robot_5/base_link"/>
+      <param name="TOPIC/SUB/TWIST" value="/rover_odo"/>
+      <param name="TOPIC/PUB/ODOM" value="/robot_5/odom"/>
+    </node>
+
+    <include file="$(find potbot)/launch/robot_localization.launch"/>
+
+</launch>
