@@ -87,7 +87,7 @@ class PathPlanningClass{
 
         std::vector<int> exploration_arr;
         //std::vector<geometry_msgs::Vector3> robot_path;
-        nav_msgs::Path robot_path, robot_path_;
+        nav_msgs::Path robot_path_world_coord_, robot_path_;
         std::vector<int> centered;
         geometry_msgs::Vector3 sub_start;
         int robot_path_index = 0, robot_path_index_pre = 0;

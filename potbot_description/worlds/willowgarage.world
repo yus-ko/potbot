@@ -101,7 +101,7 @@
     </spherical_coordinates>
     <model name='willowgarage'>
       <static>1</static>
-      <pose frame=''>-8.73142 -2.54554 0 0 -0 0</pose>
+      <pose frame=''>-8.73142 -2.54554 0.01 0 -0 0</pose>
       <link name='walls'>
         <collision name='collision'>
           <geometry>
@@ -152,10 +152,10 @@
         </link>
       </model>
       <model name='willowgarage'>
-        <pose frame=''>-8.73142 -2.54554 0 0 -0 0</pose>
+        <pose frame=''>-8.73142 -2.54554 0.01 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='walls'>
-          <pose frame=''>-8.73142 -2.54554 0 0 -0 0</pose>
+          <pose frame=''>-8.73142 -2.54554 0.01 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>

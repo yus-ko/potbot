@@ -3,17 +3,7 @@ project(potbot_lib)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  # sensor_msgs
-  # message_generation
-  # cv_bridge
   pcl_ros
-  # dynamic_reconfigure
-  # beego_control
-  #dynamixel_sdk
-  #dynamixel_sdk_examples
-  #obstacle_detection_2019
-  # visualization_msgs
-  #autonomous_mobile_robot
 )
 
 catkin_package(
@@ -34,6 +24,8 @@ add_library(${PROJECT_NAME}
   src/Utility.cpp
   src/PotentialField.cpp
   src/PathPlanner.cpp
+  src/UnscentedKalmanFilter.cpp
+
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})

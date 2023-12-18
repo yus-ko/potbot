@@ -19,6 +19,11 @@ void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
 {
     local_map_ = msg;
     // ROS_INFO("subscribe local map");
+    if(__PathCollision())
+    {
+        ROS_INFO("hit");
+        run();
+    }
 }
 
 void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)

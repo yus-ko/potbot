@@ -30,7 +30,7 @@ LocalizationClass::LocalizationClass()
 		pub_particle_ = nhPub_.advertise<visualization_msgs::MarkerArray>("Particle", 1);
 	}
 
-	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("Localmap", 1);
+	pub_localmap_ = nhPub_.advertise<nav_msgs::OccupancyGrid>("Localmap/test", 1);
 	
 	particles_.markers.resize(particle_num_);
 	weights_.resize(particle_num_);

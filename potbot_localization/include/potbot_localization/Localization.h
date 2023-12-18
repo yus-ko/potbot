@@ -1,5 +1,4 @@
 #include <potbot_lib/Utility.h>
-#include <potbot_msgs/beego_encoder.h>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <geometry_msgs/Twist.h>
@@ -46,8 +45,6 @@ class LocalizationClass{
 
         int localization_method_id_ = 0;
 
-        potbot_msgs::beego_encoder beggo_;
-
         geometry_msgs::Twist encoder_value_;
         nav_msgs::Odometry odom_;
         
@@ -68,7 +65,7 @@ class LocalizationClass{
   	    dynamic_reconfigure::Server<potbot_localization::LocalizationConfig>::CallbackType f_;
 
         std::string ROBOT_NAME, LOCALIZATION_METHOD, TOPIC_SCAN, TOPIC_ODOM;
-        // std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, FRAME_ID_LIDAR;
+        std::string FRAME_ID_ROBOT_BASE;//FRAME_ID_GLOBAL, FRAME_ID_LIDAR;
         bool IS_SIMULATOR, USE_RVIZ;
         double COVARIANCE_VV, COVARIANCE_VOMEGA, COVARIANCE_OMEGAOMEGA, INITIAL_POSE_X, INITIAL_POSE_Y, INITIAL_POSE_THETA;
 

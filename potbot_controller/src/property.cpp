@@ -1,13 +1,10 @@
 #include<potbot_controller/Controller.h>
 
-void ControllerClass::setLaunchParam(){
+void ControllerClass::__get_param(){
     
     ros::NodeHandle n("~");
     //n.getParam("",);
-    n.getParam("ROBOT_NAME",            ROBOT_NAME);
-    n.getParam("IS_SIMULATOR",          IS_SIMULATOR);
     n.getParam("PUBLISH_COMMAND",       PUBLISH_COMMAND);
-    n.getParam("COLLISION_DETECTION",   COLLISION_DETECTION);
     n.getParam("PATH_TRACKING_MARGIN",  PATH_TRACKING_MARGIN);
     n.getParam("FRAME_ID/GLOBAL",       FRAME_ID_GLOBAL);
     n.getParam("FRAME_ID/ROBOT_BASE",   FRAME_ID_ROBOT_BASE);
@@ -16,7 +13,6 @@ void ControllerClass::setLaunchParam(){
     n.getParam("TARGET/POSITION/YAW",   TARGET_POSITION_YAW);
     n.getParam("MAX_LINEAR_VELOCITY",   MAX_LINEAR_VELOCITY);
     n.getParam("MAX_ANGULAR_VELOCITY",  MAX_ANGULAR_VELOCITY);
-    n.getParam("TOPIC/SCAN",            TOPIC_SCAN);
     n.getParam("TOPIC/ODOM",            TOPIC_ODOM);
     n.getParam("TOPIC/CMD_VEL",         TOPIC_CMD_VEL);
 

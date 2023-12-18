@@ -1,18 +1,18 @@
 <launch>
-    <arg name="FRAME_ID/GLOBAL" default="map"/>
-    <arg name="FRAME_ID/ROBOT_BASE" default="potbot"/>
-    <arg name="FRAME_ID/LIDAR" default="lidar"/>
-    <arg name="TOPIC/SCAN" default="scan"/>
-    <arg name="TOPIC/ODOM" default="odom"/>
+    <arg name="FRAME_ID/GLOBAL"                     default="map"/>
+    <arg name="FRAME_ID/ROBOT_BASE"                 default="base_link"/>
+    <arg name="TOPIC/SCAN"                          default="scan"/>
+    <arg name="SIGMA/P"                             default="1.0"/>     <!-- 推定誤差共分散行列対角要素の初期値 -->
+    <arg name="SIGMA/Q"                             default="0.00001"/> <!-- 観測ノイズ（ガウス分布） 共分散行列の対角要素 -->
+    <arg name="SIGMA/R"                             default="0.00001"/> <!-- システムノイズ（ガウス分布） 共分散行列の対角要素 -->
+    
 
     <node pkg="potbot_filter" name="potbot_filter_fi" type="potbot_filter_fi" output="screen">
-        <param name="SIGMA_P" value="1"/>
-        <param name="SIGMA_Q" value="0.00001"/>    <!-- 観測ノイズ -->
-        <param name="SIGMA_R" value="0.00001"/>    <!-- システムノイズ -->
-        <param name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
-        <param name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
-        <param name="FRAME_ID/LIDAR" value="$(arg FRAME_ID/LIDAR)"/>
-        <param name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
-        <param name="TOPIC/ODOM" value="$(arg TOPIC/ODOM)"/>
+        <param name="SIGMA/P"                       value="$(arg SIGMA/P)"/>
+        <param name="SIGMA/Q"                       value="$(arg SIGMA/Q)"/>    
+        <param name="SIGMA/R"                       value="$(arg SIGMA/R)"/>    
+        <param name="FRAME_ID/GLOBAL"               value="$(arg FRAME_ID/GLOBAL)"/>
+        <param name="FRAME_ID/ROBOT_BASE"           value="$(arg FRAME_ID/ROBOT_BASE)"/>
+        <param name="TOPIC/SCAN"                    value="$(arg TOPIC/SCAN)"/>
     </node>
 </launch>

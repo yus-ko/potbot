@@ -2,13 +2,16 @@
 
 void ControllerClass::mainloop()
 {
-    ros::Rate loop_rate(50);
-	while (ros::ok())
-	{
-        manage();
-		ros::spinOnce();
-		loop_rate.sleep();
-	}
+
+    ros::spin();
+
+    // ros::Rate loop_rate(50);
+	// while (ros::ok())
+	// {
+    //     manage();
+	// 	ros::spinOnce();
+	// 	loop_rate.sleep();
+	// }
 }
 
 void ControllerClass::manage()
@@ -21,8 +24,7 @@ void ControllerClass::manage()
     // print_Pose(robot_.pose.pose);
     // ROS_INFO("path_size: %d", robot_path_.poses.size());
     //potbot_lib::utility::print_Pose(goal_.pose);
-    if (robot_path_.poses.size() > 0) controller();
-    else __publish_path_request();
+    if (!robot_path_.poses.empty() > 0) controller();
     if (PUBLISH_COMMAND) __publishcmd();
 }
 
@@ -41,27 +43,15 @@ void ControllerClass::controller()
     }
     else
     {
-        if (COLLISION_DETECTION  && __PathCollision(0))
-        {
-            ROS_INFO("PathCollision");
-            __publish_path_request();
-        }
         __LineFollowing();
-        
     }
 }
 
 //pure pursuite法
 void ControllerClass::__LineFollowing()
 {
-    int robot_path_size = robot_path_.poses.size();
-    if (robot_path_size == 0)
-    {
-        __publish_path_request();
-        return;
-    }
-
-    double procces = double(robot_path_index_)/double(robot_path_size);
+    size_t robot_path_size = robot_path_.poses.size();
+    double procces = double(robot_path_index_+1)/double(robot_path_size);
     //ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
     if (procces > 0.9 && potbot_lib::utility::get_Distance(robot_path_.poses[robot_path_size-1].pose.position, goal_.pose.position) > 0.3)
     {
@@ -88,9 +78,35 @@ void ControllerClass::__LineFollowing()
         }
         else
         {
-            if (l_d > 1)
+            if (l_d > 1.0)
             {
                 __publish_path_request();
+            }
+            else
+            {
+                visualization_msgs::Marker lookahead;
+                lookahead.header                = robot_.header;
+
+                lookahead.ns                    = "LookAhead";
+                lookahead.id                    = 0;
+                lookahead.lifetime              = ros::Duration(0);
+
+                lookahead.type                  = visualization_msgs::Marker::SPHERE;
+                lookahead.action                = visualization_msgs::Marker::MODIFY;
+                
+                geometry_msgs::PoseStamped pose_in;
+                pose_in.header                  = robot_path_.header;
+                pose_in.pose                    = robot_path_.poses[robot_path_index_].pose;
+                lookahead.pose                  = potbot_lib::utility::get_tf(tf_buffer_, pose_in, FRAME_ID_ROBOT_BASE);
+
+                lookahead.scale.x               = 0.03;
+                lookahead.scale.y               = 0.03;
+                lookahead.scale.z               = 0.03;
+
+                lookahead.color                 = potbot_lib::color::get_msg(potbot_lib::color::RED);
+                lookahead.color.a               = 0.5;
+                
+                pub_look_ahead_.publish(lookahead);
             }
             break;
         }
@@ -174,113 +190,6 @@ void ControllerClass::__PoseAlignment(geometry_msgs::Pose target)
     // ROS_INFO("__PoseAlignment (v,omega) = (%f, %f)", cmd_.linear.x, cmd_.angular.z);
 }
 
-bool ControllerClass::__PathCollision(int mode)
-{
-    if (mode == 0)
-    {
-        int path_size = robot_path_.poses.size();
-        
-        int map_size = local_map_.data.size();
-
-        std::vector<geometry_msgs::Point> obs;
-        double rx = robot_.pose.pose.position.x;
-        double ry = robot_.pose.pose.position.y;
-        double yaw = potbot_lib::utility::get_Yaw(robot_.pose.pose.orientation);
-
-        int scan_size = scan_.ranges.size();
-        for (int i = 0; i < scan_size; i++)
-        {
-            //if (!std::isinf(scan_.ranges[i]) && !std::isnan(scan_.ranges[i]))
-            if (scan_.range_min <= scan_.ranges[i] && scan_.ranges[i] <= scan_.range_max)
-            {
-                double angle = i * scan_.angle_increment + scan_.angle_min + yaw;
-                double distance = scan_.ranges[i] + scan_.range_min;
-                double x = distance * cos(angle) + rx;
-                double y = distance * sin(angle) + ry;
-                geometry_msgs::Point o;
-                o.x=x;
-                o.y=y;
-                obs.push_back(o);
-            }
-        }
-
-        int obs_size = obs.size();
-        for (int i=0; i < obs_size; i++)
-        {
-            
-            for (int p = robot_path_index_; p < path_size; p++)
-            {
-                if (potbot_lib::utility::get_Distance(obs[i],robot_path_.poses[p].pose.position) < 0.15)
-                {
-                    // geometry_msgs::Pose pose;
-                    // pose.position = obs[i];
-                    // std::cout<<"obs";
-                    // print_Pose(pose);
-                    // std::cout<<"path";
-                    // print_Pose(robot_path_.poses[p].pose);
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-    else if (mode == 1)
-    {
-        std::vector<geometry_msgs::Vector3> obstacle_arr;
-        for (int i = 0; i < obstacle_segment_.markers.size(); i++)
-        {
-            if (obstacle_segment_.markers[i].ns == "segments_display")
-            {
-
-                geometry_msgs::Pose world_obslacle_pose;
-                geometry_msgs::TransformStamped transform;
-                static tf2_ros::TransformListener tfListener(tf_buffer_);
-                try 
-                {
-                    // ロボット座標系の障害物を世界座標系に変換
-                    transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, obstacle_segment_.markers[i].header.frame_id, ros::Time());
-                    tf2::doTransform(obstacle_segment_.markers[i].pose, world_obslacle_pose, transform);
-                }
-                catch (tf2::TransformException &ex) 
-                {
-                    ROS_ERROR("TF Ereor : %s", ex.what());
-                    continue;
-                }
-
-                if (obstacle_segment_.markers[i].type == visualization_msgs::Marker::SPHERE)
-                {
-                    double a = world_obslacle_pose.position.x;
-                    double b = world_obslacle_pose.position.y;
-                    double r = obstacle_segment_.markers[i].scale.x/2.0;
-                    for (int p = robot_path_index_; p < robot_path_.poses.size(); p++)
-                    {
-                        double x = robot_path_.poses[p].pose.position.x;
-                        double y = robot_path_.poses[p].pose.position.y;
-                        if (x <= sqrt(pow(r,2)-pow(y-b,2))+a && y <= sqrt(pow(r,2)-pow(x-a,2))+b) return true;
-                    }
-                }
-                else if(obstacle_segment_.markers[i].type == visualization_msgs::Marker::CUBE)
-                {
-                    double xmin = world_obslacle_pose.position.x - obstacle_segment_.markers[i].scale.x/2.0;
-                    double xmax = world_obslacle_pose.position.x + obstacle_segment_.markers[i].scale.x/2.0;
-                    double ymin = world_obslacle_pose.position.y - obstacle_segment_.markers[i].scale.y/2.0;
-                    double ymax = world_obslacle_pose.position.y + obstacle_segment_.markers[i].scale.y/2.0;
-                    for (int p = robot_path_index_; p < robot_path_.poses.size(); p++)
-                    {
-                        double x = robot_path_.poses[p].pose.position.x;
-                        double y = robot_path_.poses[p].pose.position.y;
-                        if (x >= xmin && x <= xmax && y >= ymin && y <= ymax) return true;
-                    }
-                }
-                
-            }
-        }
-        return false;
-    }
-    
-}
-
 // void ControllerClass::__PID()
 // {
 //     double error_distance = get_Distance(robot_.pose.pose.position, goal_.pose.position);
@@ -299,7 +208,6 @@ void ControllerClass::__publishcmd()
 
 void ControllerClass::__publish_path_request()
 {
-    return;
     geometry_msgs::PoseStamped goal_init;
     if(goal_init != goal_)
     {
