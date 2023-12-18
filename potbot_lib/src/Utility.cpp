@@ -2,7 +2,7 @@
 
 namespace potbot_lib{
     namespace color{
-        std_msgs::ColorRGBA get_msg(int color_id)
+        std_msgs::ColorRGBA get_msg(const int color_id)
         {
             std_msgs::ColorRGBA color;
             if(color_id < 0)
@@ -49,7 +49,7 @@ namespace potbot_lib{
             return color;
         }
 
-        std_msgs::ColorRGBA get_msg(std::string color_name)
+        std_msgs::ColorRGBA get_msg(const std::string color_name)
         {
             if (color_name == "r" || color_name == "red")
             {
@@ -96,14 +96,14 @@ namespace potbot_lib{
 
     namespace utility{
 
-        void get_RPY(geometry_msgs::Quaternion orientation, double &roll, double &pitch, double &yaw)
+        void get_RPY(const geometry_msgs::Quaternion& orientation, double &roll, double &pitch, double &yaw)
         {
             tf2::Quaternion quat;
             tf2::convert(orientation, quat);
             tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
         }
 
-        geometry_msgs::Quaternion get_Quat(double roll, double pitch, double yaw)
+        geometry_msgs::Quaternion get_Quat(const double roll, const double pitch, const double yaw)
         {
             tf2::Quaternion quat;
             quat.setRPY(roll, pitch, yaw);
@@ -112,7 +112,24 @@ namespace potbot_lib{
             return orientation;
         }
 
-        double get_Yaw(geometry_msgs::Quaternion orientation)
+        geometry_msgs::Point get_Point(const double x, const double y, const double z)
+        {
+            geometry_msgs::Point point;
+            point.x = x;
+            point.y = y;
+            point.z = z;
+            return point;
+        }
+
+        geometry_msgs::Pose get_Pose(const double x, const double y, const double z, const double roll, const double pitch, const double yaw)
+        {
+            geometry_msgs::Pose pose;
+            pose.position = get_Point(x,y,z);
+            pose.orientation = get_Quat(roll,pitch,yaw);
+            return pose;
+        }
+
+        double get_Yaw(const geometry_msgs::Quaternion& orientation)
         {
             double roll, pitch, yaw;
             get_RPY(orientation, roll, pitch, yaw);
@@ -139,7 +156,7 @@ namespace potbot_lib{
             return get_Distance(position1.pose.pose.position, position2.pose.pose.position);
         }
 
-        void print_Pose(geometry_msgs::Pose pose)
+        void print_Pose(const geometry_msgs::Pose& pose)
         {
             double r,p,y;
             get_RPY(pose.orientation,r,p,y);
@@ -148,12 +165,12 @@ namespace potbot_lib{
                         r/M_PI*180, p/M_PI*180, y/M_PI*180);
         }
 
-        void print_Pose(geometry_msgs::PoseStamped pose)
+        void print_Pose(const geometry_msgs::PoseStamped& pose)
         {
             print_Pose(pose.pose);
         }
 
-        void print_Pose(nav_msgs::Odometry pose)
+        void print_Pose(const nav_msgs::Odometry& pose)
         {
             print_Pose(pose.pose.pose);
         }

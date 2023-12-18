@@ -39,23 +39,25 @@ namespace potbot_lib{
         const int WHITE         = 6;
         const int BLACK         = 7;
 
-        std_msgs::ColorRGBA get_msg(int color_id = potbot_lib::color::RED);
-        std_msgs::ColorRGBA get_msg(std::string color_name);
+        std_msgs::ColorRGBA get_msg(const int color_id = potbot_lib::color::RED);
+        std_msgs::ColorRGBA get_msg(const std::string color_name);
     }
 
     namespace utility{
-        void get_RPY(geometry_msgs::Quaternion orientation, double &roll, double &pitch, double &yaw);
-        geometry_msgs::Quaternion get_Quat(double roll, double pitch, double yaw);
-        double get_Yaw(geometry_msgs::Quaternion orientation);
+        void get_RPY(const geometry_msgs::Quaternion& orientation, double &roll, double &pitch, double &yaw);
+        geometry_msgs::Quaternion get_Quat(const double roll = 0, const double pitch = 0, const double yaw = 0);
+        geometry_msgs::Point get_Point(const double x = 0, const double y = 0, const double z = 0);
+        geometry_msgs::Pose get_Pose(const double x = 0, const double y = 0, const double z = 0, const double roll = 0, const double pitch = 0, const double yaw = 0);
+        double get_Yaw(const geometry_msgs::Quaternion& orientation);
 
         double get_Distance(const geometry_msgs::Point& position1, const geometry_msgs::Point& position2);
         double get_Distance(const geometry_msgs::Pose& position1, const geometry_msgs::Pose& position2);
         double get_Distance(const geometry_msgs::PoseStamped& position1, const geometry_msgs::PoseStamped& position2);
         double get_Distance(const nav_msgs::Odometry& position1, const nav_msgs::Odometry& position2);
 
-        void print_Pose(geometry_msgs::Pose pose);
-        void print_Pose(geometry_msgs::PoseStamped pose);
-        void print_Pose(nav_msgs::Odometry pose);
+        void print_Pose(const geometry_msgs::Pose& pose);
+        void print_Pose(const geometry_msgs::PoseStamped& pose);
+        void print_Pose(const nav_msgs::Odometry& pose);
 
         int get_tf(geometry_msgs::PoseStamped pose_in, geometry_msgs::PoseStamped &pose_out, tf2_ros::Buffer &buffer);
         geometry_msgs::Pose get_tf(const tf2_ros::Buffer &buffer,const geometry_msgs::PoseStamped pose_in, const std::string target_frame_id);
