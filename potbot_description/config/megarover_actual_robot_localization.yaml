@@ -12,11 +12,10 @@ print_diagnostics: true
 debug: false
 debug_out_file: /path/to/debug/file.txt
 
-
 map_frame: map              # Defaults to "map" if unspecified
-odom_frame: robot_5/odom            # Defaults to "odom" if unspecified
-base_link_frame: robot_5/base_link  # Defaults to "base_link" if unspecified
-world_frame: robot_5/odom           # Defaults to the value of odom_frame if unspecified
+odom_frame: odom            # Defaults to "odom" if unspecified
+base_link_frame: base_link  # Defaults to "base_link" if unspecified
+world_frame: odom           # Defaults to the value of odom_frame if unspecified
 
 odom0: /gazebo_dead_reckoning/rectangle
 odom0_config: [true,  true,  false,
