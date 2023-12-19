@@ -18,35 +18,15 @@
   <include file="$(find mynt_eye_ros_wrapper)/launch/mynteye.launch">
     <arg name="mynteye" value="robot_4/mynteye"/>
     <arg name="base_frame_id" value="robot_4/camera_link" />
-    <!-- <arg name="left_frame_id" value="robot_5/mynteye_left_frame" />
-    <arg name="right_frame_id" value="robot_5/mynteye_right_frame" />
-    <arg name="left_rect_frame_id" value="robot_5/mynteye_left_rect_frame" />
-    <arg name="right_rect_frame_id" value="robot_5/mynteye_right_rect_frame" />
-    <arg name="disparity_frame_id" value="robot_5/mynteye_disparity_frame" />
-    <arg name="disparity_norm_frame_id" value="robot_5/mynteye_disparity_norm_frame" />
-    <arg name="points_frame_id" value="robot_5/mynteye_points_frame" />
-    <arg name="depth_frame_id" value="robot_5/mynteye_depth_frame" /> -->
   </include>
 
   <group ns="$(arg GROUP)">
 
-    <!-- <node name="urg_node" pkg="urg_node" type="urg_node" output="screen"> -->
-      <!-- <param name="ip_address" value=""/> -->
-      <!-- <param name="serial_port" value="/dev/ttyACM0"/> -->
-      <!-- <param name="serial_baud" value="115200"/> -->
-      <!-- <param name="frame_id" value=""/> -->
-      <!-- <param name="calibrate_time" value="true"/>
-      <param name="publish_intensity" value="false"/>
-      <param name="publish_multiecho" value="false"/>
-      <param name="angle_min" value="-1.5707963"/>
-      <param name="angle_max" value="1.5707963"/> -->
-    <!-- </node> -->
-
-    <node pkg="urg_node" type="urg_node" name="urg_node">
+    <!-- <node pkg="urg_node" type="urg_node" name="urg_node">
       <param name="ip_address" value="172.16.0.10"/>
       <param name="frame_id" value="base_scan"/>
       <param name="tf_prefix" value="/robot_4"/>
-    </node>
+    </node> -->
 
     <include file="$(find potbot)/launch/potbot_remote.launch">
       <arg name="model" value="beego2"/>
@@ -54,14 +34,17 @@
     </include>
 
     <node pkg="tf" type="static_transform_publisher" name="odom_tf" args="0 0 0 0 0 0 map robot_4/odom 100" />
-    <node pkg="tf" type="static_transform_publisher" name="base_footprint_tf" args="0 0 0 0 0 0 robot_4/odom robot_4/base_footprint 100" />
-
-    <!-- <node pkg="beego_control" name="beego_control_x" type="beego_control_x" output="screen" >
-      <param name="posX" value="0"/>
-      <param name="posY" value="0"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_footprint_tf" args="0 0 0 0 0 0 robot_4/odom robot_4/base_footprint 100" >
       <param name="yaw" value="0"/>
       <param name="d" value="0.22"/>
-    </node> -->
+    </node>
+
+    <node pkg="dynamixel_sdk_examples" type="read_write_node_pid" name="pan_tilt_motor">
+      <remap from="/set_position" to="set_position"/>
+    </node>
+    
+    <include file="$(find mynteye_pointcloud)/launch/all.launch"/>
+    <include file="$(find pan_order)/launch/pan_order.launch"/>
 
     <!-- <node pkg="potbot_localization" type="potbot_localization_twist_to_odometry" name="potbot_localization_twist_to_odometry" output="screen">
       <param name="FRAME_ID/ODOM" value="robot_4/base_footprint"/>
@@ -70,7 +53,7 @@
       <param name="TOPIC/PUB/ODOM" value="$(arg TOPIC/ODOM)"/>
     </node> -->
 
-    <include file="$(find potbot_localization)/launch/Localization.launch">
+    <!-- <include file="$(find potbot_localization)/launch/Localization.launch">
       <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
       <arg name="IS_SIMULATOR" value="$(arg IS_SIMULATOR)"/>
       <arg name="USE_RVIZ" value="$(arg USE_RVIZ)"/>
@@ -115,6 +98,11 @@
       <arg name="TARGET/POSITION/YAW" value="$(arg TARGET/POSITION/YAW)"/>
       <arg name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
       <arg name="TOPIC/ODOM" value="$(arg TOPIC/ODOM)"/>
+    </include> -->
+
+    <include file="$(find potbot_pcl)/launch/PCLClustering.launch">
+      <arg name="TOPIC/PCL2"              value="mynteye/points/data_raw"/>
+      <arg name="CLUSTERING_METHOD"       value="Euclidean"/>
     </include>
     
     <group if="$(arg USE_RVIZ)">
