@@ -5,12 +5,11 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
-#include <nav_msgs/OccupancyGrid.h>
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
 #include <dynamic_reconfigure/server.h>
 #include <potbot_controller/ControllerConfig.h>
 
@@ -19,12 +18,11 @@ class ControllerClass{
 
     private:
         
-        //センサーデータ
 		ros::NodeHandle nhSub_;
-		ros::Subscriber sub_odom_, sub_path_, sub_goal_, sub_local_map_, sub_scan_, sub_seg_;
-        //送信データ
+		ros::Subscriber sub_odom_, sub_path_, sub_goal_;
+        
         ros::NodeHandle nhPub_;
-		ros::Publisher pub_cmd_, pub_path_request_;
+		ros::Publisher pub_cmd_, pub_path_request_, pub_look_ahead_;
 
         tf2_ros::Buffer tf_buffer_;
         
@@ -33,56 +31,39 @@ class ControllerClass{
 
         nav_msgs::Odometry line_following_start_;
         nav_msgs::Path robot_path_;
-        nav_msgs::OccupancyGrid local_map_;
 
         bool done_init_pose_alignment_;
 
         geometry_msgs::PoseStamped goal_;
-
-        sensor_msgs::LaserScan scan_;
-
-        visualization_msgs::MarkerArray obstacle_segment_;
 
         dynamic_reconfigure::Server<potbot_controller::ControllerConfig> server_;
   	    dynamic_reconfigure::Server<potbot_controller::ControllerConfig>::CallbackType f_;
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
-        std::string ROBOT_NAME, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN, TOPIC_ODOM, TOPIC_CMD_VEL;
-        bool IS_SIMULATOR, PUBLISH_COMMAND, COLLISION_DETECTION;
+        std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_ODOM, TOPIC_CMD_VEL;
+        bool PUBLISH_COMMAND;
         double PATH_TRACKING_MARGIN, TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW, MAX_LINEAR_VELOCITY = 0.2, MAX_ANGULAR_VELOCITY = 1.0;
 
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __goal_callback(const geometry_msgs::PoseStamped& msg);
-        void __local_map_callback(const nav_msgs::OccupancyGrid& msg);
-        void __scan_callback(const sensor_msgs::LaserScan& msg);
-        void __segment_callback(const visualization_msgs::MarkerArray& msg);
+        void __path_callback(const nav_msgs::Path& msg);
         void __param_callback(const potbot_controller::ControllerConfig& param, uint32_t level);
         void __publish_path_request();
         void __publishcmd();
 
         void __LineFollowing();
         void __PoseAlignment(geometry_msgs::Pose target);
-        bool __PathCollision(int mode);
+
+        void __get_param();
 
     public:
-        //in constracter.cpp
-        //コンストラクタ：クラス定義に呼び出されるメソッド
         ControllerClass();
-        //デストラクタ：クラスが消滅するときに呼びだされるメソッド
         ~ControllerClass();
-        //メソッド：関数のようなもの:後でlaunchファイルからの読み込みメソッドを追加
-        //in property.cpp
-        //セット：内部パラメータの書き込み
-        void setLaunchParam();//launchファイルから書き込み
-        //in methods.cpp
-        //--センサーデータ受信
-        void path_callback(const nav_msgs::Path& msg);
         
         void mainloop();
 
         void manage();
         void controller();
-        void calculate_cmd();
         
 };

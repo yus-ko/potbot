@@ -1,0 +1,10 @@
+<launch>
+   <arg name="TOPIC/PCL2"                    default="mynteye/points/data_raw"/>
+   <arg name="CLUSTERING_METHOD"             default="Euclidean"/>
+   <!-- Euclidean SuperVoxel -->
+   
+   <node pkg="potbot_pcl" name="potbot_pcl_cl3d" type="potbot_pcl_cl3d" output="screen">
+      <param name="TOPIC/PCL2"               value="$(arg TOPIC/PCL2)"/>
+      <param name="CLUSTERING_METHOD"        value="$(arg CLUSTERING_METHOD)"/>
+   </node>
+</launch>

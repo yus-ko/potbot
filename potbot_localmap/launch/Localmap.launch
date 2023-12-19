@@ -1,0 +1,7 @@
+<launch>
+    <!-- <arg name="ROBOT_NAME" default="turtlebot3"/> -->
+
+    <node pkg="potbot_localmap" name="potbot_localmap" type="potbot_localmap" output="screen">
+        <!-- <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/> -->
+    </node>
+</launch>

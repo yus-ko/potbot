@@ -2,15 +2,16 @@
 
 void FilterClass::mainloop()
 {
+    ros::spin();
     ros::Rate loop_rate(50);
-    KalmanFilter obs;
-    states_.push_back(obs);
-	while (ros::ok())
-	{
-        manage();
-		ros::spinOnce();
-		loop_rate.sleep();
-	}
+    // KalmanFilter obs;
+    // states_.push_back(obs);
+	// while (ros::ok())
+	// {
+    //     manage();
+	// 	ros::spinOnce();
+	// 	loop_rate.sleep();
+	// }
 }
 
 void FilterClass::manage()

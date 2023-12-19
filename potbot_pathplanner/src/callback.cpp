@@ -19,6 +19,11 @@ void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
 {
     local_map_ = msg;
     // ROS_INFO("subscribe local map");
+    if(__PathCollision())
+    {
+        ROS_INFO("hit");
+        run();
+    }
 }
 
 void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)
@@ -62,15 +67,22 @@ void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)
 void PathPlanningClass::__param_callback(const potbot_pathplanner::PathPlanningConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
-    rho_zero_ = param.threshold_create_potential_field;
-    eta_ = param.weight_obstacle;
-    kp_ = param.weight_destination;
 
-    max_path_index_ = param.max_path_length;
-    wu_ = param.weight_potential_field;
-    w_theta_ = param.weight_angle;
+    potential_field_rows_       = param.potential_field_rows;
+    potential_field_cols_       = param.potential_field_cols;
+    potential_field_resolution_ = param.potential_field_resolution;
 
-    sync_createpath_ = param.sync_createpath_and_controlcycle;
+    rho_zero_                   = param.distance_threshold_repulsion_field;
+    eta_                        = param.weight_repulsion_field;
+    kp_                         = param.weight_attraction_field;
+
+    path_search_range_          = param.path_search_range;
+
+    max_path_length_            = param.max_path_length;
+    wu_                         = param.weight_potential_field;
+    w_theta_                    = param.weight_angle;
+
+    sync_createpath_            = param.sync_createpath_and_controlcycle;
 
     test_vx_ = param.test_vx;
     test_vy_ = param.test_vy;

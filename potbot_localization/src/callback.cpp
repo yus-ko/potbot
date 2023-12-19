@@ -110,9 +110,10 @@ void LocalizationClass::__scan_callback(const sensor_msgs::LaserScan& msg)
 {
     scan_ = msg;
 
-    local_map_.header = header_;
+    local_map_.header = scan_.header;
+    local_map_.header.frame_id = FRAME_ID_ROBOT_BASE;
     local_map_.info = world_map_.info;
-    local_map_.info.map_load_time = header_.stamp;
+    local_map_.info.map_load_time = local_map_.header.stamp;
     local_map_.info.width = 240;
     local_map_.info.height = 240;
     local_map_.info.resolution = 0.05;

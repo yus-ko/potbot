@@ -2,7 +2,7 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <potbot_lib/Utility.h>
-#include <potbot_lib/PotentialField.h>
+#include <potbot_lib/PathPlanner.h>
 #include <potbot_msgs/StateArray.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Twist.h>
@@ -39,7 +39,7 @@ class PathPlanningClass{
 		ros::Subscriber sub_encoder, sub_scan_, sub_coefficient, sub_goal_, sub_local_map_, sub_odom_, sub_seg_, sub_state_, sub_run_;
         //送信データ
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_cmd, pub_odom, pub_PP, pub_pf_, pub_cmd_, pub_potential_, pub_attraction_field_, pub_repulsion_field_, pub_potential_field_;
+        ros::Publisher pub_cmd, pub_odom, pub_PP, pub_cmd_, pub_potential_, pub_attraction_field_, pub_repulsion_field_, pub_potential_field_;
 
         std_msgs::Header header_;
 
@@ -79,9 +79,15 @@ class PathPlanningClass{
         double distance_to_obstacle;
         int obstacle_index = 0, obstacle_size = 1000;
 
+        double max_path_length_ = 6.0;
+        double potential_field_resolution_ = 0.05;
+        size_t potential_field_rows_ = 240;
+        size_t potential_field_cols_ = 240;
+        size_t path_search_range_ = 1;
+
         std::vector<int> exploration_arr;
         //std::vector<geometry_msgs::Vector3> robot_path;
-        nav_msgs::Path robot_path, robot_path_;
+        nav_msgs::Path robot_path_world_coord_, robot_path_;
         std::vector<int> centered;
         geometry_msgs::Vector3 sub_start;
         int robot_path_index = 0, robot_path_index_pre = 0;

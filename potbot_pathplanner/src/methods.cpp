@@ -8,15 +8,17 @@
 
 void PathPlanningClass::mainloop()
 {
-    ros::Rate loop_rate(10);
-	while (ros::ok())
-	{
-        //if (sync_createpath_ || __PathCollision()) run();
-        if (sync_createpath_) run();
+    ros::spin();
+
+    // ros::Rate loop_rate(10);
+	// while (ros::ok())
+	// {
+    //     //if (sync_createpath_ || __PathCollision()) run();
+    //     if (sync_createpath_) run();
         
-        loop_rate.sleep();
-		ros::spinOnce();
-	}
+    //     loop_rate.sleep();
+	// 	ros::spinOnce();
+	// }
 }
 
 void PathPlanningClass::run()
@@ -31,14 +33,14 @@ void PathPlanningClass::run()
         if(__create_PotentialField())
         {
             //__create_Path();
-            __create_Path_used_weight();
+            // __create_Path_used_weight();
         }
     }
     else if (path_planning_id == potbot_lib::CSV_PATH)
     {
         __create_PathFromCSV();
     }
-    publishPathPlan();
+    // publishPathPlan();
     
 }
 
@@ -54,12 +56,15 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
         double map_ori_y = local_map_.info.origin.position.y;
         double map_res = local_map_.info.resolution;
 
+        std_msgs::Header map_header = local_map_.header;
+
         std::vector<nav_msgs::Odometry> obstacle_arr(map_size);
         int obs_idx = 0;
         for (int i = 0; i < map_size; i++)
         {
             if (local_map_.data[i])
             {
+                obstacle_arr[obs_idx].header = map_header;
                 obstacle_arr[obs_idx].pose.pose.position.x = int(i%map_cols)*map_res + map_ori_x;
                 obstacle_arr[obs_idx].pose.pose.position.y = int(i/map_cols)*map_res + map_ori_y;
                 obs_idx++;
@@ -194,7 +199,7 @@ int PathPlanningClass::__create_PotentialField()
     double map_ori_y = local_map_.info.origin.position.y;
     double map_res = local_map_.info.resolution;
 
-    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);  //引数確認
+    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(0);  //引数確認
 
     potential_field_.header = header_;
     potential_field_.header.frame_id = FRAME_ID_ROBOT_BASE;
@@ -232,128 +237,105 @@ int PathPlanningClass::__create_PotentialField()
     // int break_cnt = 0;
     // while(!get_tf(world_goal ,robot_goal, tf_buffer_) || break_cnt > 1000){break_cnt++;}
     
-    for (int i = 0; i < map_size; i++)
+    potbot_lib::PathPlanner::APFPathPlanner apf(
+							potential_field_rows_,					//ポテンシャル場の幅(x軸方向) [m]
+							potential_field_cols_,					//ポテンシャル場の高さ(y軸方向) [m]
+							potential_field_resolution_,			//ポテンシャル場グリッド1辺の長さ [m]
+							kp_,				                    //ポテンシャル場における引力場の重み
+							eta_,				                    //ポテンシャル場における斥力場の重み
+							rho_zero_                               //斥力場を場を作る距離の閾値 [m]
+							);
+    apf.set_goal(robot_goal.pose.position.x, robot_goal.pose.position.y);
+    apf.set_robot(0,0);
+    
+    for (auto obs : obstacles)
     {
-        double x = int(i%map_cols)*map_res + map_ori_x;
-        double y = int(i/map_cols)*map_res + map_ori_y;
-
-        // double rho = __get_ShortestDistanceToObstacle(x,y,obstacles) + 0.00000000000001;
-
-        double Uo = 0;
-        for (int j = 0; j < obstacles.size(); j++)
-        {
-            double obs_x        = obstacles[j].pose.pose.position.x;
-            double obs_y        = obstacles[j].pose.pose.position.y;
-            // double obs_theta    = get_Yaw(obstacles[j].pose.pose.orientation);
-            // double obs_v        = obstacles[j].twist.twist.linear.x;
-            // double obs_omega    = obstacles[j].twist.twist.angular.z;
-            // double obs_vx       = obs_v*cos(obs_theta);
-            // double obs_vy       = obs_v*sin(obs_theta);
-            // double c = abs(test_vx_) + rho_zero_;
-            // double d = abs(test_vy_) + rho_zero_;
-            // double e = 1;
-
-            // double rot = test_theta_;
-
-            // double x_rot = x*cos(rot)-y*sin(rot);
-            // double y_rot = x*sin(rot)+y*cos(rot);
-
-            // double obs_x_rot = obs_x*cos(rot)-obs_y*sin(rot);
-            // double obs_y_rot = obs_x*sin(rot)+obs_y*cos(rot);
-
-            // double edge_x_min = -sqrt(pow(c,2)-pow(c,2)*pow(y_rot-obs_y_rot,2)/pow(d,2))+obs_x_rot;
-            // double edge_x_max = sqrt(pow(c,2)-pow(c,2)*pow(y_rot-obs_y_rot,2)/pow(d,2))+obs_x_rot;
-            // double edge_y_min = -sqrt(pow(d,2)-pow(d,2)*pow(x_rot-obs_x_rot,2)/pow(c,2))+obs_y_rot;
-            // double edge_y_max = sqrt(pow(d,2)-pow(d,2)*pow(x_rot-obs_x_rot,2)/pow(c,2))+obs_y_rot;
-
-            double rho = sqrt(pow(x-obs_x,2) + pow(y-obs_y,2)) + 1e-9;
-            
-            // double edge_x_min_rot = cos(rot)*edge_x_min-sin(rot)*edge_y_min;
-            // double edge_y_min_rot = sin(rot)*edge_x_min+cos(rot)*edge_y_min;
-            // double edge_x_max_rot = cos(rot)*edge_x_max-sin(rot)*edge_y_max;
-            // double edge_y_max_rot = sin(rot)*edge_x_max+cos(rot)*edge_y_max;
-            // if (x >= edge_x_min_rot && x <= edge_x_max_rot && y >= edge_y_min_rot && y <= edge_y_max_rot)
-            // if (x_rot >= edge_x_min && x_rot <= edge_x_max && y_rot >= edge_y_min && y_rot <= edge_y_max)
-            // if (pow((x_rot-obs_x_rot)/a_,2)+pow(b_*(y_rot-obs_y_rot)/(1+((x_rot-obs_x_rot)+a_)/c_),2) <= 1)
-            // if (x >= obs_x-a_ && x <= obs_x+a_ && y >= obs_y-b_ && y <= obs_y+b_)
-            if (rho <= rho_zero_)
-            {
-                potential_field_info_[i][IS_REPULSION_FIELD_INSIDE] = true;
-                Uo += 0.5 * eta_ * pow(1/rho - 1/rho_zero_, 2.0);
-                // Uo = 1;
-
-                // if ((x >= edge_x_min - map_res && x <= edge_x_min + map_res) || 
-                //     (x >= edge_x_max - map_res && x <= edge_x_max + map_res) || 
-                //     (y >= edge_y_min - map_res && y <= edge_y_min + map_res) ||
-                //     (y >= edge_y_max - map_res && y <= edge_y_max + map_res))
-                // {
-                //     potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-                // }
-                //if (potential_field_info_[i][IS_REPULSION_FIELD_EDGE] && !potential_field_info_[i][IS_REPULSION_FIELD_EDGE_DUPLICATION]) Uo = 2;
-            }
-            else
-            {
-                Uo += 0;
-            }
-        }
-
-        double distance_to_goal = sqrt(pow(x - robot_goal.pose.position.x,2)+pow(y - robot_goal.pose.position.y,2));
-        if (distance_to_goal < 0.3) potential_field_info_[i][IS_AROUND_GOAL] = true;
-        double Ud = 0.5 * kp_ * pow(distance_to_goal, 2);
-
-        double U = Ud + Uo;
-        // if (isnan(U) || isinf(U))
-        // {
-        //     ROS_INFO("%f, %f, %f, %f",x,y,Ud,Uo);
-        // }
-
-        potential_field_.cells[i].x = x;
-        potential_field_.cells[i].y = y;
-        potential_field_.cells[i].z = U;
-
+        apf.set_obstacle(obs.pose.pose.position.x, obs.pose.pose.position.y);
     }
 
-    for (int i = map_cols+1; i < map_size-map_cols-1; i++)
-    {
-        if (potential_field_info_[i][IS_REPULSION_FIELD_INSIDE])
-        {
-            // double xx = int(i%map_cols)*map_res + map_ori_x;
-            // double yy = int(i/map_cols)*map_res + map_ori_y;
-            if(!potential_field_info_[i-1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-            if(!potential_field_info_[i+1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-            if(!potential_field_info_[i-map_cols][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-            if(!potential_field_info_[i-map_cols-1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-            if(!potential_field_info_[i-map_cols+1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-            if(!potential_field_info_[i+map_cols][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-            if(!potential_field_info_[i+map_cols-1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-            if(!potential_field_info_[i+map_cols+1][IS_REPULSION_FIELD_INSIDE]) potential_field_info_[i][IS_REPULSION_FIELD_EDGE] = true;
-            // bool inside = false;
-            // for (int j = 0; j < obstacles.size(); j++)
-            // {
-            //     double obs_x        = obstacles[j].pose.pose.position.x;
-            //     double obs_y        = obstacles[j].pose.pose.position.y;
-            //     double c = rho_zero_;
-            //     double d = 1;
+    apf.create_potential_field();
 
-            //     double edge_x_min = -sqrt(pow(c,2)-pow(c,2)*pow(y-obs_y,2)/pow(c,2))+obs_x;
-            //     double edge_x_max = sqrt(pow(c,2)-pow(c,2)*pow(y-obs_y,2)/pow(d,2))+obs_x;
-            //     double edge_y_min = -sqrt(pow(d,2)-pow(d,2)*pow(x-obs_x,2)/pow(c,2))+obs_y;
-            //     double edge_y_max = sqrt(pow(d,2)-pow(d,2)*pow(x-obs_x,2)/pow(c,2))+obs_y;
-            //     if (x >= edge_x_min && x <= edge_x_max && y >= edge_y_min && y <= edge_y_max)
-            //     {
-            //         if (inside) 
-            //         {
-            //             potential_field_info_[i][IS_REPULSION_FIELD_EDGE_DUPLICATION] = true;
-            //             break;
-            //         }
-            //         inside = true;
-            //     }
-            // }
+    std::vector<std::vector<double>> path_raw, path_interpolated;
+    // double init_yaw = potbot_lib::utility::get_Yaw(g_robot.pose.pose.orientation);
+    // if (isnan(init_yaw)) init_yaw = 0;
+    double init_yaw = 0;
+
+    apf.create_path(path_raw, init_yaw, max_path_length_, path_search_range_);
+    apf.bezier(path_raw, path_interpolated);
+
+    potbot_lib::Potential::Field attraction_field, repulsion_field, potential_field, filtered_field;
+    apf.get_attraction_field(attraction_field);
+    apf.get_repulsion_field(repulsion_field);
+    apf.get_potential_field(potential_field);
+    // potential_field.info_filter(filtered_field, {potbot_lib::Potential::GridInfo::IS_PLANNED_PATH, potbot_lib::Potential::GridInfo::IS_REPULSION_FIELD_EDGE},"and");
+    // potential_field.info_filter(filtered_field, g_potential_field_filter_terms, g_potential_field_filter_mode);
+
+    nav_msgs::Path path_msg_raw, path_msg_interpolated;
+    for (auto point : path_raw)
+    {
+        geometry_msgs::PoseStamped pose_msg;
+        pose_msg.pose.position.x = point[0];
+        pose_msg.pose.position.y = point[1];
+        pose_msg.pose.orientation = potbot_lib::utility::get_Quat(0,0,0);
+        path_msg_raw.poses.push_back(pose_msg);
+    }
+    for (auto point : path_interpolated)
+    {
+        geometry_msgs::PoseStamped pose_msg;
+        pose_msg.pose.position.x = point[0];
+        pose_msg.pose.position.y = point[1];
+        pose_msg.pose.orientation = potbot_lib::utility::get_Quat(0,0,0);
+        path_msg_interpolated.poses.push_back(pose_msg);
+    }
+
+    sensor_msgs::PointCloud2 attraction_field_msg, repulsion_field_msg, potential_field_msg, filtered_field_msg;
+    attraction_field.to_pcl2(attraction_field_msg);
+    repulsion_field.to_pcl2(repulsion_field_msg);
+    potential_field.to_pcl2(potential_field_msg);
+    // filtered_field.to_pcl2(filtered_field_msg);
+
+    std_msgs::Header header_apf     = robot_goal.header;
+    header_apf.stamp                = local_map_.header.stamp;
+    attraction_field_msg.header		= header_apf;
+    repulsion_field_msg.header		= header_apf;
+    potential_field_msg.header		= header_apf;
+    // filtered_field_msg.header		= header_apf;
+    path_msg_raw.header				= header_apf;
+    path_msg_interpolated.header	= header_apf;
+
+    robot_path_                     = path_msg_raw;
+
+    pub_attraction_field_.publish(attraction_field_msg);
+    pub_repulsion_field_.publish(repulsion_field_msg);
+    pub_potential_field_.publish(potential_field_msg);
+    // pub_filtered_field.publish(filtered_field_msg);
+    // pub_path_raw.publish(path_msg_raw);
+    pub_PP.publish(path_msg_interpolated);
+
+    robot_path_world_coord_.header = robot_path_.header;
+    robot_path_world_coord_.header.frame_id = FRAME_ID_GLOBAL;
+    robot_path_world_coord_.poses.clear();
+    for (const auto& pose : robot_path_.poses)
+    {
+        geometry_msgs::PoseStamped world_pose;
+        geometry_msgs::TransformStamped transform;
+        try 
+        {
+            // ロボット座標系の経路を世界座標系に変換
+            transform = tf_buffer_.lookupTransform(robot_path_world_coord_.header.frame_id, robot_path_.header.frame_id, robot_path_.header.stamp);
+            tf2::doTransform(pose, world_pose, transform);
+            robot_path_world_coord_.poses.push_back(world_pose);
+        }
+        catch (tf2::TransformException &ex) 
+        {
+            ROS_ERROR("TF Ereor : %s", ex.what());
+            continue;
         }
     }
-    // for (int i = 1; i < map_size; i++) if (potential_field_info_[i][IS_REPULSION_FIELD_EDGE]) potential_field_.cells[i].z = 2;
 
-    pub_pf_.publish(potential_field_);
+
+    
+
     return potbot_lib::SUCCESS;
 }
 
@@ -983,7 +965,9 @@ void PathPlanningClass::__create_PathFromCSV()
 
 bool PathPlanningClass::__PathCollision()
 {
-    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(2);
+    if (robot_path_world_coord_.poses.empty()) return false;
+
+    std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(0);
     for (int i = 0; i < obstacles.size(); i++)
     {
         geometry_msgs::Pose world_obslacle_pose;
@@ -992,7 +976,7 @@ bool PathPlanningClass::__PathCollision()
         try 
         {
             // ロボット座標系の障害物を世界座標系に変換
-            transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, obstacles[i].header.frame_id, ros::Time());
+            transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, obstacles[i].header.frame_id, obstacles[i].header.stamp);
             tf2::doTransform(obstacles[i].pose.pose, world_obslacle_pose, transform);
         }
         catch (tf2::TransformException &ex) 
@@ -1001,10 +985,11 @@ bool PathPlanningClass::__PathCollision()
             continue;
         }
 
-        for (int j = 0; j < robot_path_.poses.size(); j++)
+        for (int j = 0; j < robot_path_world_coord_.poses.size(); j++)
         {
 
-            if (potbot_lib::utility::get_Distance(world_obslacle_pose.position,robot_path_.poses[j].pose.position) < 0.2)
+            if (potbot_lib::utility::get_Distance(world_obslacle_pose.position, robot_path_world_coord_.poses[j].pose.position) < 0.2)
+            // if (potbot_lib::utility::get_Distance(obstacles[i].pose.pose.position, robot_path_.poses[j].pose.position) < 0.2)
             {
                 return true;
             }

@@ -342,11 +342,11 @@ namespace potbot_lib{
                     double c = pow(1.0-t,n-i-1.0);
                     double x_inc = a * b * c * path_control[size_t(i)][0];
                     double y_inc = __nCr(n-1.0,i) * pow(t,i) * pow(1.0-t,n-i-1.0) * path_control[size_t(i)][1];
-                    if (isnan(x_inc) || isinf(x_inc))
+                    if (std::isnan(x_inc) || std::isinf(x_inc))
                     {
                         x_inc = 0;
                     }
-                    if (isnan(y_inc) || isinf(y_inc))
+                    if (std::isnan(y_inc) || std::isinf(y_inc))
                     {
                         y_inc = 0;
                     }
@@ -385,11 +385,11 @@ namespace potbot_lib{
             }
             
             double ans = top/bottom;
-            if (isnan(ans))
+            if (std::isnan(ans))
             {
                 ans = 0;
             }
-            if (isinf(ans))
+            if (std::isinf(ans))
             {
                 ans = 1e100;
             }

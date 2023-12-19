@@ -9,6 +9,7 @@ void ControllerClass::__odom_callback(const nav_msgs::Odometry& msg)
     {
         // odom座標系の自己位置をmap座標系に変換
         transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, odom.header.frame_id, odom.header.stamp);
+        // transform = tf_buffer_.lookupTransform(FRAME_ID_ROBOT_BASE, odom.header.frame_id, odom.header.stamp);
         tf2::doTransform(odom.pose.pose, target_point, transform);
     }
     catch (tf2::TransformException &ex) 
@@ -17,16 +18,18 @@ void ControllerClass::__odom_callback(const nav_msgs::Odometry& msg)
         return;
     }
 
-    odom_ = odom;
+    odom_ = odom_;
     odom_.header.frame_id = FRAME_ID_GLOBAL;
     odom_.pose.pose = target_point;
+
+    manage();
 }
 
-void ControllerClass::path_callback(const nav_msgs::Path& msg)
+void ControllerClass::__path_callback(const nav_msgs::Path& msg)
 {
     //ROS_INFO("path_callback");
     //ROS_INFO("%f",msg.header.stamp.toSec());
-    if (robot_path_.header.stamp != msg.header.stamp)
+    if (true || robot_path_.header.stamp != msg.header.stamp)
     {
         
         if (msg.header.frame_id != FRAME_ID_GLOBAL)
@@ -34,7 +37,6 @@ void ControllerClass::path_callback(const nav_msgs::Path& msg)
             nav_msgs::Path init;
             robot_path_ = init;
             robot_path_.header = msg.header;
-            static tf2_ros::TransformListener tfListener(tf_buffer_);
             for (int i = 0; i < msg.poses.size(); i++)
             {
                 geometry_msgs::TransformStamped transform;
@@ -73,22 +75,8 @@ void ControllerClass::__goal_callback(const geometry_msgs::PoseStamped& msg)
     __publish_path_request();
 }
 
-void ControllerClass::__local_map_callback(const nav_msgs::OccupancyGrid& msg)
-{
-    local_map_ = msg;
-}
-
-void ControllerClass::__scan_callback(const sensor_msgs::LaserScan& msg)
-{
-    scan_ = msg;
-}
-
-void ControllerClass::__segment_callback(const visualization_msgs::MarkerArray& msg)
-{
-    obstacle_segment_ = msg;
-}
-
 void ControllerClass::__param_callback(const potbot_controller::ControllerConfig& param, uint32_t level)
 {
-    PUBLISH_COMMAND = param.publish_control_command;
+    PUBLISH_COMMAND             = param.publish_control_command;
+    PATH_TRACKING_MARGIN        = param.pure_pursuit_distance_to_lookahead_point;
 }
