@@ -18,7 +18,7 @@
   <group ns="$(arg GROUP)">
 
     <include file="$(find potbot)/launch/megarover_act_amcl.launch">
-      <arg name="map_file"                value="$(find potbot_description)/maps/lab5.yaml"/>
+      <arg name="map_file"                value="$(find potbot_description)/maps/lab9.yaml"/>
       <arg name="USE_RVIZ"                value="false"/>
       <arg name="initial_pose_x" value="0.05"/>
     </include>
