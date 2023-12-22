@@ -4,6 +4,7 @@ project(potbot_lib)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
+  potbot_msgs
 )
 
 catkin_package(

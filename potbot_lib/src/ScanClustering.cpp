@@ -18,12 +18,13 @@ namespace potbot_lib{
             {
                 POINT p;
                 p.index = p_idx++;
-                p.theta = double(range_idx++ * scan.angle_increment) + scan.angle_min;
-                p.r = range + scan.range_min;   //minは足さない
+                p.theta = (double)range_idx * scan.angle_increment + scan.angle_min;
+                p.r = range;   //minは足さない
                 p.x = p.r * cos(p.theta);
                 p.y = p.r * sin(p.theta);
                 clus.points.push_back(p);
             }
+            range_idx++;
         }
         clusters_.push_back(clus);
         
@@ -186,6 +187,34 @@ namespace potbot_lib{
                 points.colors.push_back(points.color);
             }
             ma.markers.push_back(points);
+        }
+    }
+
+    void ScanClustering::to_obstaclearray(potbot_msgs::ObstacleArray& oa)
+    {
+        oa.data.clear();
+        for (const auto& clus : clusters_)
+        {
+            potbot_msgs::Obstacle obstacle;
+
+            obstacle.id = clus.id;
+            obstacle.is_moving = clus.is_moving;
+            obstacle.pose = potbot_lib::utility::get_Pose(clus.x, clus.y, 0,0,0,0);
+
+            obstacle.scale.x = clus.width;
+            obstacle.scale.y = clus.height;
+            obstacle.scale.z = 0.001;
+
+            for (const auto& p : clus.points)
+            {
+                geometry_msgs::Point p_msg;
+                p_msg.x = p.x;
+                p_msg.y = p.y;
+                p_msg.z = 0.0;
+                obstacle.points.push_back(p_msg);
+            }
+            
+            oa.data.push_back(obstacle);
         }
     }
 

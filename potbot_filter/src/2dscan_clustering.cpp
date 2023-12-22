@@ -75,14 +75,25 @@ void scan2dClass::__scan_callback(const sensor_msgs::LaserScan::ConstPtr msg)
     pub_scan_filter_.publish(scan_);
     std::vector<SEGMENT> segments;
 
-    // potbot_lib::ScanClustering scanclus;
-    // scanclus.set_scan(scan_);
-    // scanclus.euclidean_clustering();
-    // visualization_msgs::MarkerArray clusters;
-    // scanclus.to_markerarray(clusters);
-    // for (auto& clus : clusters.markers) clus.header = scan_.header;
-    // pub_segment_.publish(clusters);
-    // return;
+    potbot_lib::ScanClustering scanclus;
+    scanclus.set_scan(scan_);
+    scanclus.euclidean_clustering();
+    visualization_msgs::MarkerArray clusters;
+    scanclus.to_markerarray(clusters);
+    for (auto& clus : clusters.markers) clus.header = scan_.header;
+
+    potbot_msgs::ObstacleArray obstacle_array_msg;
+
+    scanclus.to_obstaclearray(obstacle_array_msg);
+    //座標変換の追加
+    obstacle_array_msg.header = scan_.header;
+    obstacle_array_msg.header.frame_id = FRAME_ID_ROBOT_BASE;
+    for (auto& obs : obstacle_array_msg.data) obs.header = obstacle_array_msg.header;
+
+    pub_segment_.publish(clusters);
+    pub_obstacles_scan_clustering_.publish(obstacle_array_msg);
+    
+    return;
 
 
     __Segmentation(scan_, segments);
@@ -93,7 +104,7 @@ void scan2dClass::__scan_callback(const sensor_msgs::LaserScan::ConstPtr msg)
     // std::cout<<std::endl;
 
     visualization_msgs::MarkerArray seg;
-    potbot_msgs::ObstacleArray obstacle_array_msg;
+    // potbot_msgs::ObstacleArray obstacle_array_msg;
     obstacle_array_msg.header = scan_.header;
     obstacle_array_msg.header.frame_id = FRAME_ID_ROBOT_BASE;
     std::vector<int> ids;

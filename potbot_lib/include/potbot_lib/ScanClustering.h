@@ -2,6 +2,7 @@
 #define _H_SCANCLUSTERING_
 
 #include <potbot_lib/Utility.h>
+#include <potbot_msgs/ObstacleArray.h>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -41,6 +42,7 @@ namespace potbot_lib{
             void euclidean_clustering();
             void segmentation();
             void to_markerarray(visualization_msgs::MarkerArray& ma);
+            void to_obstaclearray(potbot_msgs::ObstacleArray& oa);
 
     };
 }
