@@ -4,7 +4,7 @@
   <arg name="set_map_frame"  default="map"/>
 
   <include file="$(find mynt_eye_ros_wrapper)/launch/mynteye.launch">
-    <arg name="mynteye" value="robot_5/mynteye"/>
+    <!-- <arg name="mynteye" value="robot_5/mynteye"/> -->
     <arg name="base_frame_id" value="robot_5/camera_link" />
   </include>
 

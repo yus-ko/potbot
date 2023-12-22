@@ -23,16 +23,20 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
 
     for (const auto& obstacle : obstacles_scan_.data)
     {
-        double v                    = obstacle.twist.linear.x;
-        double yaw                  = potbot_lib::utility::get_Yaw(obstacle.pose.orientation);
+        double v                    = obstacle.twist.linear.x;  //障害物の並進速度
+        double omega                = obstacle.twist.angular.z; //障害物の回転角速度
+        double yaw                  = potbot_lib::utility::get_Yaw(obstacle.pose.orientation);  //障害物の姿勢
 
-        if (abs(v) > 0.1 && abs(v) < 2.0)
+        if (abs(v) > 0.1 && abs(v) < 2.0 && abs(omega) < 1)
         {
-            double inc = v/abs(v) * local_map.info.resolution;
-            for (double l = 0; abs(l) < abs(v); l += inc)
+            //並進速度と角速度を一定として1秒後までの位置x,yを算出
+            double dt = 0.1;
+            for (double t = 0; t <= 1; t += dt)
             {
-                double x            = l*cos(yaw) + obstacle.pose.position.x;
-                double y            = l*sin(yaw) + obstacle.pose.position.y;
+                double distance = v*t;
+                double angle = omega*t + yaw;
+                double x            = distance*cos(angle) + obstacle.pose.position.x;
+                double y            = distance*sin(angle) + obstacle.pose.position.y;
                 local_map.data[potbot_lib::utility::get_MapIndex(x, y, local_map.info)] = 100;
             }
         }

@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 generate_dynamic_reconfigure_options(
-  cfg/Filter.cfg
+  cfg/Clustering.cfg
 )
 
 catkin_package(
@@ -23,15 +23,17 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_fi
+add_executable(state_estimation
   src/constructor.cpp
   src/methods.cpp
   src/debug_main.cpp
   src/callback.cpp
   src/property.cpp
 )
+target_link_libraries(state_estimation ${catkin_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_fi ${catkin_LIBRARIES})
+add_executable(2dscan_clustering src/2dscan_clustering.cpp)
+target_link_libraries(2dscan_clustering ${catkin_LIBRARIES})
 
 add_definitions(-std=c++14)
 

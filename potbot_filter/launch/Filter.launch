@@ -7,10 +7,15 @@
     <arg name="SIGMA/R"                             default="0.00001"/> <!-- システムノイズ（ガウス分布） 共分散行列の対角要素 -->
     
 
-    <node pkg="potbot_filter" name="potbot_filter_fi" type="potbot_filter_fi" output="screen">
+    <node pkg="potbot_filter" name="state_estimation" type="state_estimation" output="screen">
         <param name="SIGMA/P"                       value="$(arg SIGMA/P)"/>
         <param name="SIGMA/Q"                       value="$(arg SIGMA/Q)"/>    
         <param name="SIGMA/R"                       value="$(arg SIGMA/R)"/>    
+        <param name="FRAME_ID/GLOBAL"               value="$(arg FRAME_ID/GLOBAL)"/>
+        <param name="FRAME_ID/ROBOT_BASE"           value="$(arg FRAME_ID/ROBOT_BASE)"/>
+    </node>
+
+    <node pkg="potbot_filter" name="scan2d_clustering" type="2dscan_clustering" output="screen">
         <param name="FRAME_ID/GLOBAL"               value="$(arg FRAME_ID/GLOBAL)"/>
         <param name="FRAME_ID/ROBOT_BASE"           value="$(arg FRAME_ID/ROBOT_BASE)"/>
         <param name="TOPIC/SCAN"                    value="$(arg TOPIC/SCAN)"/>
