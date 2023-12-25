@@ -37,7 +37,8 @@ namespace potbot_lib{
             ScanClustering();
             ~ScanClustering(){};
             
-            void set_scan(const sensor_msgs::LaserScan& scan);
+            void set_clusters(const sensor_msgs::LaserScan& scan);
+            void set_clusters(const potbot_msgs::ObstacleArray& obstaclearray);
             void get_clusters(std::vector<SEGMENT>& clusters_arg);
             void euclidean_clustering();
             void segmentation();

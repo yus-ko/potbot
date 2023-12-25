@@ -97,7 +97,7 @@ void ControllerClass::__LineFollowing()
                 geometry_msgs::PoseStamped pose_in;
                 pose_in.header                  = robot_path_.header;
                 pose_in.pose                    = robot_path_.poses[robot_path_index_].pose;
-                lookahead.pose                  = potbot_lib::utility::get_tf(tf_buffer_, pose_in, FRAME_ID_ROBOT_BASE);
+                lookahead.pose                  = potbot_lib::utility::get_tf(tf_buffer_, pose_in, FRAME_ID_ROBOT_BASE).pose;
 
                 lookahead.scale.x               = 0.03;
                 lookahead.scale.y               = 0.03;

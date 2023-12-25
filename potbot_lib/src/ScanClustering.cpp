@@ -7,7 +7,7 @@ namespace potbot_lib{
 
     }
 
-    void ScanClustering::set_scan(const sensor_msgs::LaserScan& scan)
+    void ScanClustering::set_clusters(const sensor_msgs::LaserScan& scan)
     {
         clusters_.clear();
         SEGMENT clus;
@@ -28,6 +28,31 @@ namespace potbot_lib{
         }
         clusters_.push_back(clus);
         
+    }
+
+    void ScanClustering::set_clusters(const potbot_msgs::ObstacleArray& obstaclearray)
+    {
+        clusters_.resize(obstaclearray.data.size());
+        size_t p_idx = 0;
+        for (size_t i = 0; i < clusters_.size(); i++)
+        {
+            clusters_[i].x                      = obstaclearray.data[i].pose.position.x;
+            clusters_[i].y                      = obstaclearray.data[i].pose.position.y;
+            clusters_[i].width                  = obstaclearray.data[i].scale.x;
+            clusters_[i].height                 = obstaclearray.data[i].scale.y;
+            clusters_[i].id                     = obstaclearray.data[i].id;
+            clusters_[i].is_moving              = obstaclearray.data[i].is_moving;
+
+            clusters_[i].points.resize(obstaclearray.data[i].points.size());
+            for (size_t j = 0; j < clusters_[i].points.size(); j++)
+            {
+                clusters_[i].points[j].index    = p_idx++;
+                clusters_[i].points[j].x        = obstaclearray.data[i].points[j].x;
+                clusters_[i].points[j].y        = obstaclearray.data[i].points[j].y;
+                clusters_[i].points[j].r        = sqrt(pow(obstaclearray.data[i].points[j].x,2) + pow(obstaclearray.data[i].points[j].y,2));
+                clusters_[i].points[j].theta    = atan2(obstaclearray.data[i].points[j].y, obstaclearray.data[i].points[j].x);
+            }
+        }
     }
     
     void ScanClustering::get_clusters(std::vector<SEGMENT>& clusters_arg)
@@ -173,6 +198,7 @@ namespace potbot_lib{
             visualization_msgs::Marker points;
             points.ns = "scan2d/points";
             points.id = points_id++;
+            points.lifetime = ros::Duration(1);
             points.type = visualization_msgs::Marker::SPHERE_LIST;
             points.action = visualization_msgs::Marker::ADD;
             points.pose = potbot_lib::utility::get_Pose(0,0,0,0,0,0);
