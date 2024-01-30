@@ -27,7 +27,7 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
         double omega                = obstacle.twist.angular.z; //障害物の回転角速度
         double yaw                  = potbot_lib::utility::get_Yaw(obstacle.pose.orientation);  //障害物の姿勢
 
-        if (abs(v) > 0.1 && abs(v) < 2.0 && abs(omega) < 1)
+        if (false&&abs(v) > 0.1 && abs(v) < 2.0 && abs(omega) < 1)
         {
             //並進速度と角速度を一定として1秒後までの位置x,yを算出
             double dt = 0.1;

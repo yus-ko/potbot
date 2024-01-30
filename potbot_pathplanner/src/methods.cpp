@@ -988,7 +988,7 @@ bool PathPlanningClass::__PathCollision()
         for (int j = 0; j < robot_path_world_coord_.poses.size(); j++)
         {
 
-            if (potbot_lib::utility::get_Distance(world_obslacle_pose.position, robot_path_world_coord_.poses[j].pose.position) < 0.2)
+            if (potbot_lib::utility::get_Distance(world_obslacle_pose.position, robot_path_world_coord_.poses[j].pose.position) < 0.1)
             // if (potbot_lib::utility::get_Distance(obstacles[i].pose.pose.position, robot_path_.poses[j].pose.position) < 0.2)
             {
                 return true;
