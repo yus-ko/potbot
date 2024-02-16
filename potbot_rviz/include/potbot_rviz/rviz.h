@@ -1,7 +1,6 @@
 //include haeders
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <potbot_msgs/PotentialValue.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 
@@ -14,9 +13,8 @@ class rvizClass{
 		ros::Subscriber sub_PV, sub_odom;
         //送信データ
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_marker, pub_marker_pp, pub_path;
+        ros::Publisher pub_marker_pp, pub_path;
         
-        potbot_msgs::PotentialValue PV;
         visualization_msgs::MarkerArray marker_array;
 
         visualization_msgs::MarkerArray marker_array_pp;
@@ -39,7 +37,6 @@ class rvizClass{
         void setLaunchParam();//launchファイルから書き込み
         //in methods.cpp
         //--センサーデータ受信
-	    void PotentialValue_callback(const potbot_msgs::PotentialValue& msg);
         void odom_callback(const nav_msgs::Odometry& msg);
 
         void manage();

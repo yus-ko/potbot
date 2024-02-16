@@ -4,8 +4,6 @@ rvizClass::rvizClass()
 {
 
 	setLaunchParam();	// lanchファイルの読み込み
-
-	sub_PV = nhSub.subscribe("PotentialValue",1000,&rvizClass::PotentialValue_callback,this);
 	sub_odom = nhSub.subscribe("position",1000,&rvizClass::odom_callback,this);
 	
 	pub_marker = nhPub.advertise<visualization_msgs::MarkerArray>("PotentialValue_MarkerArray", 1000);
