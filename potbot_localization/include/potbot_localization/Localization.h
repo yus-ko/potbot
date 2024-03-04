@@ -64,7 +64,7 @@ class LocalizationClass{
         dynamic_reconfigure::Server<potbot_localization::LocalizationConfig> server_;
   	    dynamic_reconfigure::Server<potbot_localization::LocalizationConfig>::CallbackType f_;
 
-        std::string ROBOT_NAME, LOCALIZATION_METHOD, TOPIC_SCAN, TOPIC_ODOM;
+        std::string LOCALIZATION_METHOD, TOPIC_SCAN, TOPIC_ODOM;
         std::string FRAME_ID_ROBOT_BASE;//FRAME_ID_GLOBAL, FRAME_ID_LIDAR;
         bool IS_SIMULATOR, USE_RVIZ;
         double COVARIANCE_VV, COVARIANCE_VOMEGA, COVARIANCE_OMEGAOMEGA, INITIAL_POSE_X, INITIAL_POSE_Y, INITIAL_POSE_THETA;
