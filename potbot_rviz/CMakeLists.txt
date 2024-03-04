@@ -3,7 +3,7 @@ project(potbot_rviz)
 
 find_package(catkin REQUIRED COMPONENTS
   pcl_ros
-  potbot_msgs
+  # potbot_msgs
 )
 
 catkin_package(
