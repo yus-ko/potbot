@@ -37,9 +37,11 @@
     <include file="$(find potbot)/launch/amcl.launch">
       <arg name="map_file"                value="$(find potbot_description)/maps/garage.yaml"/>
       <arg name="USE_RVIZ"                value="false"/>
-      <arg name="initial_pose_x"          value="2.0"/>
-      <arg name="initial_pose_y"          value="2.2"/>
-      <arg name="initial_pose_a"          value="-1.57"/>
+      <!-- <arg name="initial_pose_x"          value="2.0"/> -->
+      <!-- <arg name="initial_pose_y"          value="2.2"/> -->
+      <!-- <arg name="initial_pose_a"          value="-1.57"/> -->
+      <arg name="odom_frame_id"           value="robot_0/odom"/>
+      <arg name="base_frame_id"           value="robot_0/base_link"/>
     </include>
 
     <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
@@ -48,7 +50,7 @@
       <remap from="odometry/filtered"     to="odom/fusion"/>
     </node>
 
-    <!-- <include file="$(find potbot_localization)/launch/Localization.launch">
+    <include file="$(find potbot_localization)/launch/Localization.launch">
       <arg name="IS_SIMULATOR"            value="$(arg IS_SIMULATOR)"/>
       <arg name="USE_RVIZ"                value="$(arg USE_RVIZ)"/>
       <arg name="FRAME_ID/GLOBAL"         value="$(arg FRAME_ID/GLOBAL)"/>
@@ -56,9 +58,9 @@
       <arg name="FRAME_ID/LIDAR"          value="$(arg FRAME_ID/LIDAR)"/>
       <arg name="TOPIC/SCAN"              value="$(arg TOPIC/SCAN)"/>
       <arg name="TOPIC/ODOM"              value="$(arg TOPIC/ODOM)"/>
-    </include> -->
+    </include>
 
-    <!-- <include file="$(find potbot_controller)/launch/Controller.launch">
+    <include file="$(find potbot_controller)/launch/Controller.launch">
       <arg name="PUBLISH_COMMAND"         value="$(arg PUBLISH_COMMAND)"/>
       <arg name="FRAME_ID/GLOBAL"         value="$(arg FRAME_ID/GLOBAL)"/>
       <arg name="FRAME_ID/ROBOT_BASE"     value="$(arg FRAME_ID/ROBOT_BASE)"/>
@@ -94,7 +96,7 @@
     </include>
 
     <include file="$(find potbot_localmap)/launch/Localmap.launch">
-    </include> -->
+    </include>
     
     <group if="$(arg USE_RVIZ)">
       <include file="$(find potbot_rviz)/launch/rviz.launch">
