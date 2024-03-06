@@ -30,4 +30,4 @@ catkin build megarover_samples turtlebot3_msgs turtlebot3 multiple_robots_slam p
 gazebo環境
   
 **demo.launch**
-potbot起動
+ナビゲーションプログラムの起動

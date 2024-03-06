@@ -1,6 +1,5 @@
 <launch>
   <!-- Arguments -->
-  <arg name="USE_RVIZ"        default="true"/>
   <arg name="scan_topic"      default="scan"/>
   <arg name="initial_pose_x"  default="0.0"/>
   <arg name="initial_pose_y"  default="0.0"/>
@@ -50,9 +49,5 @@
   </node>
 
   <node pkg="map_server" type="map_server" name="map_server" args="$(arg map_file)"/>
-
-  <group if="$(arg USE_RVIZ)">
-    <node pkg="rviz" type="rviz" name="rviz_amcl" required="true" args="-d $(find potbot_description)/rviz/gmapping_megarover.rviz"/>
-  </group>
 
 </launch>

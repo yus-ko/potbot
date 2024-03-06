@@ -13,10 +13,19 @@
   </include>
 
   <include file="$(find potbot)/launch/gazebo/spawn_model/spawn_turtlebot3.launch">
-    <arg name="tf_prefix"     value="robot_0"/>
-    <arg name="z_pos"         value="0.01"/>
-    <arg name="model"         value="waffle_pi"/>
-    <arg name="laser_visual"  value="false"/>
+    <arg name="tf_prefix" value="robot_0"/>
+    <arg name="z_pos"           value="0.01"/>
+    <arg name="model" value="waffle_pi"/>
+    <arg name="laser_visual" value="false"/>
+    <arg name="camera_visual" value="true"/>
+  </include>
+
+  <include file="$(find potbot)/launch/gazebo/spawn_model/spawn_turtlebot3.launch">
+    <arg name="tf_prefix" value="robot_1"/>
+    <arg name="x_pos"           value="1.0"/>
+    <arg name="z_pos"           value="0.01"/>
+    <arg name="model" value="burger"/>
+    <arg name="laser_visual" value="false"/>
     <arg name="camera_visual" value="true"/>
   </include>
 
