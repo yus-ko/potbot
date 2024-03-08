@@ -12,6 +12,7 @@
 
 std::string G_FRAME_ID_MAP						= "map",
 			G_FRAME_ID_ODOM						= "odom",
+			G_FRAME_ID_BASE_FOOTPRINT			= "base_footprint",
 			G_FRAME_ID_ROBOT_BASE				= "base_link",
 			G_TOPIC_SUB_TWIST					= "cmd_vel",
 			G_TOPIC_PUB_ODOM					= "odom";
@@ -22,7 +23,7 @@ nav_msgs::Odometry g_odom, g_odom_rectangle, g_odom_trapezoid;
 void dead_reckoning_rectangle(geometry_msgs::TwistStamped vel_msg)
 {
 	g_odom_rectangle.header						= vel_msg.header;
-	g_odom_rectangle.child_frame_id				= G_FRAME_ID_ROBOT_BASE;
+	g_odom_rectangle.child_frame_id				= G_FRAME_ID_BASE_FOOTPRINT;
 	g_odom_rectangle.twist.twist				= vel_msg.twist;
 
 	static double t_pre							= g_odom_rectangle.header.stamp.toSec();
@@ -38,7 +39,7 @@ void dead_reckoning_rectangle(geometry_msgs::TwistStamped vel_msg)
 	g_odom_rectangle.pose.pose.position.y		= y;
 	g_odom_rectangle.pose.pose.orientation		= potbot_lib::utility::get_Quat(0,0,theta);
 
-	g_pub_odom_rectangle.publish(g_odom_rectangle);
+	// g_pub_odom_rectangle.publish(g_odom_rectangle);
 
 	t_pre										= g_odom_rectangle.header.stamp.toSec();
 
@@ -56,7 +57,7 @@ void dead_reckoning_rectangle(geometry_msgs::TwistStamped vel_msg)
 void dead_reckoning_trapezoid(geometry_msgs::TwistStamped vel_msg)
 {
 	g_odom_trapezoid.header						= vel_msg.header;
-	g_odom_trapezoid.child_frame_id				= G_FRAME_ID_ROBOT_BASE;
+	g_odom_trapezoid.child_frame_id				= G_FRAME_ID_BASE_FOOTPRINT;
 	g_odom_trapezoid.twist.twist				= vel_msg.twist;
 
 	static double t_pre							= g_odom_trapezoid.header.stamp.toSec();
@@ -76,7 +77,7 @@ void dead_reckoning_trapezoid(geometry_msgs::TwistStamped vel_msg)
 	g_odom_trapezoid.pose.pose.position.y		= y;
 	g_odom_trapezoid.pose.pose.orientation		= potbot_lib::utility::get_Quat(0,0,theta);
 
-	g_pub_odom_trapezoid.publish(g_odom_trapezoid);
+	// g_pub_odom_trapezoid.publish(g_odom_trapezoid);
 	
 	t_pre										= g_odom_trapezoid.header.stamp.toSec();
 	v_pre										= v_now;
@@ -93,6 +94,9 @@ void twist_callback(const geometry_msgs::Twist& msg)
 
 	dead_reckoning_rectangle(tm);
 	dead_reckoning_trapezoid(tm);
+
+	g_pub_odom.publish(g_odom_rectangle);
+	// g_odom.publish(g_odom_trapezoid);
 }
 
 void odom_twist_callback(const nav_msgs::Odometry& msg)
@@ -127,6 +131,7 @@ int main(int argc,char **argv){
 	double x=0,y=0,z=0,roll=0,pitch=0,yaw=0;
 	n.getParam("FRAME_ID/MAP",					G_FRAME_ID_MAP);
 	n.getParam("FRAME_ID/ODOM",					G_FRAME_ID_ODOM);
+	n.getParam("FRAME_ID/BASE_FOOTPRINT",		G_FRAME_ID_BASE_FOOTPRINT);
 	n.getParam("FRAME_ID/ROBOT_BASE",			G_FRAME_ID_ROBOT_BASE);
 	n.getParam("TOPIC/SUB/TWIST",				G_TOPIC_SUB_TWIST);
 	n.getParam("TOPIC/PUB/ODOM",				G_TOPIC_PUB_ODOM);
@@ -139,12 +144,12 @@ int main(int argc,char **argv){
 
 	ros::NodeHandle nh;
 	ros::Subscriber sub_twist					= nh.subscribe(G_TOPIC_SUB_TWIST,1,&twist_callback);
-	ros::Subscriber sub_odom_twist				= nh.subscribe("/robot_5/odom",1,&odom_twist_callback);
-	ros::Subscriber sub_imu						= nh.subscribe("/robot_5/mynteye/imu/data_raw",1,&imu_callback);
+	// ros::Subscriber sub_odom_twist				= nh.subscribe("/robot_5/odom",1,&odom_twist_callback);
+	// ros::Subscriber sub_imu						= nh.subscribe("/robot_5/mynteye/imu/data_raw",1,&imu_callback);
 	g_pub_odom									= nh.advertise<nav_msgs::Odometry>(G_TOPIC_PUB_ODOM, 1);
-	g_pub_odom_rectangle	 					= nh.advertise<nav_msgs::Odometry>("/gazebo_dead_reckoning/rectangle", 1);
-	g_pub_odom_trapezoid	 					= nh.advertise<nav_msgs::Odometry>("/gazebo_dead_reckoning/trapezoid", 1);
-	g_pub_imu	 								= nh.advertise<sensor_msgs::Imu>("/robot_5/imu", 1);
+	// g_pub_odom_rectangle	 					= nh.advertise<nav_msgs::Odometry>("/gazebo_dead_reckoning/rectangle", 1);
+	// g_pub_odom_trapezoid	 					= nh.advertise<nav_msgs::Odometry>("/gazebo_dead_reckoning/trapezoid", 1);
+	// g_pub_imu	 								= nh.advertise<sensor_msgs::Imu>("/robot_5/imu", 1);
 
 	nav_msgs::Odometry odom_init;
 	odom_init.pose.pose							= potbot_lib::utility::get_Pose(0,0,0,0,0,0);

@@ -13,6 +13,8 @@
   <arg name="TOPIC/SCAN"                  default="scan"/>
   <arg name="TOPIC/ODOM"                  default="odom/fusion"/>
   <arg name="TOPIC/CMD_VEL"               default="cmd_vel"/>
+  <arg name="TOPIC/PCL2"                  default="realsense/depth/points"/>
+  <arg name="DEPTH_PCL_CLUSTERING_METHOD" default="Euclidean"/>
   <arg name="FILE/RVIZ"                   default="$(find potbot_description)/rviz/waffle_pi.rviz"/>
 
   <include file="$(find potbot_localization)/launch/Localization.launch">
@@ -56,8 +58,8 @@
   </include>
 
   <include file="$(find potbot_pcl)/launch/PCLClustering.launch">
-    <arg name="TOPIC/PCL2"                value="realsense/depth/points"/>
-    <arg name="CLUSTERING_METHOD"         value="Euclidean"/>
+    <arg name="TOPIC/PCL2"                value="$(arg TOPIC/PCL2)"/>
+    <arg name="CLUSTERING_METHOD"         value="$(arg DEPTH_PCL_CLUSTERING_METHOD)"/>
   </include>
 
   <include file="$(find potbot_localmap)/launch/Localmap.launch">
