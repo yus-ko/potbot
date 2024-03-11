@@ -13,15 +13,13 @@ git clone https://github.com/osrf/gazebo_models
 ```
 ```bash
 cd ~/catkin_ws/src
-git clone https://github.com/vstoneofficial/megarover_samples
 git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs
 git clone https://github.com/ROBOTIS-GIT/turtlebot3
-git clone https://github.com/yus-ko/multiple_robots_slam
 git clone https://github.com/yus-ko/potbot
-cd ..
 ```
 ```bash
-catkin build megarover_samples turtlebot3_msgs turtlebot3 multiple_robots_slam potbot
+cd ~/catkin_ws
+catkin build turtlebot3_msgs turtlebot3 potbot
 ```
 
 # 起動方法

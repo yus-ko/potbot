@@ -19,10 +19,23 @@ void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
 {
     local_map_ = msg;
     // ROS_INFO("subscribe local map");
+    static ros::Time hit_time = local_map_.header.stamp;
+    static unsigned int hit_count = 0;
     if(__PathCollision())
     {
         ROS_INFO("hit");
-        run();
+        hit_count+=1;
+        if(hit_count > 10)
+        {
+            hit_count = 0;
+            run();
+        }
+        
+        
+    }
+    else
+    {
+        hit_count = 0;
     }
 }
 
