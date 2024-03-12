@@ -84,6 +84,7 @@ class PathPlanningClass{
         size_t potential_field_rows_ = 240;
         size_t potential_field_cols_ = 240;
         size_t path_search_range_ = 1;
+        size_t collision_count_to_replanning_ = 10;
 
         std::vector<int> exploration_arr;
         //std::vector<geometry_msgs::Vector3> robot_path;
