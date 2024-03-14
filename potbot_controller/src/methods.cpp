@@ -24,7 +24,7 @@ void ControllerClass::manage()
     // print_Pose(robot_.pose.pose);
     // ROS_INFO("path_size: %d", robot_path_.poses.size());
     //potbot_lib::utility::print_Pose(goal_.pose);
-    if (!robot_path_.poses.empty() > 0) controller();
+    if (!robot_path_.poses.empty()) controller();
     if (PUBLISH_COMMAND) __publishcmd();
 }
 
@@ -202,7 +202,9 @@ void ControllerClass::__publishcmd()
 {
     // ROS_INFO("comannd v,omega: %f / %f, %f / %f", cmd_.linear.x, MAX_LINEAR_VELOCITY, cmd_.angular.z, MAX_ANGULAR_VELOCITY);
     if (cmd_.linear.x > MAX_LINEAR_VELOCITY) cmd_.linear.x = MAX_LINEAR_VELOCITY;
+    else if (cmd_.linear.x < MAX_LINEAR_VELOCITY) cmd_.linear.x = -MAX_LINEAR_VELOCITY;
     if (cmd_.angular.z > MAX_ANGULAR_VELOCITY) cmd_.angular.z = MAX_ANGULAR_VELOCITY;
+    else if (cmd_.angular.z < MAX_ANGULAR_VELOCITY) cmd_.angular.z = -MAX_ANGULAR_VELOCITY;
     pub_cmd_.publish(cmd_);
 }
 

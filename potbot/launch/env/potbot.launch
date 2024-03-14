@@ -10,6 +10,8 @@
   <arg name="TARGET/POSITION/X"           default="0"/>
   <arg name="TARGET/POSITION/Y"           default="0"/>
   <arg name="TARGET/POSITION/YAW"         default="0"/>
+  <arg name="MAX_LINEAR_VELOCITY"         default="0.2"/>
+  <arg name="MAX_ANGULAR_VELOCITY"        default="0.3"/>
   <arg name="TOPIC/SCAN"                  default="scan"/>
   <arg name="TOPIC/ODOM"                  default="odom/fusion"/>
   <arg name="TOPIC/CMD_VEL"               default="cmd_vel"/>
@@ -34,6 +36,8 @@
     <arg name="TARGET/POSITION/X"         value="$(arg TARGET/POSITION/X)"/>
     <arg name="TARGET/POSITION/Y"         value="$(arg TARGET/POSITION/Y)"/>
     <arg name="TARGET/POSITION/YAW"       value="$(arg TARGET/POSITION/YAW)"/>
+    <arg name="MAX_LINEAR_VELOCITY"       value="$(arg MAX_LINEAR_VELOCITY)"/>
+    <arg name="MAX_ANGULAR_VELOCITY"      value="$(arg MAX_ANGULAR_VELOCITY)"/>
     <arg name="TOPIC/ODOM"                value="$(arg TOPIC/ODOM)"/>
     <arg name="TOPIC/CMD_VEL"             value="$(arg TOPIC/CMD_VEL)"/>
   </include>
