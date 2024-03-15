@@ -18,7 +18,7 @@ void Clustering3DClass::__DownSampling()
     vg.setInputCloud (cloud_raw_);
     vg.setLeafSize(DownSampling_voxel_size_, DownSampling_voxel_size_, DownSampling_voxel_size_);
     vg.filter (*cloud_filtered_);
-    ROS_INFO("PointCloud after filtering has: %d data points.", cloud_filtered_->size());
+    // ROS_INFO("PointCloud after filtering has: %d data points.", cloud_filtered_->size());
 
     pcl::PCLPointCloud2 cloud_pointcloud2;
     pcl::toPCLPointCloud2(*cloud_filtered_, cloud_pointcloud2);
@@ -49,7 +49,7 @@ void Clustering3DClass::__Plane_removal()
         seg.segment (*inliers, *coefficients);
         if (inliers->indices.size () == 0)
         {
-            ROS_ERROR("Could not estimate a planar model for the given dataset.");
+            // ROS_ERROR("Could not estimate a planar model for the given dataset.");
         }
 
         // Extract the planar inliers from the input cloud
@@ -60,7 +60,7 @@ void Clustering3DClass::__Plane_removal()
 
         // Get the points associated with the planar surface
         extract.filter (*cloud_plane);
-        ROS_INFO("PointCloud representing the planar component: %d data points.", cloud_plane->size());
+        // ROS_INFO("PointCloud representing the planar component: %d data points.", cloud_plane->size());
 
         // Remove the planar inliers, extract the rest
         extract.setNegative (true);
@@ -86,11 +86,11 @@ void Clustering3DClass::__SuperVoxelClustering()
 
     std::map <std::uint32_t, pcl::Supervoxel<pcl::PointXYZ>::Ptr > supervoxel_clusters;
 
-    ROS_INFO("Extracting supervoxels!");
+    // ROS_INFO("Extracting supervoxels!");
     super.extract (supervoxel_clusters);
-    ROS_INFO("Found %d supervoxels", supervoxel_clusters.size());
+    // ROS_INFO("Found %d supervoxels", supervoxel_clusters.size());
 
-    ROS_INFO("Getting supervoxel adjacency");
+    // ROS_INFO("Getting supervoxel adjacency");
     std::multimap<std::uint32_t, std::uint32_t> supervoxel_adjacency;
     super.getSupervoxelAdjacency (supervoxel_adjacency);
 
@@ -200,7 +200,7 @@ void Clustering3DClass::__EuclideanClustering()
 	/*クラスリング実行*/
 	ece.extract(cluster_indices);
 
-    ROS_INFO("cluster_indices.size() = %d", cluster_indices.size());
+    // ROS_INFO("cluster_indices.size() = %d", cluster_indices.size());
 
 	/*dividing（クラスタごとに点群を分割）*/
     std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> clusters;
@@ -276,7 +276,7 @@ void Clustering3DClass::__EuclideanClustering()
     }
     if(!marker_array.markers.empty()) pub_marker_.publish(marker_array);
 
-    ROS_INFO("clustering time [s] = %f", ros::Time::now().toSec() - time_start);
+    // ROS_INFO("clustering time [s] = %f", ros::Time::now().toSec() - time_start);
 }
 
 // void Clustering3DClass::publishPathPlan()

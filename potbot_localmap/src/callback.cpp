@@ -26,23 +26,31 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
         double v                    = obstacle.twist.linear.x;  //障害物の並進速度
         double omega                = obstacle.twist.angular.z; //障害物の回転角速度
         double yaw                  = potbot_lib::utility::get_Yaw(obstacle.pose.orientation);  //障害物の姿勢
+        double width                = obstacle.scale.y; //障害物の幅
+        double depth                = obstacle.scale.x; //障害物の奥行き
+        double size                 = width + depth;
 
-        if (false&&abs(v) > 0.1 && abs(v) < 2.0 && abs(omega) < 1)
+        // ROS_INFO("size:%f",size);
+
+        if (size > apply_cluster_to_localmap_)
         {
-            //並進速度と角速度を一定として1秒後までの位置x,yを算出
-            double dt = 0.1;
-            for (double t = 0; t <= 1; t += dt)
+            if (abs(v) > 0.1 && abs(v) < 2.0 && abs(omega) < 1)
             {
-                double distance = v*t;
-                double angle = omega*t + yaw;
-                double x            = distance*cos(angle) + obstacle.pose.position.x;
-                double y            = distance*sin(angle) + obstacle.pose.position.y;
-                local_map.data[potbot_lib::utility::get_MapIndex(x, y, local_map.info)] = 100;
+                //並進速度と角速度を一定として1秒後までの位置x,yを算出
+                double dt = 0.1;
+                for (double t = 0; t <= 1; t += dt)
+                {
+                    double distance = v*t;
+                    double angle = omega*t + yaw;
+                    double x            = distance*cos(angle) + obstacle.pose.position.x;
+                    double y            = distance*sin(angle) + obstacle.pose.position.y;
+                    local_map.data[potbot_lib::utility::get_MapIndex(x, y, local_map.info)] = 100;
+                }
             }
-        }
-        else
-        {
-            local_map.data[potbot_lib::utility::get_MapIndex(obstacle.pose.position.x, obstacle.pose.position.y, local_map.info)] = 100;
+            else
+            {
+                local_map.data[potbot_lib::utility::get_MapIndex(obstacle.pose.position.x, obstacle.pose.position.y, local_map.info)] = 100;
+            }
         }
 
         for (const auto& point : obstacle.points)
@@ -60,9 +68,8 @@ void LocalmapClass::__obstacles_pcl_callback(const potbot_msgs::ObstacleArray& m
     
 }
 
-// void LocalmapClass::__param_callback(const potbot_localization::LocalizationConfig& param, uint32_t level)
-// {
-//     // ROS_INFO("%d",level);
-//     Tn_ = param.threshold_point_num;
-//     square_width_ = param.squre_width;
-// }
+void LocalmapClass::__param_callback(const potbot_localmap::LocalmapConfig& param, uint32_t level)
+{
+    // ROS_INFO("%d",level);
+    apply_cluster_to_localmap_ = param.threshold_2d_size;
+}

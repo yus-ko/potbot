@@ -10,9 +10,10 @@
         <arg name="MAX_ANGULAR_VELOCITY"        default="0.3"/>
         <arg name="TOPIC/ODOM"                  default="odom"/>
         <arg name="TOPIC/CMD_VEL"               default="cmd_vel"/>
+        <arg name="TOPIC/GOAL"                  default="/move_base_simple/goal"/>
         <arg name="PATH_TRACKING_MARGIN"        default="0.1"/>
 
-    <node pkg="potbot_controller" name="potbot_controller_co" type="potbot_controller_co" output="screen">
+    <node pkg="potbot_controller" name="controller_co" type="potbot_controller_co" output="screen">
         <param name="PUBLISH_COMMAND"           value="$(arg PUBLISH_COMMAND)"/>
         <param name="PATH_TRACKING_MARGIN"      value="$(arg PATH_TRACKING_MARGIN)"/>
         <param name="FRAME_ID/GLOBAL"           value="$(arg FRAME_ID/GLOBAL)"/>
@@ -25,5 +26,6 @@
         <param name="MAX_ANGULAR_VELOCITY"      value="$(arg MAX_ANGULAR_VELOCITY)"/>
         <param name="TOPIC/ODOM"                value="$(arg TOPIC/ODOM)"/>
         <param name="TOPIC/CMD_VEL"             value="$(arg TOPIC/CMD_VEL)"/>
+        <param name="TOPIC/GOAL"                value="$(arg TOPIC/GOAL)"/>
     </node>
 </launch>

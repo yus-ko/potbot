@@ -6,6 +6,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <dynamic_reconfigure/server.h>
+#include <potbot_localmap/LocalmapConfig.h>
 
 //クラスの定義
 class LocalmapClass{
@@ -23,13 +24,15 @@ class LocalmapClass{
 
         potbot_msgs::ObstacleArray obstacles_scan_, obstacles_pcl_;
 
-        // dynamic_reconfigure::Server<potbot_localization::LocalizationConfig> server_;
-  	    // dynamic_reconfigure::Server<potbot_localization::LocalizationConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_localmap::LocalmapConfig> server_;
+  	    dynamic_reconfigure::Server<potbot_localmap::LocalmapConfig>::CallbackType f_;
+
+        double apply_cluster_to_localmap_ = 1.5;
 
         void __obstacles_scan_callback(const potbot_msgs::ObstacleArray& msg);
         void __obstacles_pcl_callback(const potbot_msgs::ObstacleArray& msg);
 
-        // void __param_callback(const potbot_localization::LocalizationConfig& param, uint32_t level);
+        void __param_callback(const potbot_localmap::LocalmapConfig& param, uint32_t level);
         void __get_param();
     public:
         //in constracter.cpp

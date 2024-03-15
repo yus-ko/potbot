@@ -18,6 +18,7 @@ void PathPlanningClass::setLaunchParam(){
     n.getParam("FRAME_ID/ROBOT_BASE",       FRAME_ID_ROBOT_BASE);
     n.getParam("TOPIC/SCAN",                TOPIC_SCAN);
     n.getParam("TOPIC/ODOM",                TOPIC_ODOM);
+    n.getParam("TOPIC/GOAL",                TOPIC_GOAL);
 
     goal_.pose.position.x = TARGET_POSITION_X;
     goal_.pose.position.y = TARGET_POSITION_Y;

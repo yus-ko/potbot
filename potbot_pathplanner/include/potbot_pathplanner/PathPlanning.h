@@ -58,7 +58,7 @@ class PathPlanningClass{
 
         geometry_msgs::PoseWithCovarianceStamped pwcs_msg;
 
-        int path_planning_id = potbot_lib::POTENTIAL_METHOD;
+        int path_planning_id_ = potbot_lib::POTENTIAL_METHOD;
 
         bool encoder_first = false, scan_first = false;
 
@@ -85,6 +85,9 @@ class PathPlanningClass{
         size_t potential_field_cols_ = 240;
         size_t path_search_range_ = 1;
         size_t collision_count_to_replanning_ = 10;
+        double hit_distance_to_replanning_ = 0.1;
+
+        size_t hit_count_ = 0;
 
         std::vector<int> exploration_arr;
         //std::vector<geometry_msgs::Vector3> robot_path;
@@ -117,7 +120,7 @@ class PathPlanningClass{
         dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig> server_;
   	    dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig>::CallbackType f_;
 
-        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN, TOPIC_ODOM;
+        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN, TOPIC_ODOM, TOPIC_GOAL;
         bool USE_AMCL, USE_RVIZ;
         double TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW;
         double POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;

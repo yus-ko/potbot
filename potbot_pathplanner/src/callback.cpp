@@ -19,15 +19,14 @@ void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
 {
     local_map_ = msg;
     // ROS_INFO("subscribe local map");
-    static ros::Time hit_time = local_map_.header.stamp;
-    static size_t hit_count = 0;
+    // static ros::Time hit_time = local_map_.header.stamp;
     if(__PathCollision())
     {
         ROS_INFO("hit");
-        hit_count+=1;
-        if(hit_count > collision_count_to_replanning_)
+        hit_count_+=1;
+        if(hit_count_ > collision_count_to_replanning_)
         {
-            hit_count = 0;
+            hit_count_ = 0;
             run();
         }
         
@@ -35,7 +34,7 @@ void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
     }
     else
     {
-        hit_count = 0;
+        hit_count_ = 0;
     }
 }
 
@@ -98,6 +97,7 @@ void PathPlanningClass::__param_callback(const potbot_pathplanner::PathPlanningC
     sync_createpath_                = param.sync_createpath_and_controlcycle;
 
     collision_count_to_replanning_  = param.collision_count_to_replanning;
+    hit_distance_to_replanning_     = param.hit_distance_to_replanning;
 
     test_vx_ = param.test_vx;
     test_vy_ = param.test_vy;

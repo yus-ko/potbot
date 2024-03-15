@@ -1,13 +1,14 @@
 <launch>
   <!-- Arguments -->
-  <arg name="scan_topic"      default="scan"/>
-  <arg name="initial_pose_x"  default="0.0"/>
-  <arg name="initial_pose_y"  default="0.0"/>
-  <arg name="initial_pose_a"  default="0.0"/>
-  <arg name="odom_frame_id"   default="odom"/>
-  <arg name="base_frame_id"   default="base_link"/>
+  <arg name="scan_topic"                    default="scan"/>
+  <arg name="initial_pose_topic"            default="initialpose"/>
+  <arg name="initial_pose_x"                default="0.0"/>
+  <arg name="initial_pose_y"                default="0.0"/>
+  <arg name="initial_pose_a"                default="0.0"/>
+  <arg name="odom_frame_id"                 default="odom"/>
+  <arg name="base_frame_id"                 default="base_link"/>
 
-  <arg name="map_file" default="$(find potbot_description)/maps/turtlebot3_house.yaml"/>
+  <arg name="map_file"                      default="$(find potbot_description)/maps/turtlebot3_house.yaml"/>
 
   <!-- AMCL -->
   <node pkg="amcl" type="amcl" name="amcl">
@@ -45,6 +46,8 @@
     <param name="odom_alpha4"               value="0.1"/>
     <param name="odom_frame_id"             value="$(arg odom_frame_id)"/>
     <param name="base_frame_id"             value="$(arg base_frame_id)"/>
+
+    <remap from="initialpose"               to="$(arg initial_pose_topic)"/>
 
   </node>
 

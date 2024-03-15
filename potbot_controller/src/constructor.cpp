@@ -8,7 +8,7 @@ ControllerClass::ControllerClass()
 
 	sub_odom_			= nhSub_.subscribe(TOPIC_ODOM,						1,&ControllerClass::__odom_callback,this);
 	sub_path_			= nhSub_.subscribe("Path",							1,&ControllerClass::__path_callback,this);
-	sub_goal_			= nhSub_.subscribe("move_base_simple/goal",			1,&ControllerClass::__goal_callback, this);
+	sub_goal_			= nhSub_.subscribe(TOPIC_GOAL,						1,&ControllerClass::__goal_callback, this);
 
 	pub_path_request_	= nhPub_.advertise<std_msgs::Empty>(				"create_path", 1);
 	pub_cmd_			= nhPub_.advertise<geometry_msgs::Twist>(			TOPIC_CMD_VEL, 1);

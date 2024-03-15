@@ -10,8 +10,8 @@ LocalmapClass::LocalmapClass()
 
 	pub_localmap_		= nhPub_.advertise<nav_msgs::OccupancyGrid>("Localmap", 1);
 
-	// f_ = boost::bind(&LocalizationClass::__param_callback, this, _1, _2);
-	// server_.setCallback(f_);
+	f_ = boost::bind(&LocalmapClass::__param_callback, this, _1, _2);
+	server_.setCallback(f_);
 	
 }
 LocalmapClass::~LocalmapClass(){

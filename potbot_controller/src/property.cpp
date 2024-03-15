@@ -15,6 +15,7 @@ void ControllerClass::__get_param(){
     n.getParam("MAX_ANGULAR_VELOCITY",  MAX_ANGULAR_VELOCITY);
     n.getParam("TOPIC/ODOM",            TOPIC_ODOM);
     n.getParam("TOPIC/CMD_VEL",         TOPIC_CMD_VEL);
+    n.getParam("TOPIC/GOAL",            TOPIC_GOAL);
 
     goal_.pose.position.x = TARGET_POSITION_X;
     goal_.pose.position.y = TARGET_POSITION_Y;

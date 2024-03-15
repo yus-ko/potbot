@@ -32,15 +32,15 @@ PathPlanningClass::PathPlanningClass()
 
 	if (PATH_PLANNING_METHOD == "csv")
 	{
-		path_planning_id = potbot_lib::CSV_PATH;
+		path_planning_id_ = potbot_lib::CSV_PATH;
 	}
 	else if (PATH_PLANNING_METHOD == "potential_method")
 	{
-		path_planning_id = potbot_lib::POTENTIAL_METHOD;
+		path_planning_id_ = potbot_lib::POTENTIAL_METHOD;
 	}
 
-	sub_scan_	= nhSub.subscribe(TOPIC_SCAN,1,&PathPlanningClass::__scan_callback,this);
-	sub_goal_ = nhSub.subscribe("move_base_simple/goal", 1, &PathPlanningClass::goal_callback, this);
+	sub_scan_		= nhSub.subscribe(TOPIC_SCAN,1,&PathPlanningClass::__scan_callback,this);
+	sub_goal_ 		= nhSub.subscribe(TOPIC_GOAL, 1, &PathPlanningClass::goal_callback, this);
 	sub_odom_		= nhSub.subscribe(TOPIC_ODOM,1,&PathPlanningClass::__odom_callback,this);
 	sub_local_map_	= nhSub.subscribe("Localmap", 1, &PathPlanningClass::local_map_callback, this);
 	sub_run_		= nhSub.subscribe("create_path", 1, &PathPlanningClass::__create_path_callback, this);

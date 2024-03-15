@@ -41,7 +41,7 @@ class ControllerClass{
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
-        std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_ODOM, TOPIC_CMD_VEL;
+        std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_ODOM, TOPIC_CMD_VEL, TOPIC_GOAL;
         bool PUBLISH_COMMAND;
         double PATH_TRACKING_MARGIN, TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW, MAX_LINEAR_VELOCITY = 0.2, MAX_ANGULAR_VELOCITY = 1.0;
 
