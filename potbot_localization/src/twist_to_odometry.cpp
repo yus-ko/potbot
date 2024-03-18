@@ -24,9 +24,9 @@ nav_msgs::Odometry g_odom;
 
 void dead_reckoning(geometry_msgs::TwistStamped vel_msg)
 {
-	g_odom.header						= vel_msg.header;
-	g_odom.child_frame_id				= G_FRAME_ID_BASE_FOOTPRINT;
-	g_odom.twist.twist				= vel_msg.twist;
+	g_odom.header								= vel_msg.header;
+	g_odom.child_frame_id						= G_FRAME_ID_BASE_FOOTPRINT;
+	g_odom.twist.twist							= vel_msg.twist;
 
 	static double t_pre							= g_odom.header.stamp.toSec();
 	double dt									= g_odom.header.stamp.toSec() - t_pre;
@@ -40,24 +40,24 @@ void dead_reckoning(geometry_msgs::TwistStamped vel_msg)
 	double theta,x,y;
 	if (G_DEAD_RECKONING == "rectangle")
 	{
-		theta								= potbot_lib::utility::get_Yaw(g_odom.pose.pose.orientation) + omega*dt;
-		x									= g_odom.pose.pose.position.x + v*cos(theta)*dt;
-		y									= g_odom.pose.pose.position.y + v*sin(theta)*dt;
+		theta									= potbot_lib::utility::get_Yaw(g_odom.pose.pose.orientation) + omega*dt;
+		x										= g_odom.pose.pose.position.x + v*cos(theta)*dt;
+		y										= g_odom.pose.pose.position.y + v*sin(theta)*dt;
 	}
 	else if (G_DEAD_RECKONING == "trapezoid")
 	{
-		theta								= potbot_lib::utility::get_Yaw(g_odom.pose.pose.orientation) + ((omega + omega_pre)*dt/2);
-		x									= g_odom.pose.pose.position.x + ((v + v_pre)*dt/2)*cos(theta);
-		y									= g_odom.pose.pose.position.y + ((v + v_pre)*dt/2)*sin(theta);
+		theta									= potbot_lib::utility::get_Yaw(g_odom.pose.pose.orientation) + ((omega + omega_pre)*dt/2);
+		x										= g_odom.pose.pose.position.x + ((v + v_pre)*dt/2)*cos(theta);
+		y										= g_odom.pose.pose.position.y + ((v + v_pre)*dt/2)*sin(theta);
 	}
 	
 
 
 	
 
-	g_odom.pose.pose.position.x		= x;
-	g_odom.pose.pose.position.y		= y;
-	g_odom.pose.pose.orientation		= potbot_lib::utility::get_Quat(0,0,theta);
+	g_odom.pose.pose.position.x					= x;
+	g_odom.pose.pose.position.y					= y;
+	g_odom.pose.pose.orientation				= potbot_lib::utility::get_Quat(0,0,theta);
 
 	t_pre										= g_odom.header.stamp.toSec();
 	v_pre										= v;
