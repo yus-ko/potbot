@@ -42,9 +42,13 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
                 {
                     double distance = v*t;
                     double angle = omega*t + yaw;
-                    double x            = distance*cos(angle) + obstacle.pose.position.x;
-                    double y            = distance*sin(angle) + obstacle.pose.position.y;
-                    local_map.data[potbot_lib::utility::get_MapIndex(x, y, local_map.info)] = 100;
+                    for (const auto& p : obstacle.points)
+                    {
+                        double x            = distance*cos(angle) + p.x;
+                        double y            = distance*sin(angle) + p.y;
+                        local_map.data[potbot_lib::utility::get_MapIndex(x, y, local_map.info)] = 100;
+                    }
+                    
                 }
             }
             else
@@ -71,5 +75,5 @@ void LocalmapClass::__obstacles_pcl_callback(const potbot_msgs::ObstacleArray& m
 void LocalmapClass::__param_callback(const potbot_localmap::LocalmapConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
-    apply_cluster_to_localmap_ = param.threshold_2d_size;
+    apply_cluster_to_localmap_ = param.apply_localmap_threshold_2d_size;
 }
