@@ -38,7 +38,7 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
             {
                 //並進速度と角速度を一定として1秒後までの位置x,yを算出
                 double dt = 0.1;
-                for (double t = 0; t <= 1; t += dt)
+                for (double t = 0; t <= prediction_time_; t += dt)
                 {
                     double distance = v*t;
                     double angle = omega*t + yaw;
@@ -74,6 +74,6 @@ void LocalmapClass::__obstacles_pcl_callback(const potbot_msgs::ObstacleArray& m
 
 void LocalmapClass::__param_callback(const potbot_localmap::LocalmapConfig& param, uint32_t level)
 {
-    // ROS_INFO("%d",level);
-    apply_cluster_to_localmap_ = param.apply_localmap_threshold_2d_size;
+    apply_cluster_to_localmap_  = param.apply_localmap_threshold_2d_size;
+    prediction_time_            = param.prediction_time;
 }

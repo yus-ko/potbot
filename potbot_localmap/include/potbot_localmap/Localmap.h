@@ -28,6 +28,7 @@ class LocalmapClass{
   	    dynamic_reconfigure::Server<potbot_localmap::LocalmapConfig>::CallbackType f_;
 
         double apply_cluster_to_localmap_ = 1.5;
+        double prediction_time_ = 2.0;
 
         void __obstacles_scan_callback(const potbot_msgs::ObstacleArray& msg);
         void __obstacles_pcl_callback(const potbot_msgs::ObstacleArray& msg);
