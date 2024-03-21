@@ -15,18 +15,23 @@ namespace potbot_lib{
             double v                            = 0.0;  //並進速度 [m/s]
             double omega                        = 0.0;  //回転角速度 [rad/s]
 
-            DiffDriveAgent( const double x      = 0.0,
-                            const double y      = 0.0,
-                            const double yaw    = 0.0,
-                            const double v      = 0.0,
-                            const double omega  = 0.0):
+            double deltatime                    = 0.02; //単位時間 [s]
+
+            DiffDriveAgent( const double x              = 0.0,
+                            const double y              = 0.0,
+                            const double yaw            = 0.0,
+                            const double v              = 0.0,
+                            const double omega          = 0.0,
+                            const double deltatime      = 0.02):
                             x(x),
                             y(y),
                             yaw(yaw),
                             v(v),
-                            omega(omega){};
+                            omega(omega),
+                            deltatime(deltatime){};
 
             void to_msg(nav_msgs::Odometry& odom_msg){
+                odom_msg.header.stamp           = ros::Time::now();
                 odom_msg.pose.pose.position.x   = x;
                 odom_msg.pose.pose.position.y   = y;
                 odom_msg.pose.pose.position.z   = 0.0;
@@ -38,13 +43,46 @@ namespace potbot_lib{
                 odom_msg.twist.twist.angular.y  = 0.0;
                 odom_msg.twist.twist.angular.z  = omega;
             };
+
+            void set_msg(const nav_msgs::Odometry& odom_msg){
+                x                               = odom_msg.pose.pose.position.x;
+                y                               = odom_msg.pose.pose.position.y;
+                yaw                             = utility::get_Yaw(odom_msg.pose.pose.orientation);
+                v                               = odom_msg.twist.twist.linear.x;
+                omega                           = odom_msg.twist.twist.angular.z;
+            };
+
+            void update(){
+                yaw                             += omega*deltatime;
+                x                               += v*deltatime*cos(yaw);
+                y                               += v*deltatime*sin(yaw);
+            };
     };
 
     class DiffDriveController : public DiffDriveAgent{
         protected:
+            double target_x_ = 0.0;
+            double target_y_ = 0.0;
+            double target_yaw_ = 0.0;
+
+            double gain_p_ = 1.0;
+            double gain_i_ = 0.5;
+            double gain_d_ = 0.001;
+
+            double error_i_ = 0.0;
+            double error_pre_ = nan("");
+
         public:
             DiffDriveController(){};
             ~DiffDriveController(){};
+
+            void pid_controller(){
+                if (!isfinite(error_pre_)) return;
+                double error = target_yaw_-yaw;
+                error_i_ += error*deltatime;
+                double error_d_ = (error - error_pre_)/deltatime;
+                double alngular_velocity = gain_p_*error + gain_i_*error_i_ + gain_d_*error_d_;
+            };
         
     };
 }
