@@ -78,6 +78,8 @@ namespace potbot_lib{
         public:
             DiffDriveController(){};
             ~DiffDriveController(){};
+        
+            set_gain();
 
             void pid_controller(){
                 if (!isfinite(error_angle_pre_) || !isfinite(error_distance_pre_)) return;
