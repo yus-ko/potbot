@@ -69,19 +69,31 @@ namespace potbot_lib{
             double gain_i_ = 0.5;
             double gain_d_ = 0.001;
 
-            double error_i_ = 0.0;
-            double error_pre_ = nan("");
+            double error_angle_i_ = 0.0;
+            double error_angle_pre_ = nan("");
+
+            double error_distance_i_ = 0.0;
+            double error_distance_pre_ = nan("");
 
         public:
             DiffDriveController(){};
             ~DiffDriveController(){};
 
             void pid_controller(){
-                if (!isfinite(error_pre_)) return;
-                double error = target_yaw_-yaw;
-                error_i_ += error*deltatime;
-                double error_d_ = (error - error_pre_)/deltatime;
-                double alngular_velocity = gain_p_*error + gain_i_*error_i_ + gain_d_*error_d_;
+                if (!isfinite(error_angle_pre_) || !isfinite(error_distance_pre_)) return;
+
+                double error_angle = target_yaw_-yaw;
+                error_angle_i_ += error_angle*deltatime;
+                double error_angle_d = (error_angle - error_angle_pre_)/deltatime;
+                double alngular_velocity = gain_p_*error_angle + gain_i_*error_angle_i_ + gain_d_*error_angle_d;
+                error_angle_pre_ = error_angle_d;
+
+                double error_distance = sqrt(pow(target_x_-x,2)+pow(target_y_-y,2));
+                error_distance_i_ += error_distance*deltatime;
+                double error_distance_d = (error_distance - error_distance_pre_)/deltatime;
+                double linear_velocity = gain_p_*error_distance + gain_i_*error_distance_i_ + gain_d_*error_distance_d;
+                error_distance_pre_ = error_distance_d;
+
             };
         
     };
