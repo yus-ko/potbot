@@ -30,75 +30,61 @@ namespace potbot_lib{
                             omega(omega),
                             deltatime(deltatime){};
 
-            void to_msg(nav_msgs::Odometry& odom_msg){
-                odom_msg.header.stamp           = ros::Time::now();
-                odom_msg.pose.pose.position.x   = x;
-                odom_msg.pose.pose.position.y   = y;
-                odom_msg.pose.pose.position.z   = 0.0;
-                odom_msg.pose.pose.orientation  = utility::get_Quat(0,0,yaw);
-                odom_msg.twist.twist.linear.x   = v;
-                odom_msg.twist.twist.linear.y   = 0.0;
-                odom_msg.twist.twist.linear.z   = 0.0;
-                odom_msg.twist.twist.angular.x  = 0.0;
-                odom_msg.twist.twist.angular.y  = 0.0;
-                odom_msg.twist.twist.angular.z  = omega;
-            };
-
-            void set_msg(const nav_msgs::Odometry& odom_msg){
-                x                               = odom_msg.pose.pose.position.x;
-                y                               = odom_msg.pose.pose.position.y;
-                yaw                             = utility::get_Yaw(odom_msg.pose.pose.orientation);
-                v                               = odom_msg.twist.twist.linear.x;
-                omega                           = odom_msg.twist.twist.angular.z;
-            };
-
-            void update(){
-                yaw                             += omega*deltatime;
-                x                               += v*deltatime*cos(yaw);
-                y                               += v*deltatime*sin(yaw);
-            };
+            void to_msg(nav_msgs::Odometry& odom_msg);
+            void set_msg(const nav_msgs::Odometry& odom_msg);
+            void update();
     };
 
-    class DiffDriveController : public DiffDriveAgent{
-        protected:
-            double target_x_ = 0.0;
-            double target_y_ = 0.0;
-            double target_yaw_ = 0.0;
-
-            double gain_p_ = 1.0;
-            double gain_i_ = 0.5;
-            double gain_d_ = 0.001;
-
-            double error_angle_i_ = 0.0;
-            double error_angle_pre_ = nan("");
-
-            double error_distance_i_ = 0.0;
-            double error_distance_pre_ = nan("");
-
-        public:
-            DiffDriveController(){};
-            ~DiffDriveController(){};
+    namespace Controller{
         
-            set_gain();
+        const int PROCESS_STOP = 0;
+        const int PROCESS_ROTATE_DECLINATION = 1;
+        const int PROCESS_STRAIGHT = 2;
+        const int PROCESS_ROTATE_ANGLE = 3;
 
-            void pid_controller(){
-                if (!isfinite(error_angle_pre_) || !isfinite(error_distance_pre_)) return;
+        class DiffDriveController : public DiffDriveAgent{
+            protected:
+                double target_x_ = 0.0;
+                double target_y_ = 0.0;
+                double target_yaw_ = 0.0;
 
-                double error_angle = target_yaw_-yaw;
-                error_angle_i_ += error_angle*deltatime;
-                double error_angle_d = (error_angle - error_angle_pre_)/deltatime;
-                double alngular_velocity = gain_p_*error_angle + gain_i_*error_angle_i_ + gain_d_*error_angle_d;
-                error_angle_pre_ = error_angle_d;
+                double gain_p_ = 1.0;
+                double gain_i_ = 0.5;
+                double gain_d_ = 0.001;
 
-                double error_distance = sqrt(pow(target_x_-x,2)+pow(target_y_-y,2));
-                error_distance_i_ += error_distance*deltatime;
-                double error_distance_d = (error_distance - error_distance_pre_)/deltatime;
-                double linear_velocity = gain_p_*error_distance + gain_i_*error_distance_i_ + gain_d_*error_distance_d;
-                error_distance_pre_ = error_distance_d;
+                double stop_margin_angle_ = 0.1;
+                double stop_margin_distance_ = 0.03;
 
-            };
-        
-    };
+                double max_linear_velocity = 1.0;
+                double max_angular_velocity = M_PI;
+
+                double error_angle_i_ = 0.0;
+                double error_angle_pre_ = nan("");
+
+                double error_distance_i_ = 0.0;
+                double error_distance_pre_ = nan("");
+
+                double error_declination_i_ = 0.0;
+                double error_declination_pre_ = nan("");
+
+                int process_ = PROCESS_STOP;
+
+            public:
+                DiffDriveController(){};
+                ~DiffDriveController(){};
+
+                void set_target(double x, double y, double yaw);
+                void set_gain(double p, double i, double d);
+                void set_margin(double angle, double distance);
+                void set_limit(double linear, double angular);
+
+                void pid_control_angle();
+                void pid_control_distance();
+                void pid_control_declination();
+                void pid_control();
+            
+        };
+    }
 }
 
 

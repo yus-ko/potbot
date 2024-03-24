@@ -27,7 +27,7 @@ add_library(${PROJECT_NAME}
   src/PathPlanner.cpp
   src/UnscentedKalmanFilter.cpp
   src/ScanClustering.cpp
-
+  src/DiffDriveController.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
