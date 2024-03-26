@@ -1,6 +1,4 @@
 <launch>
-    <arg name="ROBOT_NAME" default="turtlebot3"/>
-    <!--megarover turtlebot3 beego-->
     <arg name="IS_SIMULATOR" default="true"/>
     <arg name="USE_RVIZ" default="false"/>
     <arg name="OUT_PUT" default="screen"/>
@@ -11,7 +9,6 @@
     <arg name="TOPIC/ODOM" default="odom"/>
 
     <node pkg="potbot_localization" name="potbot_localization_lo" type="potbot_localization_lo" output="screen">
-        <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/>
         <param name="LOCALIZATION_METHOD" value="dead_reckoning"/>
         <!--dead_reckoning particle_filter-->
         <param name="IS_SIMULATOR" value="$(arg IS_SIMULATOR)"/>

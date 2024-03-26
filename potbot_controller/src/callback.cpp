@@ -75,7 +75,7 @@ void ControllerClass::__goal_callback(const geometry_msgs::PoseStamped& msg)
     __publish_path_request();
 }
 
-void ControllerClass::__param_callback(const potbot_controller::ControllerConfig& param, uint32_t level)
+void ControllerClass::__param_callback(const potbot_msgs::ControllerConfig& param, uint32_t level)
 {
     PUBLISH_COMMAND             = param.publish_control_command;
     PATH_TRACKING_MARGIN        = param.pure_pursuit_distance_to_lookahead_point;

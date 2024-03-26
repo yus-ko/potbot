@@ -4,8 +4,8 @@ void Clustering3DClass::__pcl2_callback(const sensor_msgs::PointCloud2ConstPtr &
 {
     header_ = msg->header;
     pcl::fromROSMsg(*msg, *cloud_raw_);
-	ROS_INFO("==========");
-    ROS_INFO("cloud_raw->points.size() = %d", cloud_raw_->points.size());
+	// ROS_INFO("==========");
+    // ROS_INFO("cloud_raw->points.size() = %d", cloud_raw_->points.size());
 
     __DownSampling();
     __Plane_removal();
@@ -21,7 +21,7 @@ void Clustering3DClass::__pcl2_callback(const sensor_msgs::PointCloud2ConstPtr &
     
 }
 
-void Clustering3DClass::__param_callback(const potbot_pcl::ClusteringParamConfig& param, uint32_t level)
+void Clustering3DClass::__param_callback(const potbot_msgs::ClusteringParamConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
     DownSampling_voxel_size_            = param.DownSampling_voxel_size;

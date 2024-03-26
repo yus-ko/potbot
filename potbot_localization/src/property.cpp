@@ -3,7 +3,6 @@
 void LocalizationClass::setLaunchParam(){
     
     ros::NodeHandle n("~");
-    n.getParam("ROBOT_NAME",            ROBOT_NAME);
     n.getParam("LOCALIZATION_METHOD",   LOCALIZATION_METHOD);
     n.getParam("IS_SIMULATOR",          IS_SIMULATOR);
     n.getParam("COVARIANCE_VV",         COVARIANCE_VV);

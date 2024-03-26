@@ -1,7 +1,3 @@
-
-
-
-
 cmake_minimum_required(VERSION 3.0.2)
 project(potbot_pcl)
 
@@ -11,10 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
   potbot_msgs
 )
 find_package(PCL REQUIRED)
-
-generate_dynamic_reconfigure_options(
-  cfg/ClusteringParam.cfg
-)
 
 catkin_package(
   INCLUDE_DIRS include

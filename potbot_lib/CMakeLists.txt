@@ -4,6 +4,7 @@ project(potbot_lib)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
+  potbot_msgs
 )
 
 catkin_package(
@@ -25,7 +26,8 @@ add_library(${PROJECT_NAME}
   src/PotentialField.cpp
   src/PathPlanner.cpp
   src/UnscentedKalmanFilter.cpp
-
+  src/ScanClustering.cpp
+  src/DiffDriveController.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})

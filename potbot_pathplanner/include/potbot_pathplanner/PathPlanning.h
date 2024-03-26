@@ -20,7 +20,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <dynamic_reconfigure/server.h>
-#include <potbot_pathplanner/PathPlanningConfig.h>
+#include <potbot_msgs/PathPlanningConfig.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <fstream>
@@ -58,7 +58,7 @@ class PathPlanningClass{
 
         geometry_msgs::PoseWithCovarianceStamped pwcs_msg;
 
-        int path_planning_id = potbot_lib::POTENTIAL_METHOD;
+        int path_planning_id_ = potbot_lib::POTENTIAL_METHOD;
 
         bool encoder_first = false, scan_first = false;
 
@@ -84,6 +84,10 @@ class PathPlanningClass{
         size_t potential_field_rows_ = 240;
         size_t potential_field_cols_ = 240;
         size_t path_search_range_ = 1;
+        size_t collision_count_to_replanning_ = 10;
+        double hit_distance_to_replanning_ = 0.1;
+
+        size_t hit_count_ = 0;
 
         std::vector<int> exploration_arr;
         //std::vector<geometry_msgs::Vector3> robot_path;
@@ -113,17 +117,17 @@ class PathPlanningClass{
 
         potbot_msgs::StateArray obstacle_state_;
 
-        dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig> server_;
-  	    dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig> server_;
+  	    dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig>::CallbackType f_;
 
-        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN, TOPIC_ODOM;
+        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN, TOPIC_ODOM, TOPIC_GOAL;
         bool USE_AMCL, USE_RVIZ;
         double TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW;
         double POTENTIAL_FIELD_WIDTH, POTENTIAL_FIELD_DIVDE_X, POTENTIAL_FIELD_DIVDE_Y;
         
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __scan_callback(const sensor_msgs::LaserScan& msg);
-        void __param_callback(const potbot_pathplanner::PathPlanningConfig& param, uint32_t level);
+        void __param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level);
         void __segment_callback(const visualization_msgs::MarkerArray& msg);
         void __state_callback(const potbot_msgs::StateArray& msg);
         void __create_path_callback(const std_msgs::Empty& msg);

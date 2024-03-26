@@ -19,10 +19,22 @@ void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
 {
     local_map_ = msg;
     // ROS_INFO("subscribe local map");
+    // static ros::Time hit_time = local_map_.header.stamp;
     if(__PathCollision())
     {
         ROS_INFO("hit");
-        run();
+        hit_count_+=1;
+        if(hit_count_ > collision_count_to_replanning_)
+        {
+            hit_count_ = 0;
+            run();
+        }
+        
+        
+    }
+    else
+    {
+        hit_count_ = 0;
     }
 }
 
@@ -64,25 +76,28 @@ void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)
     if (distance > 0.05 || abs(angle) > 0.03) run();
 }
 
-void PathPlanningClass::__param_callback(const potbot_pathplanner::PathPlanningConfig& param, uint32_t level)
+void PathPlanningClass::__param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
 
-    potential_field_rows_       = param.potential_field_rows;
-    potential_field_cols_       = param.potential_field_cols;
-    potential_field_resolution_ = param.potential_field_resolution;
+    potential_field_rows_           = param.potential_field_rows;
+    potential_field_cols_           = param.potential_field_cols;
+    potential_field_resolution_     = param.potential_field_resolution;
 
-    rho_zero_                   = param.distance_threshold_repulsion_field;
-    eta_                        = param.weight_repulsion_field;
-    kp_                         = param.weight_attraction_field;
+    rho_zero_                       = param.distance_threshold_repulsion_field;
+    eta_                            = param.weight_repulsion_field;
+    kp_                             = param.weight_attraction_field;
 
-    path_search_range_          = param.path_search_range;
+    path_search_range_              = param.path_search_range;
 
-    max_path_length_            = param.max_path_length;
-    wu_                         = param.weight_potential_field;
-    w_theta_                    = param.weight_angle;
+    max_path_length_                = param.max_path_length;
+    wu_                             = param.weight_potential_field;
+    w_theta_                        = param.weight_angle;
 
-    sync_createpath_            = param.sync_createpath_and_controlcycle;
+    sync_createpath_                = param.sync_createpath_and_controlcycle;
+
+    collision_count_to_replanning_  = param.collision_count_to_replanning;
+    hit_distance_to_replanning_     = param.hit_distance_to_replanning;
 
     test_vx_ = param.test_vx;
     test_vy_ = param.test_vy;

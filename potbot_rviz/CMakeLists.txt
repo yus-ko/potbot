@@ -3,7 +3,7 @@ project(potbot_rviz)
 
 find_package(catkin REQUIRED COMPONENTS
   pcl_ros
-  potbot_msgs
+  # potbot_msgs
 )
 
 catkin_package(
@@ -18,12 +18,21 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+<<<<<<< HEAD
 #add_executable(${PROJECT_NAME}_rv
 #  src/constructor.cpp
 #  src/methods.cpp
 #  src/debug_main.cpp
 #  src/property.cpp
 #)
+=======
+add_executable(${PROJECT_NAME}_rv
+  # src/constructor.cpp
+  # src/methods.cpp
+  src/debug_main.cpp
+  # src/property.cpp
+)
+>>>>>>> initbuild
 
 #target_link_libraries(${PROJECT_NAME}_rv ${catkin_LIBRARIES})
 

@@ -24,7 +24,7 @@ void ControllerClass::manage()
     // print_Pose(robot_.pose.pose);
     // ROS_INFO("path_size: %d", robot_path_.poses.size());
     //potbot_lib::utility::print_Pose(goal_.pose);
-    if (!robot_path_.poses.empty() > 0) controller();
+    if (!robot_path_.poses.empty()) controller();
     if (PUBLISH_COMMAND) __publishcmd();
 }
 
@@ -97,7 +97,7 @@ void ControllerClass::__LineFollowing()
                 geometry_msgs::PoseStamped pose_in;
                 pose_in.header                  = robot_path_.header;
                 pose_in.pose                    = robot_path_.poses[robot_path_index_].pose;
-                lookahead.pose                  = potbot_lib::utility::get_tf(tf_buffer_, pose_in, FRAME_ID_ROBOT_BASE);
+                lookahead.pose                  = potbot_lib::utility::get_tf(tf_buffer_, pose_in, FRAME_ID_ROBOT_BASE).pose;
 
                 lookahead.scale.x               = 0.03;
                 lookahead.scale.y               = 0.03;
@@ -202,7 +202,9 @@ void ControllerClass::__publishcmd()
 {
     // ROS_INFO("comannd v,omega: %f / %f, %f / %f", cmd_.linear.x, MAX_LINEAR_VELOCITY, cmd_.angular.z, MAX_ANGULAR_VELOCITY);
     if (cmd_.linear.x > MAX_LINEAR_VELOCITY) cmd_.linear.x = MAX_LINEAR_VELOCITY;
+    else if (cmd_.linear.x < -MAX_LINEAR_VELOCITY) cmd_.linear.x = -MAX_LINEAR_VELOCITY;
     if (cmd_.angular.z > MAX_ANGULAR_VELOCITY) cmd_.angular.z = MAX_ANGULAR_VELOCITY;
+    else if (cmd_.angular.z < -MAX_ANGULAR_VELOCITY) cmd_.angular.z = -MAX_ANGULAR_VELOCITY;
     pub_cmd_.publish(cmd_);
 }
 

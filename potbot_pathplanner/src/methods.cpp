@@ -28,7 +28,7 @@ void PathPlanningClass::run()
     // header_ = robot_pose.header;
     // odom_.header = header_;
     // odom_.pose.pose = robot_pose.pose;
-    if (path_planning_id == potbot_lib::POTENTIAL_METHOD)
+    if (path_planning_id_ == potbot_lib::POTENTIAL_METHOD)
     {
         if(__create_PotentialField())
         {
@@ -36,7 +36,7 @@ void PathPlanningClass::run()
             // __create_Path_used_weight();
         }
     }
-    else if (path_planning_id == potbot_lib::CSV_PATH)
+    else if (path_planning_id_ == potbot_lib::CSV_PATH)
     {
         __create_PathFromCSV();
     }
@@ -241,9 +241,9 @@ int PathPlanningClass::__create_PotentialField()
 							potential_field_rows_,					//ポテンシャル場の幅(x軸方向) [m]
 							potential_field_cols_,					//ポテンシャル場の高さ(y軸方向) [m]
 							potential_field_resolution_,			//ポテンシャル場グリッド1辺の長さ [m]
-							kp_,				                    //ポテンシャル場における引力場の重み
-							eta_,				                    //ポテンシャル場における斥力場の重み
-							rho_zero_                               //斥力場を場を作る距離の閾値 [m]
+							kp_,				                    //引力場の重み
+							eta_,				                    //斥力場の重み
+							rho_zero_                               //斥力場を作る距離の閾値 [m]
 							);
     apf.set_goal(robot_goal.pose.position.x, robot_goal.pose.position.y);
     apf.set_robot(0,0);
@@ -988,7 +988,7 @@ bool PathPlanningClass::__PathCollision()
         for (int j = 0; j < robot_path_world_coord_.poses.size(); j++)
         {
 
-            if (potbot_lib::utility::get_Distance(world_obslacle_pose.position, robot_path_world_coord_.poses[j].pose.position) < 0.2)
+            if (potbot_lib::utility::get_Distance(world_obslacle_pose.position, robot_path_world_coord_.poses[j].pose.position) < hit_distance_to_replanning_)
             // if (potbot_lib::utility::get_Distance(obstacles[i].pose.pose.position, robot_path_.poses[j].pose.position) < 0.2)
             {
                 return true;

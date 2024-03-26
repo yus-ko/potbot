@@ -1,0 +1,83 @@
+<launch>
+  <arg name="GROUP"                       default="robot_0"/>
+  <arg name="IS_SIMULATOR"                default="false"/>
+  <arg name="USE_RVIZ"                    default="true"/>
+  <arg name="PUBLISH_COMMAND"             default="true"/>
+  <arg name="FRAME_ID/GLOBAL"             default="map"/>
+  <arg name="FRAME_ID/ODOM"               default="$(arg GROUP)/odom"/>
+  <arg name="FRAME_ID/ROBOT_BASE"         default="$(arg GROUP)/base_link"/>
+  <arg name="FRAME_ID/LIDAR"              default="$(arg GROUP)/base_scan"/>
+  <arg name="TARGET/POSITION/X"           default="0"/>
+  <arg name="TARGET/POSITION/Y"           default="0"/>
+  <arg name="TARGET/POSITION/YAW"         default="0"/>
+  <arg name="MAX_LINEAR_VELOCITY"         default="0.2"/>
+  <arg name="MAX_ANGULAR_VELOCITY"        default="0.3"/>
+  <arg name="TOPIC/SCAN"                  default="scan"/>
+  <arg name="TOPIC/ODOM"                  default="odom/fusion"/>
+  <arg name="TOPIC/CMD_VEL"               default="cmd_vel"/>
+  <arg name="TOPIC/GOAL"                  default="/move_base_simple/goal"/>
+  <arg name="TOPIC/PCL2"                  default="realsense/depth/points"/>
+  <arg name="DEPTH_PCL_CLUSTERING_METHOD" default="Euclidean"/>
+  <arg name="FILE/RVIZ"                   default="$(find potbot_description)/rviz/waffle_pi.rviz"/>
+
+  <group ns="potbot">
+    <include file="$(find potbot_localization)/launch/Localization.launch">
+      <arg name="IS_SIMULATOR"              value="$(arg IS_SIMULATOR)"/>
+      <arg name="USE_RVIZ"                  value="$(arg USE_RVIZ)"/>
+      <arg name="FRAME_ID/GLOBAL"           value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="FRAME_ID/ROBOT_BASE"       value="$(arg FRAME_ID/ROBOT_BASE)"/>
+      <arg name="FRAME_ID/LIDAR"            value="$(arg FRAME_ID/LIDAR)"/>
+      <arg name="TOPIC/SCAN"                value="$(arg TOPIC/SCAN)"/>
+      <arg name="TOPIC/ODOM"                value="$(arg TOPIC/ODOM)"/>
+    </include>
+
+    <include file="$(find potbot_controller)/launch/Controller.launch">
+      <arg name="PUBLISH_COMMAND"           value="$(arg PUBLISH_COMMAND)"/>
+      <arg name="FRAME_ID/GLOBAL"           value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="FRAME_ID/ROBOT_BASE"       value="$(arg FRAME_ID/ROBOT_BASE)"/>
+      <arg name="TARGET/POSITION/X"         value="$(arg TARGET/POSITION/X)"/>
+      <arg name="TARGET/POSITION/Y"         value="$(arg TARGET/POSITION/Y)"/>
+      <arg name="TARGET/POSITION/YAW"       value="$(arg TARGET/POSITION/YAW)"/>
+      <arg name="MAX_LINEAR_VELOCITY"       value="$(arg MAX_LINEAR_VELOCITY)"/>
+      <arg name="MAX_ANGULAR_VELOCITY"      value="$(arg MAX_ANGULAR_VELOCITY)"/>
+      <arg name="TOPIC/ODOM"                value="$(arg TOPIC/ODOM)"/>
+      <arg name="TOPIC/CMD_VEL"             value="$(arg TOPIC/CMD_VEL)"/>
+      <arg name="TOPIC/GOAL"                value="$(arg TOPIC/GOAL)"/>
+    </include>
+
+    <include file="$(find potbot_filter)/launch/Filter.launch">
+      <arg name="FRAME_ID/GLOBAL"           value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="FRAME_ID/ROBOT_BASE"       value="$(arg FRAME_ID/ROBOT_BASE)"/>
+      <arg name="TOPIC/SCAN"                value="$(arg TOPIC/SCAN)"/>
+    </include>
+    
+    <include file="$(find potbot_pathplanner)/launch/PathPlanning.launch">
+      <arg name="USE_RVIZ"                  value="$(arg USE_RVIZ)"/>
+      <arg name="PATH_PLANNING_METHOD"      value="potential_method"/>
+      <arg name="PATH_PLANNING_FILE"        default="straight.csv"/>
+      <arg name="FRAME_ID/GLOBAL"           value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="FRAME_ID/ROBOT_BASE"       value="$(arg FRAME_ID/ROBOT_BASE)"/>
+      <arg name="TARGET/POSITION/X"         value="$(arg TARGET/POSITION/X)"/>
+      <arg name="TARGET/POSITION/Y"         value="$(arg TARGET/POSITION/Y)"/>
+      <arg name="TARGET/POSITION/YAW"       value="$(arg TARGET/POSITION/YAW)"/>
+      <arg name="TOPIC/SCAN"                value="$(arg TOPIC/SCAN)"/>
+      <arg name="TOPIC/ODOM"                value="$(arg TOPIC/ODOM)"/>
+      <arg name="TOPIC/GOAL"                value="$(arg TOPIC/GOAL)"/>
+    </include>
+
+    <include file="$(find potbot_pcl)/launch/PCLClustering.launch">
+      <arg name="TOPIC/PCL2"                value="$(arg TOPIC/PCL2)"/>
+      <arg name="CLUSTERING_METHOD"         value="$(arg DEPTH_PCL_CLUSTERING_METHOD)"/>
+    </include>
+
+    <include file="$(find potbot_localmap)/launch/Localmap.launch">
+    </include>
+  </group>
+
+  <group if="$(arg USE_RVIZ)">
+    <include file="$(find potbot_rviz)/launch/rviz.launch">
+      <arg name="RVIZ_FILE"               value="$(arg FILE/RVIZ)"/>
+    </include>
+  </group>
+
+</launch>

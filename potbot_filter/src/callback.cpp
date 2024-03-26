@@ -67,32 +67,13 @@ void FilterClass::__obstacle_callback(const potbot_msgs::ObstacleArray& msg)
     static double t_pre = t_now;
     double dt = t_now-t_pre;
 
-    static tf2_ros::TransformListener tfListener(tf_buffer_);
-
     potbot_msgs::StateArray state_array_msg;
-    // for(int i = 0; i < obstacle_array.data.size(); i++)
     for(auto& obstacle : obstacle_array.data)
     {
+        if (!obstacle.is_moving) continue;
         
-        geometry_msgs::TransformStamped transform;
-        geometry_msgs::PointStamped target_point;
-        try 
-        {
-            // 2つの座標系間の変換を取得
-            transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, obstacle.header.frame_id, ros::Time());
-            geometry_msgs::PointStamped source_point;
-            source_point.point = obstacle.pose.position;
-
-            tf2::doTransform(source_point, target_point, transform);
-        }
-        catch (tf2::TransformException &ex) 
-        {
-            ROS_ERROR("TF Ereor in FilterClass::__obstacle_callback: %s", ex.what());
-            break;
-        }
-
-        double x = target_point.point.x;
-        double y = target_point.point.y;
+        double x = obstacle.pose.position.x;
+        double y = obstacle.pose.position.y;
         int id = obstacle.id;
 
         auto iter = std::find(ukf_id.begin(), ukf_id.end(), id);
@@ -109,7 +90,6 @@ void FilterClass::__obstacle_callback(const potbot_msgs::ObstacleArray& msg)
 
             potbot_msgs::State state_msg;
             state_msg.header = obstacle.header;
-            state_msg.header.frame_id = FRAME_ID_GLOBAL;
             state_msg.id = id;
 
             state_msg.z.data.resize(ny);
@@ -125,6 +105,9 @@ void FilterClass::__obstacle_callback(const potbot_msgs::ObstacleArray& msg)
             //std::cout<<xhat.transpose()<<std::endl;
             state_array_msg.data.push_back(state_msg);
 
+            obstacle.pose.position.x = state_msg.xhat.data[0];
+            obstacle.pose.position.y = state_msg.xhat.data[1];
+            obstacle.pose.orientation  = potbot_lib::utility::get_Quat(0,0,state_msg.xhat.data[2]);
             obstacle.twist.linear.x = state_msg.xhat.data[3];
             obstacle.twist.angular.z = state_msg.xhat.data[4];
         }
@@ -242,115 +225,4 @@ void FilterClass::__obstacle_callback(const potbot_msgs::ObstacleArray& msg)
     //     pub_obstacles_scan_.publish(obstacle_array);
     // }
 
-}
-
-void FilterClass::__scan_callback(const sensor_msgs::LaserScan& msg)
-{
-    //ROS_INFO("scan callback: filter");
-
-    scan_ = msg;
-
-    pub_scan0_.publish(scan_);
-    //__MedianFilter(scan_);
-    pub_scan1_.publish(scan_);
-    std::vector<SEGMENT> segments;
-    __Segmentation(scan_, segments);
-    __SplitSegments(segments);
-    __AssociateSegments(segments);
-
-    // for(int i = 0; i < segments.size(); i++) std::cout<<segments[i].id<<", ";
-    // std::cout<<std::endl;
-
-    visualization_msgs::MarkerArray seg;
-    potbot_msgs::ObstacleArray obstacle_array_msg;
-    obstacle_array_msg.header = scan_.header;
-    std::vector<int> ids;
-    ids.reserve(segments.size()); // 適切なサイズを確保
-    // transformを使用してidsベクトルにidだけを取り出す
-    std::transform(segments.begin(), segments.end(), std::back_inserter(ids),
-                   [](const SEGMENT& segment) { return segment.id; });
-
-    int point_id = *(std::max_element(ids.begin(), ids.end())) + 1;
-    // ROS_INFO("init point_id %d",point_id);
-                   
-    for (int i = 0; i < segments.size(); i++)
-    {
-
-        visualization_msgs::Marker segment;
-        segment.header = scan_.header;
-
-        segment.ns = "segments/centor";
-        segment.id = segments[i].id;
-        segment.lifetime = ros::Duration(1);
-
-        segment.type = segments[i].type;
-        segment.action = visualization_msgs::Marker::MODIFY;
-
-        segment.pose.position.x = segments[i].x;
-        segment.pose.position.y = segments[i].y;
-        segment.pose.position.z = 0;
-
-        segment.pose.orientation = potbot_lib::utility::get_Quat(0,0,0);
-
-        if (segment.type == visualization_msgs::Marker::SPHERE)
-        {
-            segment.scale.x = segments[i].radius*2;
-            segment.scale.y = segments[i].radius*2;
-        }
-        else if (segment.type == visualization_msgs::Marker::CUBE)
-        {
-            segment.scale.x = segments[i].width;
-            segment.scale.y = segments[i].height;
-        }
-
-        segment.scale.z = 0.001;
-
-        segment.color = potbot_lib::color::get_msg(segment.id);
-        segment.color.a = 0.3;
-        
-        seg.markers.push_back(segment);
-
-        visualization_msgs::Marker point = segment;
-        point.ns = "segments/points";
-        point.id = point_id++;
-        point.type = visualization_msgs::Marker::SPHERE_LIST;
-        point.action = visualization_msgs::Marker::ADD;
-        point.pose.position.x = 0;
-        point.pose.position.y = 0;
-        point.pose.position.z = 0;
-        point.scale.x = 0.01;
-        point.scale.y = 0.01;
-        point.scale.z = 0.01;
-
-        for (int j = 0; j < segments[i].points.size(); j++)
-        {
-            geometry_msgs::Point p;
-            p.x = segments[i].points[j].x;
-            p.y = segments[i].points[j].y;
-            p.z = 0;
-
-            point.points.push_back(p);
-            point.colors.push_back(point.color);
-            
-        }
-        seg.markers.push_back(point);
-
-        potbot_msgs::Obstacle obstacle_msg;
-        obstacle_msg.header = segment.header;
-        obstacle_msg.id = segment.id;
-        obstacle_msg.pose = segment.pose;
-        obstacle_msg.scale = segment.scale;
-        obstacle_msg.points = point.points;
-        obstacle_array_msg.data.push_back(obstacle_msg);
-        
-    }
-    pub_segment_.publish(seg);
-    pub_obstacles_scan_test_.publish(obstacle_array_msg);
-}
-
-void FilterClass::__param_callback(const potbot_filter::FilterConfig& param, uint32_t level)
-{
-    // ROS_INFO("%d",level);
-    Tn_                     = param.threshold_point_num;
-    square_width_           = param.squre_width;
 }

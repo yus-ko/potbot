@@ -10,9 +10,10 @@
    <arg name="TARGET/POSITION/YAW" default="0.0"/>
    <arg name="TOPIC/SCAN" default="scan"/>
    <arg name="TOPIC/ODOM" default="odom"/>
+   <arg name="TOPIC/GOAL" default="/move_base_simple/goal"/>
 
    
-   <node pkg="potbot_pathplanner" name="potbot_pathplanner_pp" type="potbot_pathplanner_pp" output="screen">
+   <node pkg="potbot_pathplanner" name="pathplanner_pp" type="potbot_pathplanner_pp" output="screen">
       <param name="USE_RVIZ" value="$(arg USE_RVIZ)"/>
       <param name="PATH_PLANNING_METHOD" value="$(arg PATH_PLANNING_METHOD)"/>
       <param name="PATH_PLANNING_FILE" value="$(find potbot_description)/path/$(arg PATH_PLANNING_FILE)"/>
@@ -27,6 +28,7 @@
       <param name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
       <param name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
       <param name="TOPIC/ODOM" value="$(arg TOPIC/ODOM)"/>
+      <param name="TOPIC/GOAL" value="$(arg TOPIC/GOAL)"/>
    </node>
    
 </launch>

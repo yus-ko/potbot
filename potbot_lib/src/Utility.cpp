@@ -129,6 +129,11 @@ namespace potbot_lib{
             return pose;
         }
 
+        geometry_msgs::Pose get_Pose(const geometry_msgs::Point& p, const double roll, const double pitch, const double yaw)
+        {
+            return get_Pose(p.x, p.y, p.z, roll,pitch,yaw);
+        }
+
         double get_Yaw(const geometry_msgs::Quaternion& orientation)
         {
             double roll, pitch, yaw;
@@ -138,7 +143,7 @@ namespace potbot_lib{
 
         double get_Distance(const geometry_msgs::Point& position1, const geometry_msgs::Point& position2)
         {
-            return sqrt(pow(position2.x - position1.x,2) + pow(position2.y - position1.y,2));
+            return sqrt(pow(position2.x - position1.x,2) + pow(position2.y - position1.y,2) + pow(position2.z - position1.z,2));
         }
 
         double get_Distance(const geometry_msgs::Pose& position1, const geometry_msgs::Pose& position2)
@@ -194,7 +199,7 @@ namespace potbot_lib{
             return SUCCESS;
         }
 
-        geometry_msgs::Pose get_tf(const tf2_ros::Buffer &buffer,const geometry_msgs::PoseStamped pose_in,const std::string target_frame_id)
+        geometry_msgs::PoseStamped get_tf(const tf2_ros::Buffer &buffer, const geometry_msgs::PoseStamped& pose_in, const std::string target_frame_id)
         {
             // static tf2_ros::TransformListener tf_listener(buffer);
             geometry_msgs::PoseStamped pose_out;
@@ -207,7 +212,56 @@ namespace potbot_lib{
             }
 
             tf2::doTransform(pose_in, pose_out, transformStamped);
+            return pose_out;
+        }
+        
+        geometry_msgs::Pose get_tf(const tf2_ros::Buffer &buffer, const geometry_msgs::Pose& pose_in, const std_msgs::Header target_header)
+        {
+            geometry_msgs::PoseStamped pose_stamped_in;
+            pose_stamped_in.header = target_header;
+            pose_stamped_in.pose = pose_in;
+            geometry_msgs::PoseStamped pose_out = get_tf(buffer,pose_stamped_in,target_header.frame_id);
             return pose_out.pose;
+        }
+
+        geometry_msgs::Point get_tf(const tf2_ros::Buffer &buffer, const geometry_msgs::Point& point_in, const std_msgs::Header target_header)
+        {
+            geometry_msgs::PoseStamped pose_stamped_in;
+            pose_stamped_in.header = target_header;
+            pose_stamped_in.pose = get_Pose(point_in,0,0,0);
+            geometry_msgs::PoseStamped pose_out = get_tf(buffer,pose_stamped_in,target_header.frame_id);
+            return pose_out.pose.position;
+        }
+
+        void get_tf(const tf2_ros::Buffer &buffer,const potbot_msgs::Obstacle& obstacle_in,const std::string target_frame_id, potbot_msgs::Obstacle& obstacle_out)
+        {
+            obstacle_out = obstacle_in;
+            obstacle_out.header.frame_id = target_frame_id;
+
+            geometry_msgs::PoseStamped pose_in;
+            pose_in.header = obstacle_in.header;
+            pose_in.pose = obstacle_in.pose;
+
+            geometry_msgs::PoseStamped pose_out = get_tf(buffer,pose_in,target_frame_id);
+            obstacle_out.pose =  pose_out.pose;
+
+            for(size_t i = 0; i < obstacle_in.points.size(); i++)
+            {
+                std_msgs::Header target_header = obstacle_in.header;
+                target_header.frame_id = target_frame_id;
+                obstacle_out.points[i] = get_tf(buffer, obstacle_in.points[i], target_header);
+            }
+        }
+
+        void get_tf(const tf2_ros::Buffer &buffer, const potbot_msgs::ObstacleArray& obscales_in,const std::string target_frame_id, potbot_msgs::ObstacleArray& obscales_out)
+        {
+            obscales_out.header = obscales_in.header;
+            obscales_out.header.frame_id = target_frame_id;
+            obscales_out.data.resize(obscales_in.data.size());
+            for (size_t i = 0; i < obscales_in.data.size(); i++)
+            {
+                get_tf(buffer, obscales_in.data[i], target_frame_id, obscales_out.data[i]);
+            }
         }
 
         int get_WorldCoordinate(std::string target_frame, ros::Time time, geometry_msgs::PoseStamped &Wcood, tf2_ros::Buffer &buffer)
@@ -397,6 +451,59 @@ namespace potbot_lib{
         void Timer::print_time(const std::string timer_name)
         {
             print_time((std::vector<std::string>){timer_name});  
+        }
+
+        void associate_obstacle(potbot_msgs::ObstacleArray& obstacle_input, const potbot_msgs::ObstacleArray& obstacle_compare, const tf2_ros::Buffer &buffer)
+        {
+            if (obstacle_compare.header.frame_id == "")
+            {
+                ROS_INFO("associate_obstacle : empty frame_id");
+                for (size_t i = 0; i < obstacle_input.data.size(); i++) obstacle_input.data[i].id = i;
+                return;
+            }
+
+            potbot_msgs::ObstacleArray obstacle_input_no_points;
+            obstacle_input_no_points.data.resize(obstacle_input.data.size());
+            for (size_t i = 0; i < obstacle_input.data.size(); i++)
+            {
+                obstacle_input_no_points.data[i].header = obstacle_input.data[i].header;
+                obstacle_input_no_points.data[i].id     = obstacle_input.data[i].id;
+                obstacle_input_no_points.data[i].pose   = obstacle_input.data[i].pose;
+                obstacle_input_no_points.data[i].scale  = obstacle_input.data[i].scale;
+                obstacle_input_no_points.data[i].twist  = obstacle_input.data[i].twist;
+            }
+
+            potbot_msgs::ObstacleArray obstacle_input_global;
+            get_tf(buffer, obstacle_input_no_points, obstacle_compare.header.frame_id, obstacle_input_global);
+
+            static int global_idx = 0;
+            for(int i = 0; i < obstacle_input_global.data.size(); i++)
+            {
+                double distance_min = std::numeric_limits<double>::infinity();
+                int idx = 0;
+                for(int j = 0; j < obstacle_compare.data.size(); j++)
+                {
+                    double distance = get_Distance(obstacle_input_global.data[i].pose, obstacle_compare.data[j].pose);
+                    if(distance < distance_min)
+                    {
+                        distance_min = distance;
+                        idx = j;
+                    }
+                }
+
+                if (distance_min > 1)
+                {
+                    obstacle_input.data[i].id = global_idx++;
+                }
+                else
+                {
+                    if (distance_min > 0.02) 
+                    {
+                        obstacle_input.data[i].is_moving = true;
+                    }
+                    obstacle_input.data[i].id = obstacle_compare.data[idx].id;
+                }
+            }
         }
 
     }
