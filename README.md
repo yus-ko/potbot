@@ -7,7 +7,7 @@
 ```bash
 sudo apt install ros-$ROS_DISTRO-gazebo-ros ros-$ROS_DISTRO-gazebo-ros-control ros-$ROS_DISTRO-ros-control ros-$ROS_DISTRO-ros-controllers
 sudo apt install ros-$ROS_DISTRO-gmapping ros-$ROS_DISTRO-amcl ros-$ROS_DISTRO-map-server ros-$ROS_DISTRO-robot-localization
-mkdir ~/.gazebo/model
+mkdir -p ~/.gazebo/model
 cd ~/.gazebo/model
 git clone https://github.com/osrf/gazebo_models
 ```
