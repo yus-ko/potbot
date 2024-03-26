@@ -58,7 +58,7 @@ void scan2dClass::mainloop()
 	ros::spin();
 }
 
-void scan2dClass::__param_callback(const potbot_filter::ClusteringConfig& param, uint32_t level)
+void scan2dClass::__param_callback(const potbot_msgs::ClusteringConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
     Tn_                     = param.threshold_point_num;

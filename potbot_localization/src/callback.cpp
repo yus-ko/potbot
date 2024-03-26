@@ -158,7 +158,7 @@ void LocalizationClass::__scan_callback(const sensor_msgs::LaserScan& msg)
     pub_localmap_.publish(local_map_);
 }
 
-void LocalizationClass::__param_callback(const potbot_localization::LocalizationConfig& param, uint32_t level)
+void LocalizationClass::__param_callback(const potbot_msgs::LocalizationConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
     Tn_ = param.threshold_point_num;

@@ -11,7 +11,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <visualization_msgs/Marker.h>
 #include <dynamic_reconfigure/server.h>
-#include <potbot_controller/ControllerConfig.h>
+#include <potbot_msgs/ControllerConfig.h>
 
 //クラスの定義
 class ControllerClass{
@@ -36,8 +36,8 @@ class ControllerClass{
 
         geometry_msgs::PoseStamped goal_;
 
-        dynamic_reconfigure::Server<potbot_controller::ControllerConfig> server_;
-  	    dynamic_reconfigure::Server<potbot_controller::ControllerConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_msgs::ControllerConfig> server_;
+  	    dynamic_reconfigure::Server<potbot_msgs::ControllerConfig>::CallbackType f_;
 
         int robot_path_index_ = 0;
         nav_msgs::Odometry robot_, odom_;
@@ -48,7 +48,7 @@ class ControllerClass{
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __goal_callback(const geometry_msgs::PoseStamped& msg);
         void __path_callback(const nav_msgs::Path& msg);
-        void __param_callback(const potbot_controller::ControllerConfig& param, uint32_t level);
+        void __param_callback(const potbot_msgs::ControllerConfig& param, uint32_t level);
         void __publish_path_request();
         void __publishcmd();
 

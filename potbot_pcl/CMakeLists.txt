@@ -8,10 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(PCL REQUIRED)
 
-generate_dynamic_reconfigure_options(
-  cfg/ClusteringParam.cfg
-)
-
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} potbot_lib

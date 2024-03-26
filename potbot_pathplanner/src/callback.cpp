@@ -76,7 +76,7 @@ void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)
     if (distance > 0.05 || abs(angle) > 0.03) run();
 }
 
-void PathPlanningClass::__param_callback(const potbot_pathplanner::PathPlanningConfig& param, uint32_t level)
+void PathPlanningClass::__param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
 

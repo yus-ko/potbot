@@ -19,13 +19,17 @@ git clone https://github.com/yus-ko/potbot
 ```
 ```bash
 cd ~/catkin_ws
-catkin build turtlebot3_msgs turtlebot3 potbot
+catkin build turtlebot3 potbot
 ```
 
 # 起動方法
 
-**turtlebot3_with_willowgarage.launch**
+```bash
+roslaunch potbot turtlebot3_with_willowgarage.launch
+```
 gazebo環境
-  
-**demo.launch**
+
+```bash
+roslaunch potbot demo.launch
+```
 ナビゲーションプログラムの起動

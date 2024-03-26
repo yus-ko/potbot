@@ -20,7 +20,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <dynamic_reconfigure/server.h>
-#include <potbot_pathplanner/PathPlanningConfig.h>
+#include <potbot_msgs/PathPlanningConfig.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <fstream>
@@ -117,8 +117,8 @@ class PathPlanningClass{
 
         potbot_msgs::StateArray obstacle_state_;
 
-        dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig> server_;
-  	    dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig> server_;
+  	    dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig>::CallbackType f_;
 
         std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_SCAN, TOPIC_ODOM, TOPIC_GOAL;
         bool USE_AMCL, USE_RVIZ;
@@ -127,7 +127,7 @@ class PathPlanningClass{
         
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __scan_callback(const sensor_msgs::LaserScan& msg);
-        void __param_callback(const potbot_pathplanner::PathPlanningConfig& param, uint32_t level);
+        void __param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level);
         void __segment_callback(const visualization_msgs::MarkerArray& msg);
         void __state_callback(const potbot_msgs::StateArray& msg);
         void __create_path_callback(const std_msgs::Empty& msg);

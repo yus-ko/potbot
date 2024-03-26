@@ -16,7 +16,7 @@
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <dynamic_reconfigure/server.h>
-#include <potbot_localization/LocalizationConfig.h>
+#include <potbot_msgs/LocalizationConfig.h>
 
 //クラスの定義
 class LocalizationClass{
@@ -61,15 +61,15 @@ class LocalizationClass{
         int Tn_=30;
         double square_width_=0.1;
 
-        dynamic_reconfigure::Server<potbot_localization::LocalizationConfig> server_;
-  	    dynamic_reconfigure::Server<potbot_localization::LocalizationConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_msgs::LocalizationConfig> server_;
+  	    dynamic_reconfigure::Server<potbot_msgs::LocalizationConfig>::CallbackType f_;
 
         std::string LOCALIZATION_METHOD, TOPIC_SCAN, TOPIC_ODOM;
         std::string FRAME_ID_ROBOT_BASE;//FRAME_ID_GLOBAL, FRAME_ID_LIDAR;
         bool IS_SIMULATOR, USE_RVIZ;
         double COVARIANCE_VV, COVARIANCE_VOMEGA, COVARIANCE_OMEGAOMEGA, INITIAL_POSE_X, INITIAL_POSE_Y, INITIAL_POSE_THETA;
 
-        void __param_callback(const potbot_localization::LocalizationConfig& param, uint32_t level);
+        void __param_callback(const potbot_msgs::LocalizationConfig& param, uint32_t level);
         void __scan_callback(const sensor_msgs::LaserScan& msg);
         void __odom_callback(const nav_msgs::Odometry& msg);
 

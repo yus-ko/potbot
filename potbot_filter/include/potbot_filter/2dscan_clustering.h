@@ -19,7 +19,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <dynamic_reconfigure/server.h>
-#include <potbot_filter/ClusteringConfig.h>
+#include <potbot_msgs/ClusteringConfig.h>
 
 #define NO_SEGMENT -1
 
@@ -65,14 +65,14 @@ class scan2dClass{
         int Tn_=30;
         double square_width_=0.1;
 		
-		dynamic_reconfigure::Server<potbot_filter::ClusteringConfig> server_;
-  	    dynamic_reconfigure::Server<potbot_filter::ClusteringConfig>::CallbackType f_;
+		dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig> server_;
+  	    dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig>::CallbackType f_;
 
 		std::string FRAME_ID_GLOBAL = "map";
 		std::string FRAME_ID_ROBOT_BASE = "base_link";
 		std::string TOPIC_SCAN = "scan";
 
-		void __param_callback(const potbot_filter::ClusteringConfig& param, uint32_t level);
+		void __param_callback(const potbot_msgs::ClusteringConfig& param, uint32_t level);
 		void __scan_callback(const sensor_msgs::LaserScan::ConstPtr msg);
 
 		void __get_param();

@@ -72,7 +72,7 @@ void LocalmapClass::__obstacles_pcl_callback(const potbot_msgs::ObstacleArray& m
     
 }
 
-void LocalmapClass::__param_callback(const potbot_localmap::LocalmapConfig& param, uint32_t level)
+void LocalmapClass::__param_callback(const potbot_msgs::LocalmapConfig& param, uint32_t level)
 {
     apply_cluster_to_localmap_  = param.apply_localmap_threshold_2d_size;
     prediction_time_            = param.prediction_time;
