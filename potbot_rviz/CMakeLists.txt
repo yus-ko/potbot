@@ -18,21 +18,12 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-<<<<<<< HEAD
-#add_executable(${PROJECT_NAME}_rv
-#  src/constructor.cpp
-#  src/methods.cpp
-#  src/debug_main.cpp
-#  src/property.cpp
-#)
-=======
 add_executable(${PROJECT_NAME}_rv
   # src/constructor.cpp
   # src/methods.cpp
   src/debug_main.cpp
   # src/property.cpp
 )
->>>>>>> initbuild
 
 #target_link_libraries(${PROJECT_NAME}_rv ${catkin_LIBRARIES})
 

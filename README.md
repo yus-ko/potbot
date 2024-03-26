@@ -29,21 +29,7 @@ roslaunch potbot turtlebot3_with_willowgarage.launch
 ```
 gazebo環境
 
-<<<<<<< HEAD
-**Filter.launch**
-- アンセンテッドカルマンフィルタによる障害物に対する速度予測
-  
-**robot_0.launch**
-- 上記をまとめて起動
-
-**multi_robot.launch**
-- gazebo
-
-**potbot_megarover.launch**
-- ナビゲーション
-=======
 ```bash
 roslaunch potbot demo.launch
 ```
 ナビゲーションプログラムの起動
->>>>>>> initbuild
