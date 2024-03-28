@@ -204,13 +204,14 @@ namespace potbot_lib{
             // static tf2_ros::TransformListener tf_listener(buffer);
             geometry_msgs::PoseStamped pose_out;
             geometry_msgs::TransformStamped transformStamped;
+
             try{
-                transformStamped = buffer.lookupTransform(target_frame_id, pose_in.header.frame_id, pose_in.header.stamp);
+                transformStamped = buffer.lookupTransform(target_frame_id, pose_in.header.frame_id, pose_in.header.stamp, ros::Duration(1.0));
             }
             catch (tf2::TransformException &ex) {
-                ROS_WARN_STREAM("get_tf TF2 exception: " << ex.what());
+                ROS_WARN_STREAM("get_tf TF23456 exception: " << ex.what());
             }
-
+            
             tf2::doTransform(pose_in, pose_out, transformStamped);
             return pose_out;
         }
