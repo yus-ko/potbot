@@ -5,6 +5,7 @@
   <arg name="PUBLISH_COMMAND"             default="true"/>
   <arg name="FRAME_ID/GLOBAL"             default="map"/>
   <arg name="FRAME_ID/ODOM"               default="$(arg GROUP)/odom"/>
+  <arg name="FRAME_ID/BASE_FOOTPRINT"     default="$(arg GROUP)/base_footprint"/>
   <arg name="FRAME_ID/ROBOT_BASE"         default="$(arg GROUP)/base_link"/>
   <arg name="FRAME_ID/LIDAR"              default="$(arg GROUP)/base_scan"/>
   <arg name="INITIAL/POSE/X"              default="2"/>
@@ -16,7 +17,7 @@
   <arg name="MAX_LINEAR_VELOCITY"         default="0.2"/>
   <arg name="MAX_ANGULAR_VELOCITY"        default="0.3"/>
   <arg name="TOPIC/SCAN"                  default="/$(arg GROUP)/scan"/>
-  <arg name="TOPIC/ODOM"                  default="/$(arg GROUP)/odom/fusion"/>
+  <arg name="TOPIC/ODOM"                  default="/$(arg GROUP)/odom"/>
   <arg name="TOPIC/CMD_VEL"               default="/$(arg GROUP)/cmd_vel"/>
   <arg name="TOPIC/GOAL"                  default="/$(arg GROUP)/goal"/>
   <arg name="TOPIC/INITIAL_POSE"          default="/$(arg GROUP)/initialpose"/>
@@ -46,6 +47,10 @@
 
     <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
       <rosparam command="load"            file="$(arg FILE/FUSION)"/>
+      <param name="map_frame"             value="$(arg FRAME_ID/GLOBAL)"/>
+      <param name="world_frame"           value="$(arg FRAME_ID/ODOM)"/>
+      <param name="odom_frame"            value="$(arg FRAME_ID/ODOM)"/>
+      <param name="base_link_frame"       value="$(arg FRAME_ID/BASE_FOOTPRINT)"/>
       <remap from="odometry/filtered"     to="$(arg TOPIC/ODOM)"/>
     </node>
 
