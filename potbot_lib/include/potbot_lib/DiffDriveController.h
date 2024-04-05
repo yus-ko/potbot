@@ -42,11 +42,19 @@ namespace potbot_lib{
         const int PROCESS_STRAIGHT = 2;
         const int PROCESS_ROTATE_ANGLE = 3;
 
+        typedef struct {
+            double x=0;
+            double y=0;
+            double yaw=0;
+        } Point;
+
         class DiffDriveController : public DiffDriveAgent{
             protected:
                 double target_x_ = 0.0;
                 double target_y_ = 0.0;
                 double target_yaw_ = 0.0;
+
+                std::vector<Point> target_path_;
 
                 double gain_p_ = 1.0;
                 double gain_i_ = 0.5;
@@ -78,10 +86,14 @@ namespace potbot_lib{
                 void set_margin(double angle, double distance);
                 void set_limit(double linear, double angular);
 
+                void set_target_path();
+
                 void pid_control_angle();
                 void pid_control_distance();
                 void pid_control_declination();
                 void pid_control();
+
+                void pure_pursuit();
             
         };
     }

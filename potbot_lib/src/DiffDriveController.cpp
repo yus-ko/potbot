@@ -68,6 +68,18 @@ namespace potbot_lib{
             max_angular_velocity = angular;
         }
 
+        void DiffDriveController::set_target_path()
+        {
+            target_path_.clear();
+            for (double x = 0; x <= 2*M_PI; x+=0.01)
+            {
+                Point p;
+                p.x = x;
+                p.y = sin(x);
+                target_path_.push_back(p);
+            }
+        }
+
         void DiffDriveController::pid_control_angle()
         {
             double error_angle = target_yaw_-yaw;
@@ -147,6 +159,109 @@ namespace potbot_lib{
             else if (v < -max_linear_velocity) v = -max_linear_velocity;
             if (omega > max_angular_velocity) omega = max_angular_velocity;
             else if (omega < -max_angular_velocity) omega = -max_angular_velocity; 
+        }
+        
+        void DiffDriveController::pure_pursuit()
+        {
+            size_t target_path_size = target_path_.size();
+            // double procces = double(robot_path_index_+1)/double(target_path_size);
+            // //ROS_INFO("line following processing: %3.1f %% index:%d/%d Done", robot_path_index_, robot_path_size, procces*100);
+            // if (procces > 0.9 && potbot_lib::utility::get_Distance(robot_path_.poses[target_path_size-1].pose.position, goal_.pose.position) > 0.3)
+            // {
+            // }
+
+            // double margin = PATH_TRACKING_MARGIN;
+
+            // //print_Pose(robot_.pose.pose);
+
+            // geometry_msgs::Point sub_goal;
+            // double l_d;
+            // while(true)
+            // {
+            //     sub_goal = robot_path_.poses[robot_path_index_].pose.position;
+            //     l_d = sqrt(pow(robot_.pose.pose.position.x - sub_goal.x,2) + pow(robot_.pose.pose.position.y - sub_goal.y,2));
+            //     if (l_d <= margin)
+            //     {
+            //         robot_path_index_++;
+            //         if (robot_path_index_ >= robot_path_size-1)
+            //         {
+            //             break;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         if (l_d > 1.0)
+            //         {
+            //             __publish_path_request();
+            //         }
+            //         else
+            //         {
+            //             visualization_msgs::Marker lookahead;
+            //             lookahead.header                = robot_.header;
+
+            //             lookahead.ns                    = "LookAhead";
+            //             lookahead.id                    = 0;
+            //             lookahead.lifetime              = ros::Duration(0);
+
+            //             lookahead.type                  = visualization_msgs::Marker::SPHERE;
+            //             lookahead.action                = visualization_msgs::Marker::MODIFY;
+                        
+            //             geometry_msgs::PoseStamped pose_in;
+            //             pose_in.header                  = robot_path_.header;
+            //             pose_in.pose                    = robot_path_.poses[robot_path_index_].pose;
+            //             lookahead.pose                  = potbot_lib::utility::get_tf(tf_buffer_, pose_in, FRAME_ID_ROBOT_BASE).pose;
+
+            //             lookahead.scale.x               = 0.03;
+            //             lookahead.scale.y               = 0.03;
+            //             lookahead.scale.z               = 0.03;
+
+            //             lookahead.color                 = potbot_lib::color::get_msg(potbot_lib::color::RED);
+            //             lookahead.color.a               = 0.5;
+                        
+            //             pub_look_ahead_.publish(lookahead);
+            //         }
+            //         break;
+            //     }
+            // }
+
+            // geometry_msgs::Twist cmd;
+            // double init_angle, x1,x2,y1,y2;
+
+            // if (robot_path_index_ <= robot_path_size - 2)
+            // {
+            //     x1 = robot_path_.poses[robot_path_index_].pose.position.x;
+            //     x2 = robot_path_.poses[robot_path_index_+1].pose.position.x;
+            //     y1 = robot_path_.poses[robot_path_index_].pose.position.y;
+            //     y2 = robot_path_.poses[robot_path_index_+1].pose.position.y;
+            // }
+            // else
+            // {
+            //     x1 = robot_path_.poses[robot_path_index_-1].pose.position.x;
+            //     x2 = robot_path_.poses[robot_path_index_].pose.position.x;
+            //     y1 = robot_path_.poses[robot_path_index_-1].pose.position.y;
+            //     y2 = robot_path_.poses[robot_path_index_].pose.position.y;
+            // }
+            // init_angle = atan2(y2-y1,x2-x1);
+
+            // if(!done_init_pose_alignment_ && abs(init_angle - potbot_lib::utility::get_Yaw(robot_.pose.pose.orientation)) > M_PI/6.0)
+            // {
+            //     geometry_msgs::Quaternion alpha_quat = potbot_lib::utility::get_Quat(0,0,init_angle);
+            //     geometry_msgs::Pose target;
+            //     target.position = robot_.pose.pose.position;
+            //     target.orientation = alpha_quat;
+            //     potbot_lib::utility::print_Pose(target);
+            //     __PoseAlignment(target);
+            // }
+            // else if (robot_path_index_ < robot_path_size)
+            // {   
+            //     done_init_pose_alignment_ = true;
+            //     double yaw = potbot_lib::utility::get_Yaw(robot_.pose.pose.orientation);
+            //     double alpha = atan2(sub_goal.y - robot_.pose.pose.position.y, sub_goal.x - robot_.pose.pose.position.x) - yaw;
+            //     cmd.linear.x = MAX_LINEAR_VELOCITY;
+            //     cmd.angular.z = 2*cmd.linear.x*sin(alpha)/l_d;
+            //     cmd_ = cmd;
+            //     //ROS_INFO("comannd v,omega: %f, %f", cmd_.linear.x, cmd_.angular.z);
+            // } 
         }
     }
 }
