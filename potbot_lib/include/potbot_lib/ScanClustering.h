@@ -10,15 +10,7 @@
 namespace potbot_lib{
 
     typedef struct {
-        int index=0;
-        double x=0;
-        double y=0;
-        double r=0;
-        double theta=0;
-    } POINT;
-
-    typedef struct {
-        std::vector<POINT> points;
+        std::vector<Point> points;
         int id=0;
         int type=0;
         double x=0;
@@ -27,11 +19,11 @@ namespace potbot_lib{
         double width=0;
         double height=0;
         bool is_moving=false;
-    } SEGMENT;
+    } Segment;
 
     class ScanClustering{
         private:
-            std::vector<SEGMENT> clusters_;
+            std::vector<Segment> clusters_;
 
         public:
             ScanClustering();
@@ -39,7 +31,7 @@ namespace potbot_lib{
             
             void set_clusters(const sensor_msgs::LaserScan& scan);
             void set_clusters(const potbot_msgs::ObstacleArray& obstaclearray);
-            void get_clusters(std::vector<SEGMENT>& clusters_arg);
+            void get_clusters(std::vector<Segment>& clusters_arg);
             void euclidean_clustering();
             void segmentation();
             void to_markerarray(visualization_msgs::MarkerArray& ma);

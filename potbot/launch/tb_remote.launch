@@ -10,11 +10,11 @@
       <arg name="multi_robot_name"        value="$(arg GROUP)"/>
     </include>
 
-    <group ns="potbot">
+    <!-- <group ns="potbot">
       <include file="$(find potbot_rviz)/launch/rviz.launch">
         <arg name="RVIZ_FILE"               value="$(arg FILE/RVIZ)"/>
       </include>
-    </group>
+    </group> -->
 
   </group>
 </launch>

@@ -14,8 +14,8 @@
   <arg name="TARGET/POSITION/X"           default="0"/>
   <arg name="TARGET/POSITION/Y"           default="0"/>
   <arg name="TARGET/POSITION/YAW"         default="0"/>
-  <arg name="MAX_LINEAR_VELOCITY"         default="0.2"/>
-  <arg name="MAX_ANGULAR_VELOCITY"        default="0.3"/>
+  <arg name="max_linear_velocity"         default="0.2"/>
+  <arg name="max_angular_velocity"        default="1.0"/>
   <arg name="TOPIC/SCAN"                  default="/$(arg GROUP)/scan"/>
   <arg name="TOPIC/ODOM"                  default="/$(arg GROUP)/odom"/>
   <arg name="TOPIC/CMD_VEL"               default="/$(arg GROUP)/cmd_vel"/>
@@ -30,12 +30,10 @@
 
   <group ns="$(arg GROUP)">
 
-    <include file="$(find potbot)/launch/env/remote.launch">
-      <arg name="urdf_file"               default="$(find xacro)/xacro --inorder '$(arg FILE/URDF)'"/>
-      <arg name="multi_robot_name"        value="$(arg GROUP)"/>
-    </include>
+    
 
-    <include file="$(find potbot)/launch/env/amcl.launch">
+    <node pkg="tf" type="static_transform_publisher" name="map_tf" args="0 0 0 0 0 0 $(arg FRAME_ID/GLOBAL) $(arg FRAME_ID/ODOM) 100" />
+    <!-- <include file="$(find potbot)/launch/env/amcl.launch">
       <arg name="map_file"                value="$(arg FILE/MAP)"/>
       <arg name="initial_pose_topic"      value="$(arg TOPIC/INITIAL_POSE)"/>
       <arg name="initial_pose_x"          value="$(arg INITIAL/POSE/X)"/>
@@ -43,16 +41,16 @@
       <arg name="initial_pose_a"          value="$(arg INITIAL/POSE/YAW)"/>
       <arg name="odom_frame_id"           value="$(arg FRAME_ID/ODOM)"/>
       <arg name="base_frame_id"           value="$(arg FRAME_ID/ROBOT_BASE)"/>
-    </include>
-
-    <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
+    </include> -->
+    
+    <!-- <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
       <rosparam command="load"            file="$(arg FILE/FUSION)"/>
       <param name="map_frame"             value="$(arg FRAME_ID/GLOBAL)"/>
       <param name="world_frame"           value="$(arg FRAME_ID/ODOM)"/>
       <param name="odom_frame"            value="$(arg FRAME_ID/ODOM)"/>
       <param name="base_link_frame"       value="$(arg FRAME_ID/BASE_FOOTPRINT)"/>
       <remap from="odometry/filtered"     to="$(arg TOPIC/ODOM)"/>
-    </node>
+    </node> -->
 
     <include file="$(find potbot)/launch/env/potbot.launch">
       <arg name="GROUP"                         value="$(arg GROUP)"/>
@@ -64,12 +62,15 @@
       <arg name="TARGET/POSITION/X"             value="$(arg TARGET/POSITION/X)"/>
       <arg name="TARGET/POSITION/Y"             value="$(arg TARGET/POSITION/Y)"/>
       <arg name="TARGET/POSITION/YAW"           value="$(arg TARGET/POSITION/YAW)"/>
-      <arg name="MAX_LINEAR_VELOCITY"           value="$(arg MAX_LINEAR_VELOCITY)"/>
-      <arg name="MAX_ANGULAR_VELOCITY"          value="$(arg MAX_ANGULAR_VELOCITY)"/>
+      <arg name="max_linear_velocity"           value="$(arg max_linear_velocity)"/>
+      <arg name="max_angular_velocity"          value="$(arg max_angular_velocity)"/>
       <arg name="TOPIC/SCAN"                    value="$(arg TOPIC/SCAN)"/>
       <arg name="TOPIC/ODOM"                    value="$(arg TOPIC/ODOM)"/>
       <arg name="TOPIC/CMD_VEL"                 value="$(arg TOPIC/CMD_VEL)"/>
       <arg name="TOPIC/GOAL"                    value="$(arg TOPIC/GOAL)"/>
+      <arg name="topic_odom"                value="$(arg TOPIC/ODOM)"/>
+      <arg name="topic_cmd"                 value="$(arg TOPIC/CMD_VEL)"/>
+      <arg name="topic_goal"                value="$(arg TOPIC/GOAL)"/>
       <arg name="TOPIC/PCL2"                    value="$(arg TOPIC/PCL2)"/>
       <arg name="DEPTH_PCL_CLUSTERING_METHOD"   value="$(arg DEPTH_PCL_CLUSTERING_METHOD)"/>
       <arg name="FILE/RVIZ"                     value="$(arg FILE/RVIZ)"/>

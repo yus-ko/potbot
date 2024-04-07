@@ -32,7 +32,7 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
 
         // ROS_INFO("size:%f",size);
 
-        if (size > apply_cluster_to_localmap_)
+        if (size < apply_cluster_to_localmap_)
         {
             if (abs(v) > 0.1 && abs(v) < 2.0 && abs(omega) < 1)
             {

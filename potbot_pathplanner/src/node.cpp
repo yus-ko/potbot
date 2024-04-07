@@ -1,25 +1,132 @@
 #include<potbot_pathplanner/PathPlanning.h>
 
+PathPlanningClass::PathPlanningClass()
+{
+
+	ros::NodeHandle n("~");
+    n.getParam("PATH_PLANNING_METHOD",      PATH_PLANNING_METHOD);
+    n.getParam("PATH_PLANNING_FILE",        PATH_PLANNING_FILE);
+    n.getParam("TARGET/POSITION/X",         TARGET_POSITION_X);
+    n.getParam("TARGET/POSITION/Y",         TARGET_POSITION_Y);
+    n.getParam("TARGET/POSITION/YAW",       TARGET_POSITION_YAW);
+    n.getParam("FRAME_ID/GLOBAL",           FRAME_ID_GLOBAL);
+    n.getParam("FRAME_ID/ROBOT_BASE",       FRAME_ID_ROBOT_BASE);
+    n.getParam("TOPIC/ODOM",                TOPIC_ODOM);
+    n.getParam("TOPIC/GOAL",                TOPIC_GOAL);
+
+    goal_.pose.position.x = TARGET_POSITION_X;
+    goal_.pose.position.y = TARGET_POSITION_Y;
+    goal_.pose.orientation = potbot_lib::utility::get_Quat(0,0,TARGET_POSITION_YAW);
+
+	if (PATH_PLANNING_METHOD == "csv")
+	{
+		path_planning_id_ = potbot_lib::CSV_PATH;
+	}
+	else if (PATH_PLANNING_METHOD == "potential_method")
+	{
+		path_planning_id_ = potbot_lib::POTENTIAL_METHOD;
+	}
+
+	sub_goal_ 		= nhSub.subscribe(TOPIC_GOAL, 1, &PathPlanningClass::goal_callback, this);
+	sub_odom_		= nhSub.subscribe(TOPIC_ODOM,1,&PathPlanningClass::__odom_callback,this);
+	sub_local_map_	= nhSub.subscribe("Localmap", 1, &PathPlanningClass::local_map_callback, this);
+	sub_run_		= nhSub.subscribe("create_path", 1, &PathPlanningClass::__create_path_callback, this);
+	sub_seg_		= nhSub.subscribe("segment", 1, &PathPlanningClass::__segment_callback, this);
+	sub_state_		= nhSub.subscribe("state",1,&PathPlanningClass::__state_callback,this);
+	
+	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
+	pub_path_			    = nhPub.advertise<nav_msgs::Path>("Path", 1);
+	pub_attraction_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/attraction", 1);
+	pub_repulsion_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/repulsion", 1);
+	pub_potential_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/potential", 1);
+
+	f_ = boost::bind(&PathPlanningClass::__param_callback, this, _1, _2);
+	server_.setCallback(f_);
+
+	static tf2_ros::TransformListener tfListener(tf_buffer_);
+
+}
+PathPlanningClass::~PathPlanningClass(){
+}
+
+void PathPlanningClass::goal_callback(const geometry_msgs::PoseStamped& msg)
+{
+    goal_ = msg;
+    ROS_INFO("subscribe goal: path planner");
+    run();
+}
+
+void PathPlanningClass::local_map_callback(const nav_msgs::OccupancyGrid& msg)
+{
+    local_map_ = msg;
+    // ROS_INFO("subscribe local map");
+    // static ros::Time hit_time = local_map_.header.stamp;
+    if(__PathCollision())
+    {
+        // ROS_INFO("hit");
+        hit_count_+=1;
+        if(hit_count_ > collision_count_to_replanning_)
+        {
+            hit_count_ = 0;
+            run();
+        }
+        
+    }
+    else
+    {
+        hit_count_ = 0;
+    }
+}
+
+void PathPlanningClass::__odom_callback(const nav_msgs::Odometry& msg)
+{
+    odom_ = msg;
+    header_ = odom_.header;
+    //header_.stamp = ros::Time();
+}
+
+void PathPlanningClass::__segment_callback(const visualization_msgs::MarkerArray& msg)
+{
+    obstacles_ = msg;
+}
+
+void PathPlanningClass::__state_callback(const potbot_msgs::StateArray& msg)
+{
+    obstacle_state_ = msg;
+}
+
+void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)
+{
+    run();
+}
+
+void PathPlanningClass::__param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level)
+{
+    // ROS_INFO("%d",level);
+
+    potential_field_rows_           = param.potential_field_rows;
+    potential_field_cols_           = param.potential_field_cols;
+    potential_field_resolution_     = param.potential_field_resolution;
+
+    rho_zero_                       = param.distance_threshold_repulsion_field;
+    eta_                            = param.weight_repulsion_field;
+    kp_                             = param.weight_attraction_field;
+
+    path_search_range_              = param.path_search_range;
+
+    max_path_length_                = param.max_path_length;
+    wu_                             = param.weight_potential_field;
+    w_theta_                        = param.weight_angle;
+
+    collision_count_to_replanning_  = param.collision_count_to_replanning;
+    hit_distance_to_replanning_     = param.hit_distance_to_replanning;
+}
+
 #define IS_REPULSION_FIELD_INSIDE 0
 #define IS_REPULSION_FIELD_EDGE 1
 #define IS_REPULSION_FIELD_EDGE_DUPLICATION 2
 #define IS_PLANNED_PATH 3
 #define IS_AROUND_GOAL 4
-
-void PathPlanningClass::mainloop()
-{
-    ros::spin();
-
-    // ros::Rate loop_rate(10);
-	// while (ros::ok())
-	// {
-    //     //if (sync_createpath_ || __PathCollision()) run();
-    //     if (sync_createpath_) run();
-        
-    //     loop_rate.sleep();
-	// 	ros::spinOnce();
-	// }
-}
 
 void PathPlanningClass::run()
 {
@@ -36,17 +143,12 @@ void PathPlanningClass::run()
             // __create_Path_used_weight();
         }
     }
-    else if (path_planning_id_ == potbot_lib::CSV_PATH)
-    {
-        __create_PathFromCSV();
-    }
     // publishPathPlan();
     
 }
 
 std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
 {
-
     if (mode == 0)
     {
         int map_size = local_map_.data.size();
@@ -134,7 +236,7 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
             //ROS_INFO("theta,v = %f, %f",get_Yaw(obs.pose.pose.orientation),obs.twist.twist.linear.x);
             obstacle_arr.push_back(obs);
 
-            double k = a_;
+            double k = 1.0;
             int num = abs(k*obs.twist.twist.linear.x/rho_zero_);
             for (int j = 1; j < num; j++)
             {
@@ -211,31 +313,9 @@ int PathPlanningClass::__create_PotentialField()
     std::vector<bool> potential_field_cell_info = {false,false,false,false,false};
     std::fill(potential_field_info_.begin(), potential_field_info_.end(), potential_field_cell_info);
 
-    // 変換する座標
-    geometry_msgs::PoseStamped world_goal, robot_goal;
-    world_goal.header.frame_id = FRAME_ID_GLOBAL;
-    world_goal.header.stamp = header_.stamp;
-    world_goal.pose = goal_.pose;
-
-    robot_goal.header.frame_id = FRAME_ID_ROBOT_BASE;
-
-    geometry_msgs::TransformStamped transform;
-    geometry_msgs::PointStamped target_point;
-    static tf2_ros::TransformListener tfListener(tf_buffer_);
-    try 
-    {
-        // 世界座標系のゴールをロボット座標系に変換
-        transform = tf_buffer_.lookupTransform(robot_goal.header.frame_id, world_goal.header.frame_id, ros::Time());
-        tf2::doTransform(world_goal, robot_goal, transform);
-    }
-    catch (tf2::TransformException &ex) 
-    {
-        ROS_ERROR("TF Ereor in pathplan goal: %s", ex.what());
-        return potbot_lib::FAIL;
-    }
-
-    // int break_cnt = 0;
-    // while(!get_tf(world_goal ,robot_goal, tf_buffer_) || break_cnt > 1000){break_cnt++;}
+    geometry_msgs::PoseStamped world_goal = goal_;
+    world_goal.header.stamp = ros::Time();
+    geometry_msgs::PoseStamped robot_goal = potbot_lib::utility::get_tf(tf_buffer_, world_goal, FRAME_ID_ROBOT_BASE);
     
     potbot_lib::PathPlanner::APFPathPlanner apf(
 							potential_field_rows_,					//ポテンシャル場の幅(x軸方向) [m]
@@ -310,7 +390,7 @@ int PathPlanningClass::__create_PotentialField()
     pub_potential_field_.publish(potential_field_msg);
     // pub_filtered_field.publish(filtered_field_msg);
     // pub_path_raw.publish(path_msg_raw);
-    pub_PP.publish(path_msg_interpolated);
+    pub_path_.publish(path_msg_interpolated);
 
     robot_path_world_coord_.header = robot_path_.header;
     robot_path_world_coord_.header.frame_id = FRAME_ID_GLOBAL;
@@ -332,9 +412,6 @@ int PathPlanningClass::__create_PotentialField()
             continue;
         }
     }
-
-
-    
 
     return potbot_lib::SUCCESS;
 }
@@ -662,19 +739,6 @@ void PathPlanningClass::__bezier(nav_msgs::Path& points)
 {
     // https://www.f.waseda.jp/moriya/PUBLIC_HTML/education/classes/infomath6/applet/fractal/spline/
 
-    // std::cout<< "plot([";
-    // for(int i = 0; i < points.poses.size(); i++)
-    // {
-    //     std::cout<< points.poses[i].pose.position.x << " ";
-    // }
-    // std::cout<<"],";
-    // std::cout<< "[";
-    // for(int i = 0; i < points.poses.size(); i++)
-    // {
-    //     std::cout<< points.poses[i].pose.position.y << " ";
-    // }
-    // std::cout<<"])"<< std::endl;
-
     nav_msgs::Path points_original = points;
     int n = points_original.poses.size();
 
@@ -721,73 +785,6 @@ void spline(std::vector<geometry_msgs::Vector3>& points)
 {
     // http://www.yamamo10.jp/yamamoto/lecture/2006/5E/interpolation/interpolation_html/node3.html
     // 高橋大輔.数値計算.岩波書店,1996.pp43-49
-
-
-
-
-    // geometry_msgs::Vector3 end = *points.end();
-    // geometry_msgs::Vector3 begin = *points.begin();
-    // double xdiff = abs(points[points.size()-1].x - points[0].x);
-    // double ydiff = abs(points[points.size()-1].y - points[0].y);
-    // ROS_INFO("xdiff:%f     ydiff:%f",xdiff,ydiff);
-    // std::vector<geometry_msgs::Vector3> points_original;
-
-    // if (xdiff > ydiff)
-    // {
-    //     points_original = points;
-    // }
-    // else
-    // {
-    //     points_original.resize(points.size());
-    //     int i = 0;
-    //     for (geometry_msgs::Vector3 p : points)
-    //     {
-    //         std::cout<< "points =\n" << p <<std::endl;
-    //         points_original[i].x = p.y;
-    //         points_original[i].y = p.x;
-    //         points_original[i].z = p.z;
-    //         std::cout<< "points_original =\n" << points_original[i] <<std::endl;
-    //         i++;
-    //     }
-    // }
-
-
-
-    // std::vector<geometry_msgs::Vector3> points_original;
-    // points_original.resize(points.size());
-    // int i = 0;
-    // for (geometry_msgs::Vector3 p : points)
-    // {
-    //     std::cout<< "points =\n" << p <<std::endl;
-    //     points_original[i].x = p.y;
-    //     points_original[i].y = p.x;
-    //     points_original[i].z = p.z;
-    //     std::cout<< "points_original =\n" << points_original[i] <<std::endl;
-    //     i++;
-    // }
-
-
-
-
-    // std::vector<geometry_msgs::Vector3> points_original;
-    // points_original.resize(points.size());
-    // int size = points.size()-1;
-    // for(int i = 0; i < size; i++)
-    // {
-    //     double xdiff = abs(points[i+1].x - points[i].x);
-    //     double ydiff = abs(points[i+1].y - points[i].y);
-    //     if (xdiff > ydiff)
-    //     {
-    //         points_original[i] = points[i];
-    //     }
-    //     else
-    //     {
-    //         points_original[i].x = points[i].y;
-    //         points_original[i].y = points[i].x;
-    //         points_original[i].z = points[i].z;
-    //     }
-    // }
-
 
     std::vector<geometry_msgs::Vector3> points_original = points;
 
@@ -928,41 +925,6 @@ void spline(std::vector<geometry_msgs::Vector3>& points)
 
 }
 
-void PathPlanningClass::__create_PathFromCSV()
-{
-    nav_msgs::Path init;
-    robot_path_ = init;
-
-    std::string str_buf;
-    std::string str_conma_buf;
-    //std::cout<< PATH_PLANNING_FILE <<std::endl;
-    std::ifstream ifs_csv_file(PATH_PLANNING_FILE);
-
-    std_msgs::Header hd;
-    hd.frame_id = "/" + FRAME_ID_GLOBAL;
-    hd.stamp = ros::Time::now();
-    robot_path_.header = hd;
-
-    double line_buf[2];
-    while (getline(ifs_csv_file, str_buf)) 
-    {    
-        
-        std::istringstream i_stream(str_buf);// 「,」区切りごとにデータを読み込むためにistringstream型にする
-        
-        int i = 0;
-        while (getline(i_stream, str_conma_buf, ',')) // 「,」区切りごとにデータを読み込む
-        {
-            //std::cout<< str_conma_buf <<std::endl;
-            line_buf[i++] = std::stod(str_conma_buf);
-        }
-        geometry_msgs::PoseStamped point;
-        point.pose.position.x = line_buf[0];
-        point.pose.position.y = line_buf[1];
-        robot_path_.poses.push_back(point);
-    }
-    
-}
-
 bool PathPlanningClass::__PathCollision()
 {
     if (robot_path_world_coord_.poses.empty()) return false;
@@ -1001,5 +963,14 @@ bool PathPlanningClass::__PathCollision()
 
 void PathPlanningClass::publishPathPlan()
 {
-    pub_PP.publish(robot_path_);
+    pub_path_.publish(robot_path_);
+}
+
+int main(int argc,char **argv){
+	ros::init(argc,argv,"potbot_pp");
+
+    PathPlanningClass rcc;
+	ros::spin();
+
+	return 0;
 }

@@ -6,7 +6,7 @@
   <param name="robot_description" command="$(arg urdf_file)" />
 
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_$(arg model)_$(arg multi_robot_name)">
-    <param name="publish_frequency" type="double" value="30.0" />
+    <param name="publish_frequency" type="double" value="100.0" />
     <param name="tf_prefix" value="$(arg multi_robot_name)"/>
   </node>
 </launch>

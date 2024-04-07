@@ -3,6 +3,8 @@
 
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
+#include <visualization_msgs/Marker.h>
+#include <nav_msgs/Path.h>
 #include <potbot_lib/Utility.h>
 
 namespace potbot_lib{
@@ -33,6 +35,9 @@ namespace potbot_lib{
             void to_msg(nav_msgs::Odometry& odom_msg);
             void set_msg(const nav_msgs::Odometry& odom_msg);
             void update();
+
+            double get_distance(const Point& p);
+            double get_angle(const Point& p);
     };
 
     namespace Controller{
@@ -42,19 +47,14 @@ namespace potbot_lib{
         const int PROCESS_STRAIGHT = 2;
         const int PROCESS_ROTATE_ANGLE = 3;
 
-        typedef struct {
-            double x=0;
-            double y=0;
-            double yaw=0;
-        } Point;
-
         class DiffDriveController : public DiffDriveAgent{
             protected:
-                double target_x_ = 0.0;
-                double target_y_ = 0.0;
-                double target_yaw_ = 0.0;
+                Point target_point_;
 
                 std::vector<Point> target_path_;
+                Point* lookahead_ = &target_path_.front();
+                size_t target_path_index_ = 0;
+                double distance_to_lookahead_point_ = 0.3;
 
                 double gain_p_ = 1.0;
                 double gain_i_ = 0.5;
@@ -63,8 +63,8 @@ namespace potbot_lib{
                 double stop_margin_angle_ = 0.1;
                 double stop_margin_distance_ = 0.03;
 
-                double max_linear_velocity = 1.0;
-                double max_angular_velocity = M_PI;
+                double max_linear_velocity_ = 1.0;
+                double max_angular_velocity_ = M_PI;
 
                 double error_angle_i_ = 0.0;
                 double error_angle_pre_ = nan("");
@@ -76,17 +76,26 @@ namespace potbot_lib{
                 double error_declination_pre_ = nan("");
 
                 int process_ = PROCESS_STOP;
+                
+                bool done_init_pose_alignment_ = false;
+                bool initialize_pose_ = true;
 
             public:
                 DiffDriveController(){};
                 ~DiffDriveController(){};
 
                 void set_target(double x, double y, double yaw);
+                void set_target(const geometry_msgs::Pose& pose_msg);
                 void set_gain(double p, double i, double d);
                 void set_margin(double angle, double distance);
                 void set_limit(double linear, double angular);
+                void set_distance_to_lookahead_point(double distance);
+                void set_target_path(const nav_msgs::Path& path_msg);
+                void set_initialize_pose(bool ini);
 
-                void set_target_path();
+                void get_lookahead(visualization_msgs::Marker& marker_msg);
+
+                void apply_limit();
 
                 void pid_control_angle();
                 void pid_control_distance();

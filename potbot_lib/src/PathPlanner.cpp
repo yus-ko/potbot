@@ -3,6 +3,34 @@
 namespace potbot_lib{
 
     namespace PathPlanner{
+
+        void get_path_msg_from_csv(nav_msgs::Path& path_msg,const std::string& csv_fullpath)
+        {
+            nav_msgs::Path init;
+            path_msg = init;
+
+            std::string str_buf;
+            std::string str_conma_buf;
+            std::ifstream ifs_csv_file(csv_fullpath);
+
+            double line_buf[3];
+            while (getline(ifs_csv_file, str_buf)) 
+            {    
+                
+                std::istringstream i_stream(str_buf);// 「,」区切りごとにデータを読み込むためにistringstream型にする
+                
+                int i = 0;
+                while (getline(i_stream, str_conma_buf, ',')) // 「,」区切りごとにデータを読み込む
+                {
+                    line_buf[i++] = std::stod(str_conma_buf);
+                }
+                geometry_msgs::PoseStamped pose;
+                pose.pose = potbot_lib::utility::get_Pose(line_buf[0], line_buf[1], 0, 0, 0, line_buf[2]);
+                path_msg.poses.push_back(pose);
+            }
+            
+        }
+
         // void get_search_index_APF(Field& field, std::vector<size_t>, )
         APFPathPlanner::APFPathPlanner(size_t rows, size_t cols, double resolution, double weight_attraction_field, double weight_repulsion_field, double distance_threshold_repulsion_field) : 
         APF::APF(rows, cols, resolution,weight_attraction_field, weight_repulsion_field, distance_threshold_repulsion_field){}

@@ -1,5 +1,6 @@
 //include haeders
 #include <potbot_lib/Utility.h>
+#include <potbot_lib/DiffDriveController.h>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <geometry_msgs/Twist.h>
@@ -26,24 +27,23 @@ class ControllerClass{
 
         tf2_ros::Buffer tf_buffer_;
         
+        potbot_lib::Controller::DiffDriveController robot_controller_;
+
         geometry_msgs::Twist cmd_;
-        double robot_pose_x_ = 0, robot_pose_y_ = 0, robot_pose_theta_ = 0;
 
-        nav_msgs::Odometry line_following_start_;
         nav_msgs::Path robot_path_;
-
-        bool done_init_pose_alignment_;
 
         geometry_msgs::PoseStamped goal_;
 
         dynamic_reconfigure::Server<potbot_msgs::ControllerConfig> server_;
   	    dynamic_reconfigure::Server<potbot_msgs::ControllerConfig>::CallbackType f_;
 
-        int robot_path_index_ = 0;
-        nav_msgs::Odometry robot_, odom_;
-        std::string FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_ODOM, TOPIC_CMD_VEL, TOPIC_GOAL;
-        bool PUBLISH_COMMAND;
-        double PATH_TRACKING_MARGIN, TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW, MAX_LINEAR_VELOCITY = 0.2, MAX_ANGULAR_VELOCITY = 1.0;
+        nav_msgs::Odometry odom_;
+
+        //パラメーターサーバー参照
+        std::string topic_odom_, topic_cmd_, topic_goal_;
+        bool publish_command_;
+        double stop_margin_angle_, stop_margin_distance_, distance_to_lookahead_point_, distance_change_to_pose_alignment_;
 
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __goal_callback(const geometry_msgs::PoseStamped& msg);
@@ -53,15 +53,11 @@ class ControllerClass{
         void __publishcmd();
 
         void __LineFollowing();
-        void __PoseAlignment(geometry_msgs::Pose target);
-
-        void __get_param();
+        void __PoseAlignment();
 
     public:
         ControllerClass();
         ~ControllerClass();
-        
-        void mainloop();
 
         void manage();
         void controller();

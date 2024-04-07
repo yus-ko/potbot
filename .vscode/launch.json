@@ -9,6 +9,7 @@
             "type": "ros",
             "request": "launch",
             "target": "/home/ros/catkin_ws/src/potbot/potbot/launch/demo.launch"
+            // "target": "/home/ros/catkin_ws/src/controller_tutorial/launch/controller_test.launch"
         }
     ]
 }

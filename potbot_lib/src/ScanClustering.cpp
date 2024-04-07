@@ -10,13 +10,13 @@ namespace potbot_lib{
     void ScanClustering::set_clusters(const sensor_msgs::LaserScan& scan)
     {
         clusters_.clear();
-        SEGMENT clus;
+        Segment clus;
         size_t p_idx = 0, range_idx = 0;
         for (const auto& range : scan.ranges)
         {
             if (scan.range_min <= range && range <= scan.range_max)
             {
-                POINT p;
+                Point p;
                 p.index = p_idx++;
                 p.theta = (double)range_idx * scan.angle_increment + scan.angle_min;
                 p.r = range;   //minは足さない
@@ -55,7 +55,7 @@ namespace potbot_lib{
         }
     }
     
-    void ScanClustering::get_clusters(std::vector<SEGMENT>& clusters_arg)
+    void ScanClustering::get_clusters(std::vector<Segment>& clusters_arg)
     {
         clusters_arg = clusters_;
     }
@@ -73,11 +73,11 @@ namespace potbot_lib{
 
     //     for(size_t i = 0; i < clusters_[0].points.size(); i++)
     //     {
-    //         const POINT& pi = clusters_[0].points[i];
+    //         const Point& pi = clusters_[0].points[i];
     //         for(size_t j = 0; j < clusters_[0].points.size(); j++)
     //         {
     //             if (checked[j]) continue;
-    //             const POINT& pj = clusters_[0].points[j];
+    //             const Point& pj = clusters_[0].points[j];
     //             double distance = sqrt(pow(pi.x - pj.x,2) + pow(pi.y - pj.y,2));
     //             if (distance <= 0.3)
     //             {
@@ -94,7 +94,7 @@ namespace potbot_lib{
     {
         int size = clusters_[0].points.size();
         bool start = false;
-        SEGMENT seg;
+        Segment seg;
         for (int i = 0; i < size; i++)
         {
             
@@ -104,11 +104,11 @@ namespace potbot_lib{
                 seg.points.clear();
             }
 
-            POINT &p = clusters_[0].points[i];
+            Point &p = clusters_[0].points[i];
 
             if (!seg.points.empty())
             {    
-                POINT &p_next = seg.points.back();
+                Point &p_next = seg.points.back();
 
                 double distance = sqrt(pow(p.x - p_next.x,2) + pow(p.y - p_next.y,2));
                 if (distance <= 0.3)
@@ -141,9 +141,9 @@ namespace potbot_lib{
 
             std::vector<double> vec_x, vec_y;
             //x のみを抽出
-            std::transform(clus.points.begin(), clus.points.end(), std::back_inserter(vec_x), [](const POINT& p) { return p.x; });
+            std::transform(clus.points.begin(), clus.points.end(), std::back_inserter(vec_x), [](const Point& p) { return p.x; });
             //y のみを抽出
-            std::transform(clus.points.begin(), clus.points.end(), std::back_inserter(vec_y), [](const POINT& p) { return p.y; });
+            std::transform(clus.points.begin(), clus.points.end(), std::back_inserter(vec_y), [](const Point& p) { return p.y; });
 
             // xの最小値を取得
             auto min_x_itr = std::min_element(vec_x.begin(), vec_x.end());

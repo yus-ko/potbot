@@ -2,11 +2,15 @@
 #define _H_PATHPLANNER_
 
 #include <ros/ros.h>
+#include <nav_msgs/Path.h>
+#include <potbot_lib/Utility.h>
 #include <potbot_lib/PotentialField.h>
 
 namespace potbot_lib{
 
     namespace PathPlanner{
+
+        void get_path_msg_from_csv(nav_msgs::Path& path_msg,const std::string& csv_fullpath);
 
         class APFPathPlanner : public APF{
             private:
@@ -24,8 +28,7 @@ namespace potbot_lib{
                 
                 void create_path(std::vector<std::vector<double>> &path, double init_robot_pose = 0.0, double max_path_length = 6.0, size_t path_search_range = 1);
                 void bezier(const std::vector<std::vector<double>> &path_control, std::vector<std::vector<double>> &path_interpolated);
-                
-                
+                  
         };
 
     }

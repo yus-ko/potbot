@@ -209,7 +209,7 @@ namespace potbot_lib{
                 transformStamped = buffer.lookupTransform(target_frame_id, pose_in.header.frame_id, pose_in.header.stamp, ros::Duration(1.0));
             }
             catch (tf2::TransformException &ex) {
-                ROS_WARN_STREAM("get_tf TF23456 exception: " << ex.what());
+                ROS_WARN_STREAM("get_tf TF2 exception: " << ex.what());
             }
             
             tf2::doTransform(pose_in, pose_out, transformStamped);
@@ -263,6 +263,24 @@ namespace potbot_lib{
             {
                 get_tf(buffer, obscales_in.data[i], target_frame_id, obscales_out.data[i]);
             }
+        }
+
+        void get_tf(const tf2_ros::Buffer &buffer, const nav_msgs::Path& path_in, const std::string target_frame_id, nav_msgs::Path& path_out)
+        {
+            path_out.header = path_in.header;
+            path_out.header.frame_id = target_frame_id;
+            path_out.poses.clear();
+
+            for (const auto p_raw: path_in.poses)
+            {
+                geometry_msgs::PoseStamped pose_in;
+                pose_in.header = path_in.header;
+                pose_in.pose = p_raw.pose;
+
+                geometry_msgs::PoseStamped pose_out = get_tf(buffer, pose_in, target_frame_id);
+                path_out.poses.push_back(pose_out);
+            }
+            
         }
 
         int get_WorldCoordinate(std::string target_frame, ros::Time time, geometry_msgs::PoseStamped &Wcood, tf2_ros::Buffer &buffer)

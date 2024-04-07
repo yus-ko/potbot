@@ -44,6 +44,14 @@ namespace potbot_lib{
         std_msgs::ColorRGBA get_msg(const std::string color_name);
     }
 
+    typedef struct {
+        int index=0;
+        double x=0;
+        double y=0;
+        double r=0;
+        double theta=0;
+    } Point;
+
     namespace utility{
         void get_RPY(const geometry_msgs::Quaternion& orientation, double &roll, double &pitch, double &yaw);
         geometry_msgs::Quaternion get_Quat(const double roll = 0, const double pitch = 0, const double yaw = 0);
@@ -67,6 +75,7 @@ namespace potbot_lib{
         geometry_msgs::Point get_tf(const tf2_ros::Buffer &buffer, const geometry_msgs::Point& point_in, const std_msgs::Header target_header);
         void get_tf(const tf2_ros::Buffer &buffer, const potbot_msgs::Obstacle& obstacle_in, const std::string target_frame_id, potbot_msgs::Obstacle& obstacle_out);
         void get_tf(const tf2_ros::Buffer &buffer, const potbot_msgs::ObstacleArray& obscales_in, const std::string target_frame_id, potbot_msgs::ObstacleArray& obscales_out);
+        void get_tf(const tf2_ros::Buffer &buffer, const nav_msgs::Path& path_in, const std::string target_frame_id, nav_msgs::Path& path_out);
 
         int get_WorldCoordinate(std::string target_frame, ros::Time time, geometry_msgs::PoseStamped &Wcood, tf2_ros::Buffer &buffer);
 
