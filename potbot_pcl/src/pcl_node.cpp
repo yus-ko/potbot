@@ -1,5 +1,25 @@
 #include<potbot_pcl/Clustering3D.h>
 
+Clustering3DClass::Clustering3DClass()
+{
+
+	ros::NodeHandle n("~");
+    n.getParam("topic_pcl2",            topic_pcl2_);
+    n.getParam("clustering_method",     clustering_method_);
+
+	sub_pcl2_	= nhSub_.subscribe(topic_pcl2_,1,&Clustering3DClass::__pcl2_callback,this);
+
+	pub_marker_ = nhPub_.advertise<visualization_msgs::MarkerArray>("filtered_pcl", 1);
+	pub_pcl_0_ = nhPub_.advertise<sensor_msgs::PointCloud2>("debug/pcl/DownSampling", 1);
+	pub_pcl_1_ = nhPub_.advertise<sensor_msgs::PointCloud2>("debug/pcl/Plane_removal", 1);
+
+	f_ = boost::bind(&Clustering3DClass::__param_callback, this, _1, _2);
+	server_.setCallback(f_);
+
+}
+Clustering3DClass::~Clustering3DClass(){
+}
+
 void Clustering3DClass::__pcl2_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
     header_ = msg->header;
@@ -9,15 +29,14 @@ void Clustering3DClass::__pcl2_callback(const sensor_msgs::PointCloud2ConstPtr &
 
     __DownSampling();
     __Plane_removal();
-    if (CLUSTERING_METHOD == "Euclidean")
+    if (clustering_method_ == "Euclidean")
     {
         __EuclideanClustering();
     }
-    else if (CLUSTERING_METHOD == "SuperVoxel")
+    else if (clustering_method_ == "SuperVoxel")
     {
         __SuperVoxelClustering();
     }
-    
     
 }
 
@@ -36,4 +55,13 @@ void Clustering3DClass::__param_callback(const potbot_msgs::ClusteringParamConfi
     Supervoxel_color_importance_        = param.Supervoxel_color_importance;
     Supervoxel_spatial_importance_      = param.Supervoxel_spatial_importance;
     Supervoxel_normal_importance_       = param.Supervoxel_normal_importance;
+}
+
+int main(int argc,char **argv){
+	ros::init(argc,argv,"potbot_cl3d");
+
+    Clustering3DClass cl3d;
+	ros::spin();
+
+	return 0;
 }

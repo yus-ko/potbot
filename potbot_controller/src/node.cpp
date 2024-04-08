@@ -3,10 +3,10 @@
 ControllerClass::ControllerClass()
 {
 	ros::NodeHandle n("~");
-    n.getParam("PUBLISH_COMMAND",       publish_command_);
-    n.getParam("topic_odom",            topic_odom_);
-    n.getParam("topic_cmd",             topic_cmd_);
-    n.getParam("topic_goal",            topic_goal_);
+    n.getParam("publish_control_command",   publish_command_);
+    n.getParam("topic_odom",                topic_odom_);
+    n.getParam("topic_cmd",                 topic_cmd_);
+    n.getParam("topic_goal",                topic_goal_);
 
 	sub_odom_			= nhSub_.subscribe(topic_odom_,						1,&ControllerClass::__odom_callback,this);
 	sub_path_			= nhSub_.subscribe("Path",							1,&ControllerClass::__path_callback,this);

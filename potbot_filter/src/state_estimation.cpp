@@ -1,5 +1,27 @@
 #include<potbot_filter/Filter.h>
 
+#define __NX__ 5
+#define __NY__ 2
+
+FilterClass::FilterClass()
+{
+	
+	ros::NodeHandle n("~");
+    //n.getParam("",);
+    n.getParam("sigma_p",               sigma_p_);
+    n.getParam("sigma_q",               sigma_q_);
+    n.getParam("sigma_r",               sigma_r_);
+
+	sub_obstacle_				= nhSub_.subscribe("obstacle/scan/clustering",			1,&FilterClass::__obstacle_callback,this);
+	
+	pub_state_					= nhPub_.advertise<potbot_msgs::StateArray>(			"state", 1);
+	pub_state_markers_			= nhPub_.advertise<visualization_msgs::MarkerArray>(	"state/marker", 1);
+	pub_obstacles_pcl_			= nhPub_.advertise<potbot_msgs::ObstacleArray>(			"obstacle/pcl/estimate", 1);
+	pub_obstacles_scan_			= nhPub_.advertise<potbot_msgs::ObstacleArray>(			"obstacle/scan/estimate", 1);
+}
+FilterClass::~FilterClass(){
+}
+
 void matrixToDoubleArray(const Eigen::MatrixXd& matrix, std_msgs::Float64MultiArray& array) {
     int rows = matrix.rows();
     int cols = matrix.cols();
@@ -12,10 +34,6 @@ void matrixToDoubleArray(const Eigen::MatrixXd& matrix, std_msgs::Float64MultiAr
         }
     }
 }
-
-#define __NX__ 5
-#define __NY__ 2
-
 
 Eigen::VectorXd f(Eigen::VectorXd x_old, double dt) {
 	Eigen::VectorXd x_new(__NX__);
@@ -116,24 +134,24 @@ void FilterClass::__obstacle_callback(const potbot_msgs::ObstacleArray& msg)
             
             Eigen::MatrixXd Q(__NY__,__NY__), R(__NX__,__NX__), P(__NX__,__NX__);
             Q.setZero();R.setZero();P.setZero();
-            // for (int i = 0; i < __NY__; i++) Q(i,i) = SIGMA_Q;
-            // for (int i = 0; i < __NX__; i++) R(i,i) = SIGMA_R;
-            // for (int i = 0; i < __NX__; i++) P(i,i) = SIGMA_P;
+            // for (int i = 0; i < __NY__; i++) Q(i,i) = sigma_q_;
+            // for (int i = 0; i < __NX__; i++) R(i,i) = sigma_r_;
+            // for (int i = 0; i < __NX__; i++) P(i,i) = sigma_p_;
 
-            Q<< SIGMA_Q, 0,
-                0, SIGMA_Q;
+            Q<< sigma_q_, 0,
+                0, sigma_q_;
             
             R<< 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0,
-                0, 0, 0, SIGMA_R, 0,
-                0, 0, 0, 0, SIGMA_R;
+                0, 0, 0, sigma_r_, 0,
+                0, 0, 0, 0, sigma_r_;
 
-            P<< SIGMA_P, 0, 0, 0, 0,
-                0, SIGMA_P, 0, 0, 0,
-                0, 0, SIGMA_P, 0, 0,
-                0, 0, 0, SIGMA_P, 0,
-                0, 0, 0, 0, SIGMA_P;
+            P<< sigma_p_, 0, 0, 0, 0,
+                0, sigma_p_, 0, 0, 0,
+                0, 0, sigma_p_, 0, 0,
+                0, 0, 0, sigma_p_, 0,
+                0, 0, 0, 0, sigma_p_;
 
             Eigen::VectorXd xhat(__NX__);
             // xhat.setZero();
@@ -225,4 +243,13 @@ void FilterClass::__obstacle_callback(const potbot_msgs::ObstacleArray& msg)
     //     pub_obstacles_scan_.publish(obstacle_array);
     // }
 
+}
+
+int main(int argc,char **argv){
+	ros::init(argc,argv,"potbot_fi");
+
+    FilterClass fc;
+	ros::spin();
+	
+	return 0;
 }

@@ -34,13 +34,12 @@ class LocalmapClass{
         void __obstacles_pcl_callback(const potbot_msgs::ObstacleArray& msg);
 
         void __param_callback(const potbot_msgs::LocalmapConfig& param, uint32_t level);
-        void __get_param();
     public:
         //in constracter.cpp
         //コンストラクタ：クラス定義に呼び出されるメソッド
         LocalmapClass();
         //デストラクタ：クラスが消滅するときに呼びだされるメソッド
-        ~LocalmapClass();
+        ~LocalmapClass(){};
 
         
 };

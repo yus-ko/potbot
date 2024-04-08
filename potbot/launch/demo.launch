@@ -2,7 +2,7 @@
   <arg name="GROUP"                       default="robot_0"/>
   <arg name="IS_SIMULATOR"                default="false"/>
   <arg name="USE_RVIZ"                    default="true"/>
-  <arg name="PUBLISH_COMMAND"             default="true"/>
+  <arg name="publish_control_command"     default="true"/>
   <arg name="FRAME_ID/GLOBAL"             default="map"/>
   <arg name="FRAME_ID/ODOM"               default="$(arg GROUP)/odom"/>
   <arg name="FRAME_ID/BASE_FOOTPRINT"     default="$(arg GROUP)/base_footprint"/>
@@ -21,12 +21,12 @@
   <arg name="TOPIC/CMD_VEL"               default="/$(arg GROUP)/cmd_vel"/>
   <arg name="TOPIC/GOAL"                  default="/$(arg GROUP)/goal"/>
   <arg name="TOPIC/INITIAL_POSE"          default="/$(arg GROUP)/initialpose"/>
-  <arg name="TOPIC/PCL2"                  default="/$(arg GROUP)/realsense/depth/points"/>
-  <arg name="DEPTH_PCL_CLUSTERING_METHOD" default="Euclidean"/>
+  <arg name="topic_pcl2"                  default="/$(arg GROUP)/realsense/depth/points"/>
+  <arg name="clustering_method"           default="Euclidean"/>
   <arg name="FILE/URDF"                   default="$(find turtlebot3_description)/urdf/turtlebot3_waffle_pi.urdf.xacro"/>
   <arg name="FILE/MAP"                    default="$(find potbot_description)/maps/garage.yaml"/>
   <arg name="FILE/FUSION"                 default="$(find potbot_description)/config/waffle_pi_robot_localization.yaml"/>
-  <arg name="FILE/RVIZ"                   default="$(find potbot_description)/rviz/waffle_pi.rviz"/>
+  <arg name="file_rviz"                   default="$(find potbot_description)/rviz/waffle_pi.rviz"/>
 
   <group ns="$(arg GROUP)">
 
@@ -53,27 +53,19 @@
     </node> -->
 
     <include file="$(find potbot)/launch/env/potbot.launch">
-      <arg name="GROUP"                         value="$(arg GROUP)"/>
-      <arg name="USE_RVIZ"                      value="$(arg USE_RVIZ)"/>
-      <arg name="PUBLISH_COMMAND"               value="$(arg PUBLISH_COMMAND)"/>
-      <arg name="FRAME_ID/GLOBAL"               value="$(arg FRAME_ID/GLOBAL)"/>
-      <arg name="FRAME_ID/ROBOT_BASE"           value="$(arg FRAME_ID/ROBOT_BASE)"/>
-      <arg name="FRAME_ID/LIDAR"                value="$(arg FRAME_ID/LIDAR)"/>
-      <arg name="TARGET/POSITION/X"             value="$(arg TARGET/POSITION/X)"/>
-      <arg name="TARGET/POSITION/Y"             value="$(arg TARGET/POSITION/Y)"/>
-      <arg name="TARGET/POSITION/YAW"           value="$(arg TARGET/POSITION/YAW)"/>
+      <arg name="use_rviz"                      value="$(arg USE_RVIZ)"/>
+      <arg name="publish_control_command"       value="$(arg publish_control_command)"/>
+      <arg name="frame_id_global"               value="$(arg FRAME_ID/GLOBAL)"/>
+      <arg name="frame_id_robot_base"           value="$(arg FRAME_ID/ROBOT_BASE)"/>
       <arg name="max_linear_velocity"           value="$(arg max_linear_velocity)"/>
       <arg name="max_angular_velocity"          value="$(arg max_angular_velocity)"/>
-      <arg name="TOPIC/SCAN"                    value="$(arg TOPIC/SCAN)"/>
-      <arg name="TOPIC/ODOM"                    value="$(arg TOPIC/ODOM)"/>
-      <arg name="TOPIC/CMD_VEL"                 value="$(arg TOPIC/CMD_VEL)"/>
-      <arg name="TOPIC/GOAL"                    value="$(arg TOPIC/GOAL)"/>
+      <arg name="topic_scan"                    value="$(arg TOPIC/SCAN)"/>
       <arg name="topic_odom"                value="$(arg TOPIC/ODOM)"/>
       <arg name="topic_cmd"                 value="$(arg TOPIC/CMD_VEL)"/>
       <arg name="topic_goal"                value="$(arg TOPIC/GOAL)"/>
-      <arg name="TOPIC/PCL2"                    value="$(arg TOPIC/PCL2)"/>
-      <arg name="DEPTH_PCL_CLUSTERING_METHOD"   value="$(arg DEPTH_PCL_CLUSTERING_METHOD)"/>
-      <arg name="FILE/RVIZ"                     value="$(arg FILE/RVIZ)"/>
+      <arg name="topic_pcl2"                    value="$(arg topic_pcl2)"/>
+      <arg name="clustering_method"             value="$(arg clustering_method)"/>
+      <arg name="file_rviz"                     value="$(arg file_rviz)"/>
     </include>
 
   </group>

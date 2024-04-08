@@ -20,14 +20,10 @@
 class Clustering3DClass{
 
     private:
-
-        // tf::TransformListener tflistener;
-        // tf2_ros::Buffer tf_buffer_;
         
-        //センサーデータ
 		ros::NodeHandle nhSub_;
 		ros::Subscriber sub_pcl2_;
-        //送信データ
+        
 		ros::NodeHandle nhPub_;
         ros::Publisher pub_marker_, pub_pcl_0_, pub_pcl_1_;
 
@@ -52,9 +48,7 @@ class Clustering3DClass{
         float   Supervoxel_spatial_importance_          = 0.4f;
         float   Supervoxel_normal_importance_           = 1.0f;
 
-        std::string TOPIC_PCL2, CLUSTERING_METHOD = "Euclidean";
-        // std::string PATH_PLANNING_METHOD;
-        // double TARGET_POSITION_X;
+        std::string topic_pcl2_, clustering_method_ = "Euclidean";
         
         void __pcl2_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
         void __param_callback(const potbot_msgs::ClusteringParamConfig& param, uint32_t level);
@@ -68,9 +62,5 @@ class Clustering3DClass{
     public:
         Clustering3DClass();
         ~Clustering3DClass();
-        void setLaunchParam();//launchファイルから書き込み
-        
-        void mainloop();
 
-        // void publishPathPlan();
 };

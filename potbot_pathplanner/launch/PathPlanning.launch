@@ -1,34 +1,39 @@
 <launch>
-   <arg name="USE_RVIZ" default="false"/>
-   <arg name="PATH_PLANNING_METHOD" default="csv"/>
-   <!--potential_method csv-->
-   <arg name="PATH_PLANNING_FILE" default="sin.csv"/>
-   <arg name="FRAME_ID/GLOBAL" default="map"/>
-   <arg name="FRAME_ID/ROBOT_BASE" default="base_footprint"/>
-   <arg name="TARGET/POSITION/X" default="6.0"/>
-   <arg name="TARGET/POSITION/Y" default="0.0"/>
-   <arg name="TARGET/POSITION/YAW" default="0.0"/>
-   <arg name="TOPIC/SCAN" default="scan"/>
-   <arg name="TOPIC/ODOM" default="odom"/>
-   <arg name="TOPIC/GOAL" default="/move_base_simple/goal"/>
+   <arg name="frame_id_global"                              default="map"/>
+   <arg name="frame_id_robot_base"                          default="base_footprint"/>
+   <arg name="topic_odom"                                   default="odom"/>
+   <arg name="topic_goal"                                   default="/move_base_simple/goal"/>
+   <arg name="potential_field_rows"                         default="120"/>
+   <arg name="potential_field_cols"                         default="120"/>
+   <arg name="potential_field_resolution"                   default="0.05"/>
+   <arg name="weight_attraction_field"                      default="0.1"/>
+   <arg name="weight_repulsion_field"                       default="0.1"/>
+   <arg name="distance_threshold_repulsion_field"           default="0.5"/>
+   <arg name="max_path_length"                              default="6.0"/>
+   <arg name="path_search_range"                            default="1"/>
+   <arg name="weight_potential_field"                       default="1.0"/>
+   <arg name="weight_angle"                                 default="0.2"/>
+   <arg name="collision_count_to_replanning"                default="10"/>
+   <arg name="hit_distance_to_replanning"                   default="0.1"/>
 
    
    <node pkg="potbot_pathplanner" name="pathplanner_pp" type="potbot_pathplanner_pp" output="screen">
-      <param name="USE_RVIZ" value="$(arg USE_RVIZ)"/>
-      <param name="PATH_PLANNING_METHOD" value="$(arg PATH_PLANNING_METHOD)"/>
-      <param name="PATH_PLANNING_FILE" value="$(find potbot_description)/path/$(arg PATH_PLANNING_FILE)"/>
-      <param name="USE_AMCL" value="false"/>
-      <param name="TARGET/POSITION/X" value="$(arg TARGET/POSITION/X)"/>
-      <param name="TARGET/POSITION/Y" value="$(arg TARGET/POSITION/Y)"/>
-      <param name="TARGET/POSITION/YAW" value="$(arg TARGET/POSITION/YAW)"/>
-      <param name="POTENTIAL_FIELD_WIDTH" value="2"/>
-      <param name="POTENTIAL_FIELD_DIVDE_X" value="20"/>
-      <param name="POTENTIAL_FIELD_DIVDE_Y" value="20"/>
-      <param name="FRAME_ID/GLOBAL" value="$(arg FRAME_ID/GLOBAL)"/>
-      <param name="FRAME_ID/ROBOT_BASE" value="$(arg FRAME_ID/ROBOT_BASE)"/>
-      <param name="TOPIC/SCAN" value="$(arg TOPIC/SCAN)"/>
-      <param name="TOPIC/ODOM" value="$(arg TOPIC/ODOM)"/>
-      <param name="TOPIC/GOAL" value="$(arg TOPIC/GOAL)"/>
+      <param name="frame_id_global"                         value="$(arg frame_id_global)"/>
+      <param name="frame_id_robot_base"                     value="$(arg frame_id_robot_base)"/>
+      <param name="topic_odom"                              value="$(arg topic_odom)"/>
+      <param name="topic_goal"                              value="$(arg topic_goal)"/>
+      <param name="potential_field_rows"                    value="$(arg potential_field_rows)"/>
+      <param name="potential_field_cols"                    value="$(arg potential_field_cols)"/>
+      <param name="potential_field_resolution"              value="$(arg potential_field_resolution)"/>
+      <param name="weight_attraction_field"                 value="$(arg weight_attraction_field)"/>
+      <param name="weight_repulsion_field"                  value="$(arg weight_repulsion_field)"/>
+      <param name="distance_threshold_repulsion_field"      value="$(arg distance_threshold_repulsion_field)"/>
+      <param name="max_path_length"                         value="$(arg max_path_length)"/>
+      <param name="path_search_range"                       value="$(arg path_search_range)"/>
+      <param name="weight_potential_field"                  value="$(arg weight_potential_field)"/>
+      <param name="weight_angle"                            value="$(arg weight_angle)"/>
+      <param name="collision_count_to_replanning"           value="$(arg collision_count_to_replanning)"/>
+      <param name="hit_distance_to_replanning"              value="$(arg hit_distance_to_replanning)"/>
    </node>
    
 </launch>

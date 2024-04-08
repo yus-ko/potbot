@@ -1,31 +1,19 @@
 <launch>
-        <arg name="PUBLISH_COMMAND"             default="true"/>
-        <arg name="FRAME_ID/GLOBAL"             default="map"/>
-        <arg name="FRAME_ID/ROBOT_BASE"         default="basa_link"/>
-        <arg name="TARGET/POSITION/X"           default="6.0"/>
-        <arg name="TARGET/POSITION/Y"           default="0.0"/>
-        <arg name="TARGET/POSITION/YAW"         default="0.0"/>
-        <arg name="CONTROLLER"                  default="pure_pursuit"/>
-        <arg name="topic_odom"                  default="odom"/>
-        <arg name="topic_cmd"                   default="cmd_vel"/>
-        <arg name="topic_goal"                  default="/move_base_simple/goal"/>
-        <arg name="distance_to_lookahead_point" default="0.1"/>
-        <arg name="gain_p"                      default="1.0"/>
-        <arg name="gain_i"                      default="0.1"/>
-        <arg name="gain_d"                      default="0.001"/>
-        <arg name="stop_margin_angle"           default="0.2"/>
-        <arg name="stop_margin_distance"        default="0.05"/>
-        <arg name="max_linear_velocity"         default="0.3"/>
-        <arg name="max_angular_velocity"        default="0.3"/>
+        <arg name="publish_control_command"         default="true"/>
+        <arg name="topic_odom"                      default="odom"/>
+        <arg name="topic_cmd"                       default="cmd_vel"/>
+        <arg name="topic_goal"                      default="/move_base_simple/goal"/>
+        <arg name="distance_to_lookahead_point"     default="0.1"/>
+        <arg name="gain_p"                          default="1.0"/>
+        <arg name="gain_i"                          default="0.1"/>
+        <arg name="gain_d"                          default="0.001"/>
+        <arg name="stop_margin_angle"               default="0.2"/>
+        <arg name="stop_margin_distance"            default="0.05"/>
+        <arg name="max_linear_velocity"             default="0.3"/>
+        <arg name="max_angular_velocity"            default="0.3"/>
 
     <node pkg="potbot_controller" name="controller_co" type="potbot_controller_co" output="screen">
-        <param name="PUBLISH_COMMAND"               value="$(arg PUBLISH_COMMAND)"/>
-        <param name="FRAME_ID/GLOBAL"               value="$(arg FRAME_ID/GLOBAL)"/>
-        <param name="FRAME_ID/ROBOT_BASE"           value="$(arg FRAME_ID/ROBOT_BASE)"/>
-        <param name="TARGET/POSITION/X"             value="$(arg TARGET/POSITION/X)"/>
-        <param name="TARGET/POSITION/Y"             value="$(arg TARGET/POSITION/Y)"/>
-        <param name="TARGET/POSITION/YAW"           value="$(arg TARGET/POSITION/YAW)"/>
-        <param name="CONTROLLER"                    value="$(arg CONTROLLER)"/>
+        <param name="publish_control_command"       value="$(arg publish_control_command)"/>
         <param name="topic_odom"                    value="$(arg topic_odom)"/>
         <param name="topic_cmd"                     value="$(arg topic_cmd)"/>
         <param name="topic_goal"                    value="$(arg topic_goal)"/>

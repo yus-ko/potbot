@@ -4,31 +4,13 @@ PathPlanningClass::PathPlanningClass()
 {
 
 	ros::NodeHandle n("~");
-    n.getParam("PATH_PLANNING_METHOD",      PATH_PLANNING_METHOD);
-    n.getParam("PATH_PLANNING_FILE",        PATH_PLANNING_FILE);
-    n.getParam("TARGET/POSITION/X",         TARGET_POSITION_X);
-    n.getParam("TARGET/POSITION/Y",         TARGET_POSITION_Y);
-    n.getParam("TARGET/POSITION/YAW",       TARGET_POSITION_YAW);
-    n.getParam("FRAME_ID/GLOBAL",           FRAME_ID_GLOBAL);
-    n.getParam("FRAME_ID/ROBOT_BASE",       FRAME_ID_ROBOT_BASE);
-    n.getParam("TOPIC/ODOM",                TOPIC_ODOM);
-    n.getParam("TOPIC/GOAL",                TOPIC_GOAL);
+    n.getParam("frame_id_global",           frame_id_global_);
+    n.getParam("frame_id_robot_base",       frame_id_robot_base_);
+    n.getParam("topic_odom",                topic_odom_);
+    n.getParam("topic_goal",                topic_goal_);
 
-    goal_.pose.position.x = TARGET_POSITION_X;
-    goal_.pose.position.y = TARGET_POSITION_Y;
-    goal_.pose.orientation = potbot_lib::utility::get_Quat(0,0,TARGET_POSITION_YAW);
-
-	if (PATH_PLANNING_METHOD == "csv")
-	{
-		path_planning_id_ = potbot_lib::CSV_PATH;
-	}
-	else if (PATH_PLANNING_METHOD == "potential_method")
-	{
-		path_planning_id_ = potbot_lib::POTENTIAL_METHOD;
-	}
-
-	sub_goal_ 		= nhSub.subscribe(TOPIC_GOAL, 1, &PathPlanningClass::goal_callback, this);
-	sub_odom_		= nhSub.subscribe(TOPIC_ODOM,1,&PathPlanningClass::__odom_callback,this);
+	sub_goal_ 		= nhSub.subscribe(topic_goal_, 1, &PathPlanningClass::goal_callback, this);
+	sub_odom_		= nhSub.subscribe(topic_odom_,1,&PathPlanningClass::__odom_callback,this);
 	sub_local_map_	= nhSub.subscribe("Localmap", 1, &PathPlanningClass::local_map_callback, this);
 	sub_run_		= nhSub.subscribe("create_path", 1, &PathPlanningClass::__create_path_callback, this);
 	sub_seg_		= nhSub.subscribe("segment", 1, &PathPlanningClass::__segment_callback, this);
@@ -130,21 +112,11 @@ void PathPlanningClass::__param_callback(const potbot_msgs::PathPlanningConfig& 
 
 void PathPlanningClass::run()
 {
-    // geometry_msgs::PoseStamped robot_pose;
-    // while (!get_WorldCoordinate(FRAME_ID_ROBOT_BASE, ros::Time(0), robot_pose, tf_buffer_)){}
-    // header_ = robot_pose.header;
-    // odom_.header = header_;
-    // odom_.pose.pose = robot_pose.pose;
-    if (path_planning_id_ == potbot_lib::POTENTIAL_METHOD)
+    if(__create_PotentialField())
     {
-        if(__create_PotentialField())
-        {
-            //__create_Path();
-            // __create_Path_used_weight();
-        }
+        //__create_Path();
+        // __create_Path_used_weight();
     }
-    // publishPathPlan();
-    
 }
 
 std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
@@ -199,13 +171,13 @@ std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList(int mode)
 
             // 変換する座標
             geometry_msgs::PoseStamped world_obstacle, robot_obstacle;
-            world_obstacle.header.frame_id = FRAME_ID_GLOBAL;
+            world_obstacle.header.frame_id = frame_id_global_;
             world_obstacle.header.stamp = header_.stamp;
             world_obstacle.pose.position.x = obstacle_state_.data[i].xhat.data[0];
             world_obstacle.pose.position.y = obstacle_state_.data[i].xhat.data[1];
             world_obstacle.pose.orientation = potbot_lib::utility::get_Quat(0,0,-obstacle_state_.data[i].xhat.data[2]);
 
-            robot_obstacle.header.frame_id = FRAME_ID_ROBOT_BASE;
+            robot_obstacle.header.frame_id = frame_id_robot_base_;
 
             geometry_msgs::TransformStamped transform;
             static tf2_ros::TransformListener tfListener(tf_buffer_);
@@ -304,7 +276,7 @@ int PathPlanningClass::__create_PotentialField()
     std::vector<nav_msgs::Odometry> obstacles = __get_ObstacleList(0);  //引数確認
 
     potential_field_.header = header_;
-    potential_field_.header.frame_id = FRAME_ID_ROBOT_BASE;
+    potential_field_.header.frame_id = frame_id_robot_base_;
     potential_field_.cell_width = map_res;
     potential_field_.cell_height = map_res;
     potential_field_.cells.resize(map_size);
@@ -315,7 +287,7 @@ int PathPlanningClass::__create_PotentialField()
 
     geometry_msgs::PoseStamped world_goal = goal_;
     world_goal.header.stamp = ros::Time();
-    geometry_msgs::PoseStamped robot_goal = potbot_lib::utility::get_tf(tf_buffer_, world_goal, FRAME_ID_ROBOT_BASE);
+    geometry_msgs::PoseStamped robot_goal = potbot_lib::utility::get_tf(tf_buffer_, world_goal, frame_id_robot_base_);
     
     potbot_lib::PathPlanner::APFPathPlanner apf(
 							potential_field_rows_,					//ポテンシャル場の幅(x軸方向) [m]
@@ -393,7 +365,7 @@ int PathPlanningClass::__create_PotentialField()
     pub_path_.publish(path_msg_interpolated);
 
     robot_path_world_coord_.header = robot_path_.header;
-    robot_path_world_coord_.header.frame_id = FRAME_ID_GLOBAL;
+    robot_path_world_coord_.header.frame_id = frame_id_global_;
     robot_path_world_coord_.poses.clear();
     for (const auto& pose : robot_path_.poses)
     {
@@ -440,7 +412,7 @@ void PathPlanningClass::__create_Path_used_weight()
 {
     nav_msgs::Path robot_path;
     robot_path.header = header_;
-    robot_path.header.frame_id = FRAME_ID_ROBOT_BASE;
+    robot_path.header.frame_id = frame_id_robot_base_;
 
     double center_x = 0;
     double center_y = 0;
@@ -451,7 +423,7 @@ void PathPlanningClass::__create_Path_used_weight()
     {
         geometry_msgs::PoseStamped robot_pose;
         robot_pose.header = header_;
-        robot_pose.header.frame_id = FRAME_ID_ROBOT_BASE;
+        robot_pose.header.frame_id = frame_id_robot_base_;
         
         double J_min;
         if (index > -1)
@@ -566,7 +538,7 @@ void PathPlanningClass::__create_Path_used_weight()
     {
         // nav_msgs::Path world_path;
         // world_path.header = header_;
-        // world_path.header.frame_id = FRAME_ID_GLOBAL;
+        // world_path.header.frame_id = frame_id_global_;
         // for (int i = 0; i <= index; i++)
         // {
         //     geometry_msgs::PoseStamped world_pose, target_point;
@@ -607,7 +579,7 @@ void PathPlanningClass::__create_Path()
     nav_msgs::Path robot_path;
     robot_path.header = header_;
     // robot_path.header.stamp = ros::Time(0);
-    robot_path.header.frame_id = FRAME_ID_ROBOT_BASE;
+    robot_path.header.frame_id = frame_id_robot_base_;
 
     double center_x = 0;
     double center_y = 0;
@@ -619,7 +591,7 @@ void PathPlanningClass::__create_Path()
         geometry_msgs::PoseStamped robot_pose;
         robot_pose.header = header_;
         // robot_pose.header.stamp = ros::Time(0);
-        robot_pose.header.frame_id = FRAME_ID_ROBOT_BASE;
+        robot_pose.header.frame_id = frame_id_robot_base_;
         
         double J_min;
         if (index > -1)
@@ -938,7 +910,7 @@ bool PathPlanningClass::__PathCollision()
         try 
         {
             // ロボット座標系の障害物を世界座標系に変換
-            transform = tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, obstacles[i].header.frame_id, obstacles[i].header.stamp);
+            transform = tf_buffer_.lookupTransform(frame_id_global_, obstacles[i].header.frame_id, obstacles[i].header.stamp);
             tf2::doTransform(obstacles[i].pose.pose, world_obslacle_pose, transform);
         }
         catch (tf2::TransformException &ex) 

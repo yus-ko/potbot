@@ -1,4 +1,0 @@
-<launch>
-        <arg name="RVIZ_FILE" default="$(find potbot_description)/rviz/Localization.rviz"/>
-        <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(arg RVIZ_FILE)"/>
-</launch>

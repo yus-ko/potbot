@@ -1,16 +1,5 @@
 #include<potbot_pcl/Clustering3D.h>
 
-void Clustering3DClass::mainloop()
-{
-    ros::Rate loop_rate(10);
-	while (ros::ok())
-	{
-        
-        loop_rate.sleep();
-		ros::spinOnce();
-	}
-}
-
 void Clustering3DClass::__DownSampling()
 {
     //データセットのダウンサンプリング
@@ -278,8 +267,3 @@ void Clustering3DClass::__EuclideanClustering()
 
     // ROS_INFO("clustering time [s] = %f", ros::Time::now().toSec() - time_start);
 }
-
-// void Clustering3DClass::publishPathPlan()
-// {
-//     pub_PP.publish(robot_path_);
-// }

@@ -19,13 +19,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(state_estimation
-  src/constructor.cpp
-  src/methods.cpp
-  src/debug_main.cpp
-  src/callback.cpp
-  src/property.cpp
-)
+add_executable(state_estimation src/state_estimation.cpp)
 target_link_libraries(state_estimation ${catkin_LIBRARIES})
 
 add_executable(2dscan_clustering src/2dscan_clustering.cpp)

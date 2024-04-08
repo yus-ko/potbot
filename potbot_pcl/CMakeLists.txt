@@ -28,9 +28,7 @@ target_link_libraries(  ${PROJECT_NAME}_tutorial ${catkin_LIBRARIES} ${PCL_LIBRA
 #add_executable(         ${PROJECT_NAME}_tutorial2 src/main.cpp)
 #target_link_libraries(  ${PROJECT_NAME}_tutorial2 ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
-add_executable(         ${PROJECT_NAME}_cl3d src/constructor.cpp src/debug_main.cpp src/methods.cpp src/property.cpp src/callback.cpp)
+add_executable(         ${PROJECT_NAME}_cl3d src/pcl_node.cpp src/pcl_method.cpp)
 target_link_libraries(  ${PROJECT_NAME}_cl3d ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
-
 
 add_definitions(-std=c++14)

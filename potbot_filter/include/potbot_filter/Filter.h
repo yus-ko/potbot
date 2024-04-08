@@ -149,10 +149,10 @@ class FilterClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub_;
-		ros::Subscriber sub_obstacle_, sub_scan_;
+		ros::Subscriber sub_obstacle_;
         //送信データ
         ros::NodeHandle nhPub_;
-		ros::Publisher pub_state_, pub_scan0_, pub_scan1_, pub_state_markers_, pub_obstacles_scan_, pub_obstacles_pcl_;
+		ros::Publisher pub_state_, pub_state_markers_, pub_obstacles_scan_, pub_obstacles_pcl_;
 
         visualization_msgs::MarkerArray obstacles_;
         std::vector<KalmanFilter> states_;
@@ -161,20 +161,11 @@ class FilterClass{
 		sensor_msgs::LaserScan scan_;
         std::vector<sensor_msgs::LaserScan> scans_;
 
-        double SIGMA_P, SIGMA_Q, SIGMA_R;
+        double sigma_p_, sigma_q_, sigma_r_;
 
-        // void __obstacle_callback(const visualization_msgs::MarkerArray& msg);
 		void __obstacle_callback(const potbot_msgs::ObstacleArray& msg);
-		void __scan_callback(const sensor_msgs::LaserScan& msg);
 
     public:
         FilterClass();
         ~FilterClass();
-        void __get_param();//launchファイルから書き込み
-        
-        void mainloop();
-
-        void manage();
-        void filter();
-        
 };

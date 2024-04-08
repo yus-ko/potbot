@@ -36,8 +36,6 @@ class PathPlanningClass{
 
         nav_msgs::Odometry odom_;
 
-        int path_planning_id_ = potbot_lib::POTENTIAL_METHOD;
-
         double max_path_length_ = 6.0;
         double potential_field_resolution_ = 0.05;
         size_t potential_field_rows_ = 240;
@@ -64,8 +62,7 @@ class PathPlanningClass{
         dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig> server_;
   	    dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig>::CallbackType f_;
 
-        std::string PATH_PLANNING_METHOD, PATH_PLANNING_FILE, FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, TOPIC_ODOM, TOPIC_GOAL;
-        double TARGET_POSITION_X, TARGET_POSITION_Y, TARGET_POSITION_YAW;
+        std::string frame_id_global_, frame_id_robot_base_, topic_odom_, topic_goal_;
         
         void __odom_callback(const nav_msgs::Odometry& msg);
         void __param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level);

@@ -68,9 +68,9 @@ class scan2dClass{
 		dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig> server_;
   	    dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig>::CallbackType f_;
 
-		std::string FRAME_ID_GLOBAL = "map";
-		std::string FRAME_ID_ROBOT_BASE = "base_link";
-		std::string TOPIC_SCAN = "scan";
+		std::string frame_id_global_ = "map";
+		std::string frame_id_robot_base_ = "base_link";
+		std::string topic_scan_ = "scan";
 
 		void __param_callback(const potbot_msgs::ClusteringConfig& param, uint32_t level);
 		void __scan_callback(const sensor_msgs::LaserScan::ConstPtr msg);

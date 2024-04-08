@@ -4,13 +4,6 @@
 int main(int argc,char **argv){
 	ros::init(argc,argv,"potbot_fi");
 
-	ros::NodeHandle nh("~");
-	double default_param = 20.0;
-	// nh.param<double>("SIGMA/P", default_param, 10.0);
-	// nh.getParam("SIGMA/A", default_param);
-	nh.param<double>("SIGMA/B", default_param, 30.0);
-	std::cout<<default_param<<std::endl;
-
     scan2dClass s2d;
 	s2d.mainloop();
 	
@@ -21,9 +14,9 @@ scan2dClass::scan2dClass()
 {
 	__get_param();
 	
-	sub_scan_						= nhSub_.subscribe(TOPIC_SCAN,							1,&scan2dClass::__scan_callback,this);
+	sub_scan_						= nhSub_.subscribe(topic_scan_,							1,&scan2dClass::__scan_callback,this);
 	
-	pub_scan_filter_				= nhPub_.advertise<sensor_msgs::LaserScan>(				TOPIC_SCAN+"/filter", 1);
+	pub_scan_filter_				= nhPub_.advertise<sensor_msgs::LaserScan>(				topic_scan_+"/filter", 1);
 	pub_segment_					= nhPub_.advertise<visualization_msgs::MarkerArray>(	"segment", 1);
 	pub_obstacles_scan_clustering_	= nhPub_.advertise<potbot_msgs::ObstacleArray>(			"obstacle/scan/clustering", 1);
 
@@ -31,26 +24,14 @@ scan2dClass::scan2dClass()
 	server_.setCallback(f_);
 
 	static tf2_ros::TransformListener tfListener(tf_buffer_);
-	while (true)
-	{
-		try
-		{
-			tf_buffer_.lookupTransform(FRAME_ID_GLOBAL, FRAME_ID_ROBOT_BASE, ros::Time(0), ros::Duration(60));
-			break;
-		}
-		catch (tf2::TransformException &ex) 
-		{
-			ROS_WARN("tf unavailable: %s", ex.what());
-		}
-	}
 }
 
 void scan2dClass::__get_param()
 {
 	ros::NodeHandle n("~");
-	n.getParam("FRAME_ID/GLOBAL",       FRAME_ID_GLOBAL);
-    n.getParam("FRAME_ID/ROBOT_BASE",   FRAME_ID_ROBOT_BASE);
-    n.getParam("TOPIC/SCAN",            TOPIC_SCAN);
+	n.getParam("frame_id_global",       frame_id_global_);
+    n.getParam("frame_id_robot_base",   frame_id_robot_base_);
+    n.getParam("topic_scan",            topic_scan_);
 }
 
 void scan2dClass::mainloop()
@@ -91,11 +72,11 @@ void scan2dClass::__scan_callback(const sensor_msgs::LaserScan::ConstPtr msg)
     scanclus.set_clusters(clusters_obstaclearray_scan);
 
     //クラスタをワールド座標系に変換して1時刻先の追跡用データにする
-    potbot_lib::utility::get_tf(tf_buffer_, clusters_obstaclearray_scan, FRAME_ID_GLOBAL, clusters_obstaclearray_pre);
+    potbot_lib::utility::get_tf(tf_buffer_, clusters_obstaclearray_scan, frame_id_global_, clusters_obstaclearray_pre);
 
     //クラスタをロボット座標系に変換
     potbot_msgs::ObstacleArray clusters_obstaclearray_robot;
-    potbot_lib::utility::get_tf(tf_buffer_, clusters_obstaclearray_scan, FRAME_ID_ROBOT_BASE, clusters_obstaclearray_robot);
+    potbot_lib::utility::get_tf(tf_buffer_, clusters_obstaclearray_scan, frame_id_robot_base_, clusters_obstaclearray_robot);
 
     visualization_msgs::MarkerArray clusters_markerarray;
     scanclus.to_markerarray(clusters_markerarray);  //クラスタリング結果をvisualization_msgs::MarkerArray型に変換して取得
@@ -105,6 +86,7 @@ void scan2dClass::__scan_callback(const sensor_msgs::LaserScan::ConstPtr msg)
     pub_obstacles_scan_clustering_.publish(clusters_obstaclearray_robot);
     
     return;
+
 
 
     __Segmentation(scan_, segments);
@@ -117,7 +99,7 @@ void scan2dClass::__scan_callback(const sensor_msgs::LaserScan::ConstPtr msg)
     visualization_msgs::MarkerArray seg;
     potbot_msgs::ObstacleArray obstacle_array_msg;
     obstacle_array_msg.header = scan_.header;
-    obstacle_array_msg.header.frame_id = FRAME_ID_ROBOT_BASE;
+    obstacle_array_msg.header.frame_id = frame_id_robot_base_;
     std::vector<int> ids;
     ids.reserve(segments.size()); // 適切なサイズを確保
     // transformを使用してidsベクトルにidだけを取り出す
@@ -186,8 +168,6 @@ void scan2dClass::__scan_callback(const sensor_msgs::LaserScan::ConstPtr msg)
             
         }
         seg.markers.push_back(point);
-
-
 
         geometry_msgs::PoseStamped segment_scan;
         potbot_msgs::Obstacle obstacle_msg;
@@ -409,7 +389,7 @@ void scan2dClass::__AssociateSegments(std::vector<SEGMENT> &segments)
 		geometry_msgs::PoseStamped segment_scan;
 		segment_scan.header = scan_.header;
 		segment_scan.pose = potbot_lib::utility::get_Pose(segment.x, segment.y, 0,0,0,0);
-		geometry_msgs::Pose segment_pose_global = potbot_lib::utility::get_tf(tf_buffer_, segment_scan, FRAME_ID_GLOBAL).pose;
+		geometry_msgs::Pose segment_pose_global = potbot_lib::utility::get_tf(tf_buffer_, segment_scan, frame_id_global_).pose;
 
 		SEGMENT segment_global;
 		segment_global.height = segment.height;
