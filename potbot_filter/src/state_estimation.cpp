@@ -77,10 +77,10 @@ void FilterClass::__obstacle_callback(const potbot_msgs::ObstacleArray& msg)
 {
     potbot_msgs::ObstacleArray obstacle_array = msg;
     static std::vector<int> ukf_id;
-    //ROS_INFO("__obstacle_callback");
+    
     if (obstacle_array.data.empty()) return;
 
-    double t_now = obstacle_array.header.stamp.toSec();  //markers配列のサイズが0のときの例外処理を追加する
+    double t_now = obstacle_array.header.stamp.toSec();
     // double t_now = ros::Time::now().toSec();
     static double t_pre = t_now;
     double dt = t_now-t_pre;

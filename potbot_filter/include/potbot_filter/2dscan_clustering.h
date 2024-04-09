@@ -75,8 +75,6 @@ class scan2dClass{
 		void __param_callback(const potbot_msgs::ClusteringConfig& param, uint32_t level);
 		void __scan_callback(const sensor_msgs::LaserScan::ConstPtr msg);
 
-		void __get_param();
-
 		double __Median(std::vector<double> v);
         void __MedianFilter(sensor_msgs::LaserScan &scan);
         void __Segmentation(sensor_msgs::LaserScan &scan, std::vector<SEGMENT> &segments);
@@ -87,7 +85,5 @@ class scan2dClass{
     public:
         scan2dClass();
         ~scan2dClass(){};
-        
-        void mainloop();
         
 };

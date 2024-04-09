@@ -15,6 +15,7 @@ mv ~/.gazebo/models/gazebo_models/* ~/.gazebo/models/ & sudo rm -r ~/.gazebo/mod
 cd ~/catkin_ws/src
 git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs
 git clone https://github.com/ROBOTIS-GIT/turtlebot3
+git clone https://github.com/yus-ko/potbot_core
 git clone https://github.com/yus-ko/potbot
 ```
 ```bash

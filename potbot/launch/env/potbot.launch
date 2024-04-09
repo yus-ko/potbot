@@ -1,84 +1,85 @@
 <launch>
-  <arg name="use_rviz"                    default="true"/>
-  <arg name="publish_control_command"     default="true"/>
-  <arg name="frame_id_global"                              default="map"/>
-  <arg name="frame_id_robot_base"                          default="base_footprint"/>
-  <arg name="topic_scan"                  default="scan"/>
-  <arg name="topic_odom"                  default="odom"/>
-  <arg name="topic_cmd"                   default="cmd_vel"/>
-  <arg name="topic_goal"                  default="/move_base_simple/goal"/>
-  <arg name="topic_pcl2"                  default="realsense/depth/points"/>
-  <arg name="clustering_method"           default="Euclidean"/>
-  <arg name="file_rviz"                   default="$(find potbot_description)/rviz/waffle_pi.rviz"/>
-  <arg name="distance_to_lookahead_point" default="0.3"/>
-  <arg name="gain_p"                      default="1.0"/>
-  <arg name="gain_i"                      default="0.1"/>
-  <arg name="gain_d"                      default="0.001"/>
-  <arg name="stop_margin_angle"           default="0.2"/>
-  <arg name="stop_margin_distance"        default="0.05"/>
-  <arg name="max_linear_velocity"         default="0.3"/>
-  <arg name="max_angular_velocity"        default="0.3"/>
-  <arg name="potential_field_rows"                         default="120"/>
-  <arg name="potential_field_cols"                         default="120"/>
-  <arg name="potential_field_resolution"                   default="0.05"/>
-  <arg name="weight_attraction_field"                      default="0.1"/>
-  <arg name="weight_repulsion_field"                       default="0.1"/>
-  <arg name="distance_threshold_repulsion_field"           default="0.5"/>
-  <arg name="max_path_length"                              default="6.0"/>
-  <arg name="path_search_range"                            default="1"/>
-  <arg name="weight_potential_field"                       default="1.0"/>
-  <arg name="weight_angle"                                 default="0.2"/>
-  <arg name="collision_count_to_replanning"                default="10"/>
-  <arg name="hit_distance_to_replanning"                   default="0.1"/>
+  <arg name="use_rviz"                                      default="true"/>
+  <arg name="publish_control_command"                       default="true"/>
+  <arg name="frame_id_global"                               default="map"/>
+  <arg name="frame_id_robot_base"                           default="base_footprint"/>
+  <arg name="topic_scan"                                    default="scan"/>
+  <arg name="topic_odom"                                    default="odom"/>
+  <arg name="topic_cmd"                                     default="cmd_vel"/>
+  <arg name="topic_goal"                                    default="/move_base_simple/goal"/>
+  <arg name="topic_pcl2"                                    default="realsense/depth/points"/>
+  <arg name="clustering_method"                             default="Euclidean"/>
+  <arg name="file_rviz"                                     default="$(find potbot_description)/rviz/waffle_pi.rviz"/>
+  <arg name="distance_to_lookahead_point"                   default="0.3"/>
+  <arg name="gain_p"                                        default="1.0"/>
+  <arg name="gain_i"                                        default="0.1"/>
+  <arg name="gain_d"                                        default="0.001"/>
+  <arg name="stop_margin_angle"                             default="0.2"/>
+  <arg name="stop_margin_distance"                          default="0.05"/>
+  <arg name="max_linear_velocity"                           default="0.3"/>
+  <arg name="max_angular_velocity"                          default="0.3"/>
+  <arg name="potential_field_rows"                          default="120"/>
+  <arg name="potential_field_cols"                          default="120"/>
+  <arg name="potential_field_resolution"                    default="0.05"/>
+  <arg name="weight_attraction_field"                       default="0.1"/>
+  <arg name="weight_repulsion_field"                        default="0.1"/>
+  <arg name="distance_threshold_repulsion_field"            default="0.5"/>
+  <arg name="max_path_length"                               default="6.0"/>
+  <arg name="path_search_range"                             default="1"/>
+  <arg name="weight_potential_field"                        default="1.0"/>
+  <arg name="weight_angle"                                  default="0.2"/>
+  <arg name="collision_count_to_replanning"                 default="10"/>
+  <arg name="hit_distance_to_replanning"                    default="0.1"/>
 
   <group ns="potbot">
 
     <include file="$(find potbot_controller)/launch/Controller.launch">
-      <arg name="publish_control_command"                 value="$(arg publish_control_command)"/>
-      <arg name="distance_to_lookahead_point"             value="$(arg distance_to_lookahead_point)"/>
-      <arg name="max_linear_velocity"                     value="$(arg max_linear_velocity)"/>
-      <arg name="max_angular_velocity"                    value="$(arg max_angular_velocity)"/>
-      <arg name="topic_odom"                              value="$(arg topic_odom)"/>
-      <arg name="topic_cmd"                               value="$(arg topic_cmd)"/>
-      <arg name="topic_goal"                              value="$(arg topic_goal)"/>
-      <arg name="gain_p"                                  value="$(arg gain_p)"/>
-      <arg name="gain_i"                                  value="$(arg gain_i)"/>
-      <arg name="gain_d"                                  value="$(arg gain_d)"/>
-      <arg name="stop_margin_angle"                       value="$(arg stop_margin_angle)"/>
-      <arg name="stop_margin_distance"                    value="$(arg stop_margin_distance)"/>
+      <arg name="publish_control_command"                   value="$(arg publish_control_command)"/>
+      <arg name="distance_to_lookahead_point"               value="$(arg distance_to_lookahead_point)"/>
+      <arg name="max_linear_velocity"                       value="$(arg max_linear_velocity)"/>
+      <arg name="max_angular_velocity"                      value="$(arg max_angular_velocity)"/>
+      <arg name="topic_odom"                                value="$(arg topic_odom)"/>
+      <arg name="topic_cmd"                                 value="$(arg topic_cmd)"/>
+      <arg name="topic_goal"                                value="$(arg topic_goal)"/>
+      <arg name="gain_p"                                    value="$(arg gain_p)"/>
+      <arg name="gain_i"                                    value="$(arg gain_i)"/>
+      <arg name="gain_d"                                    value="$(arg gain_d)"/>
+      <arg name="stop_margin_angle"                         value="$(arg stop_margin_angle)"/>
+      <arg name="stop_margin_distance"                      value="$(arg stop_margin_distance)"/>
     </include>
 
     <include file="$(find potbot_filter)/launch/Filter.launch">
-      <arg name="frame_id_global"                         value="$(arg frame_id_global)"/>
-      <arg name="frame_id_robot_base"                     value="$(arg frame_id_robot_base)"/>
-      <arg name="topic_scan"                              value="$(arg topic_scan)"/>
+      <arg name="frame_id_global"                           value="$(arg frame_id_global)"/>
+      <arg name="frame_id_robot_base"                       value="$(arg frame_id_robot_base)"/>
+      <arg name="topic_scan"                                value="$(arg topic_scan)"/>
     </include>
     
     <include file="$(find potbot_pathplanner)/launch/PathPlanning.launch">
-      <arg name="frame_id_global"                         value="$(arg frame_id_global)"/>
-      <arg name="frame_id_robot_base"                     value="$(arg frame_id_robot_base)"/>
-      <arg name="topic_odom"                              value="$(arg topic_odom)"/>
-      <arg name="topic_goal"                              value="$(arg topic_goal)"/>
-      <arg name="potential_field_rows"                    value="$(arg potential_field_rows)"/>
-      <arg name="potential_field_cols"                    value="$(arg potential_field_cols)"/>
-      <arg name="potential_field_resolution"              value="$(arg potential_field_resolution)"/>
-      <arg name="weight_attraction_field"                 value="$(arg weight_attraction_field)"/>
-      <arg name="weight_repulsion_field"                  value="$(arg weight_repulsion_field)"/>
-      <arg name="distance_threshold_repulsion_field"      value="$(arg distance_threshold_repulsion_field)"/>
-      <arg name="max_path_length"                         value="$(arg max_path_length)"/>
-      <arg name="path_search_range"                       value="$(arg path_search_range)"/>
-      <arg name="weight_potential_field"                  value="$(arg weight_potential_field)"/>
-      <arg name="weight_angle"                            value="$(arg weight_angle)"/>
-      <arg name="collision_count_to_replanning"           value="$(arg collision_count_to_replanning)"/>
-      <arg name="hit_distance_to_replanning"              value="$(arg hit_distance_to_replanning)"/>
+      <arg name="frame_id_global"                           value="$(arg frame_id_global)"/>
+      <arg name="frame_id_robot_base"                       value="$(arg frame_id_robot_base)"/>
+      <arg name="topic_odom"                                value="$(arg topic_odom)"/>
+      <arg name="topic_goal"                                value="$(arg topic_goal)"/>
+      <arg name="potential_field_rows"                      value="$(arg potential_field_rows)"/>
+      <arg name="potential_field_cols"                      value="$(arg potential_field_cols)"/>
+      <arg name="potential_field_resolution"                value="$(arg potential_field_resolution)"/>
+      <arg name="weight_attraction_field"                   value="$(arg weight_attraction_field)"/>
+      <arg name="weight_repulsion_field"                    value="$(arg weight_repulsion_field)"/>
+      <arg name="distance_threshold_repulsion_field"        value="$(arg distance_threshold_repulsion_field)"/>
+      <arg name="max_path_length"                           value="$(arg max_path_length)"/>
+      <arg name="path_search_range"                         value="$(arg path_search_range)"/>
+      <arg name="weight_potential_field"                    value="$(arg weight_potential_field)"/>
+      <arg name="weight_angle"                              value="$(arg weight_angle)"/>
+      <arg name="collision_count_to_replanning"             value="$(arg collision_count_to_replanning)"/>
+      <arg name="hit_distance_to_replanning"                value="$(arg hit_distance_to_replanning)"/>
     </include>
 
     <include file="$(find potbot_pcl)/launch/PCLClustering.launch">
-      <arg name="topic_pcl2"                              value="$(arg topic_pcl2)"/>
-      <arg name="clustering_method"                       value="$(arg clustering_method)"/>
+      <arg name="topic_pcl2"                                value="$(arg topic_pcl2)"/>
+      <arg name="clustering_method"                         value="$(arg clustering_method)"/>
     </include>
 
     <include file="$(find potbot_localmap)/launch/Localmap.launch">
+      <arg name="frame_id_robot_base"                       value="$(arg frame_id_robot_base)"/>
     </include>
   </group>
 

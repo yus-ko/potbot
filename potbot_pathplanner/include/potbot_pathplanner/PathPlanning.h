@@ -3,7 +3,6 @@
 #include <potbot_lib/PathPlanner.h>
 #include <potbot_msgs/StateArray.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/GridCells.h>
@@ -23,18 +22,16 @@ class PathPlanningClass{
         tf2_ros::Buffer tf_buffer_;
         
 		ros::NodeHandle nhSub;
-		ros::Subscriber sub_goal_, sub_local_map_, sub_odom_, sub_seg_, sub_state_, sub_run_;
+		ros::Subscriber sub_goal_, sub_local_map_, sub_seg_, sub_state_, sub_run_;
 
 		ros::NodeHandle nhPub;
         ros::Publisher pub_cmd_, pub_path_, pub_potential_, pub_attraction_field_, pub_repulsion_field_, pub_potential_field_;
 
-        std_msgs::Header header_;
+        potbot_lib::PathPlanner::APFPathPlanner* apf_;
 
         geometry_msgs::PoseStamped goal_;
 
         nav_msgs::OccupancyGrid local_map_;
-
-        nav_msgs::Odometry odom_;
 
         double max_path_length_ = 6.0;
         double potential_field_resolution_ = 0.05;
@@ -62,33 +59,21 @@ class PathPlanningClass{
         dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig> server_;
   	    dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig>::CallbackType f_;
 
-        std::string frame_id_global_, frame_id_robot_base_, topic_odom_, topic_goal_;
+        std::string frame_id_global_ = "map", frame_id_robot_base_ = "base_link", topic_goal_ = "/move_base_simple/goal";
         
-        void __odom_callback(const nav_msgs::Odometry& msg);
         void __param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level);
         void __segment_callback(const visualization_msgs::MarkerArray& msg);
         void __state_callback(const potbot_msgs::StateArray& msg);
         void __create_path_callback(const std_msgs::Empty& msg);
+        void __goal_callback(const geometry_msgs::PoseStamped& msg);
+        void __local_map_callback(const nav_msgs::OccupancyGrid& msg);
 
-        double __nCr(double n, double r);
-        void __bezier(nav_msgs::Path& points);
-
-        std::vector<nav_msgs::Odometry> __get_ObstacleList(int mode);
-        double __get_ShortestDistanceToObstacle(double x, double y, std::vector<geometry_msgs::Vector3> &obstacles);
-        int __get_PotentialFiledIndex(double x, double y);
+        std::vector<nav_msgs::Odometry> __get_ObstacleList();
         int __create_PotentialField();
         void __create_Path();
-        void __create_Path_used_weight();
         bool __PathCollision();
-
-        void run();
 
     public:
         PathPlanningClass();
         ~PathPlanningClass();
-
-        void goal_callback(const geometry_msgs::PoseStamped& msg);
-        void local_map_callback(const nav_msgs::OccupancyGrid& msg);
-
-        void publishPathPlan();
 };

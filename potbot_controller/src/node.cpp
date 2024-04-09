@@ -88,8 +88,11 @@ void ControllerClass::__param_callback(const potbot_msgs::ControllerConfig& para
 
 void ControllerClass::manage()
 {
-    if (!robot_path_.poses.empty()) controller();
-    if (publish_command_) __publishcmd();
+    if (!robot_path_.poses.empty())
+    {
+        controller();
+        if (publish_command_) __publishcmd();
+    }
 }
 
 void ControllerClass::controller()

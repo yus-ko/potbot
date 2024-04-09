@@ -1,18 +1,11 @@
 #include<potbot_filter/2dscan_clustering.h>
 
-
-int main(int argc,char **argv){
-	ros::init(argc,argv,"potbot_fi");
-
-    scan2dClass s2d;
-	s2d.mainloop();
-	
-	return 0;
-}
-
 scan2dClass::scan2dClass()
 {
-	__get_param();
+	ros::NodeHandle n("~");
+	n.getParam("frame_id_global",       frame_id_global_);
+    n.getParam("frame_id_robot_base",   frame_id_robot_base_);
+    n.getParam("topic_scan",            topic_scan_);
 	
 	sub_scan_						= nhSub_.subscribe(topic_scan_,							1,&scan2dClass::__scan_callback,this);
 	
@@ -24,19 +17,6 @@ scan2dClass::scan2dClass()
 	server_.setCallback(f_);
 
 	static tf2_ros::TransformListener tfListener(tf_buffer_);
-}
-
-void scan2dClass::__get_param()
-{
-	ros::NodeHandle n("~");
-	n.getParam("frame_id_global",       frame_id_global_);
-    n.getParam("frame_id_robot_base",   frame_id_robot_base_);
-    n.getParam("topic_scan",            topic_scan_);
-}
-
-void scan2dClass::mainloop()
-{
-	ros::spin();
 }
 
 void scan2dClass::__param_callback(const potbot_msgs::ClusteringConfig& param, uint32_t level)
@@ -74,16 +54,12 @@ void scan2dClass::__scan_callback(const sensor_msgs::LaserScan::ConstPtr msg)
     //クラスタをワールド座標系に変換して1時刻先の追跡用データにする
     potbot_lib::utility::get_tf(tf_buffer_, clusters_obstaclearray_scan, frame_id_global_, clusters_obstaclearray_pre);
 
-    //クラスタをロボット座標系に変換
-    potbot_msgs::ObstacleArray clusters_obstaclearray_robot;
-    potbot_lib::utility::get_tf(tf_buffer_, clusters_obstaclearray_scan, frame_id_robot_base_, clusters_obstaclearray_robot);
-
     visualization_msgs::MarkerArray clusters_markerarray;
     scanclus.to_markerarray(clusters_markerarray);  //クラスタリング結果をvisualization_msgs::MarkerArray型に変換して取得
     for (auto& clus : clusters_markerarray.markers) clus.header = scan_.header;
 
     pub_segment_.publish(clusters_markerarray);
-    pub_obstacles_scan_clustering_.publish(clusters_obstaclearray_robot);
+    pub_obstacles_scan_clustering_.publish(clusters_obstaclearray_pre);
     
     return;
 
@@ -436,4 +412,13 @@ void scan2dClass::__AssociateSegments(std::vector<SEGMENT> &segments)
         }
     }
     segments_pre = segments_global;
+}
+
+int main(int argc,char **argv){
+	ros::init(argc,argv,"potbot_fi");
+
+    scan2dClass s2d;
+	ros::spin();
+	
+	return 0;
 }

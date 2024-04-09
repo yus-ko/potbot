@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Scan Raw
+    SyncSource: potential
   - Class: rviz/Help
     Name: Help
 Preferences:
@@ -435,13 +435,13 @@ Visualization Manager:
       Enabled: true
       Name: Potential Field
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: potbot/state/marker
       Name: EstimatedState
       Namespaces:
-        segments/centor: true
+        {}
       Queue Size: 1
-      Value: true
+      Value: false
     - Class: rviz/Group
       Displays:
         - Class: rviz/MarkerArray

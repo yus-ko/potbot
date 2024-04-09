@@ -14,7 +14,7 @@
     </node>
 
     <node pkg="potbot_filter" name="scan2d_clustering" type="2dscan_clustering" output="screen">
-        <param name="frame_id_global"               value="$(arg frame_id_global)"/>
+        <param name="frame_id_global"               value="robot_0/odom"/>
         <param name="frame_id_robot_base"           value="$(arg frame_id_robot_base)"/>
         <param name="topic_scan"                    value="$(arg topic_scan)"/>
     </node>

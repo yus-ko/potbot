@@ -3,6 +3,9 @@
 LocalmapClass::LocalmapClass()
 {
 
+    ros::NodeHandle n("~");
+    n.getParam("frame_id_robot_base",           frame_id_robot_base_);
+
 	sub_obstacles_scan_	= nhSub_.subscribe("obstacle/scan/estimate",1,&LocalmapClass::__obstacles_scan_callback,this);
 	sub_obstacles_pcl_	= nhSub_.subscribe("obstacle/pcl",1,&LocalmapClass::__obstacles_pcl_callback,this);
 
@@ -10,6 +13,8 @@ LocalmapClass::LocalmapClass()
 
 	f_ = boost::bind(&LocalmapClass::__param_callback, this, _1, _2);
 	server_.setCallback(f_);
+
+    static tf2_ros::TransformListener tfListener(tf_buffer_);
 	
 }
 
@@ -25,9 +30,11 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
     local_map.info.height           = 240;
     local_map.info.resolution       = 0.05;
 
+    geometry_msgs::PoseStamped robot_pose = potbot_lib::utility::get_Pose_from_tf(tf_buffer_, local_map.header.frame_id, frame_id_robot_base_);
+
     geometry_msgs::Pose origin;
-    origin.position.x               = -(local_map.info.width*local_map.info.resolution/2.0);
-    origin.position.y               = -(local_map.info.height*local_map.info.resolution/2.0);
+    origin.position.x               = robot_pose.pose.position.x - (local_map.info.width*local_map.info.resolution/2.0);
+    origin.position.y               = robot_pose.pose.position.y - (local_map.info.height*local_map.info.resolution/2.0);
     local_map.info.origin           = origin;
     
     int mapsize                     = local_map.info.width*local_map.info.height;
@@ -42,8 +49,6 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
         double width                = obstacle.scale.y; //障害物の幅
         double depth                = obstacle.scale.x; //障害物の奥行き
         double size                 = width + depth;
-
-        // ROS_INFO("size:%f",size);
 
         if (size < apply_cluster_to_localmap_)
         {
@@ -76,7 +81,7 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
         }
         
     }
-
+    
     pub_localmap_.publish(local_map);
 }
 
