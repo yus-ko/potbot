@@ -25,12 +25,12 @@ catkin build turtlebot3 potbot
 
 # 起動方法
 
+gazebo環境
 ```bash
 roslaunch potbot turtlebot3_with_willowgarage.launch
 ```
-gazebo環境
 
+ナビゲーションプログラムの起動
 ```bash
 roslaunch potbot demo.launch
 ```
-ナビゲーションプログラムの起動
