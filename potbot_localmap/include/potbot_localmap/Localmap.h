@@ -22,8 +22,6 @@ class LocalmapClass{
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_localmap_;
 
-        tf2_ros::TransformBroadcaster broadcaster_;
-
         potbot_msgs::ObstacleArray obstacles_scan_, obstacles_pcl_;
 
         dynamic_reconfigure::Server<potbot_msgs::LocalmapConfig> server_;

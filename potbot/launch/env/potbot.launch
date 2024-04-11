@@ -74,6 +74,7 @@
     </include>
 
     <include file="$(find potbot_pcl)/launch/PCLClustering.launch">
+      <arg name="frame_id_global"                           value="$(arg frame_id_global)"/>
       <arg name="topic_pcl2"                                value="$(arg topic_pcl2)"/>
       <arg name="clustering_method"                         value="$(arg clustering_method)"/>
     </include>

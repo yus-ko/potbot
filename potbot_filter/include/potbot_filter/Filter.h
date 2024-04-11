@@ -149,21 +149,22 @@ class FilterClass{
         
         //センサーデータ
 		ros::NodeHandle nhSub_;
-		ros::Subscriber sub_obstacle_;
+		ros::Subscriber sub_obstacle_scan_, sub_obstacle_pcl_;
         //送信データ
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_state_, pub_state_markers_, pub_obstacles_scan_, pub_obstacles_pcl_;
 
         visualization_msgs::MarkerArray obstacles_;
         std::vector<KalmanFilter> states_;
-		std::vector<potbot_lib::UnscentedKalmanFilter> states_ukf_;
+		std::vector<potbot_lib::UnscentedKalmanFilter> states_ukf_scan_, states_ukf_pcl_;
         
 		sensor_msgs::LaserScan scan_;
         std::vector<sensor_msgs::LaserScan> scans_;
 
         double sigma_p_, sigma_q_, sigma_r_;
 
-		void __obstacle_callback(const potbot_msgs::ObstacleArray& msg);
+		void __obstacle_scan_callback(const potbot_msgs::ObstacleArray& msg);
+		void __obstacle_pcl_callback(const potbot_msgs::ObstacleArray& msg);
 
     public:
         FilterClass();

@@ -1,9 +1,11 @@
 <launch>
+   <arg name="frame_id_global"               default="frame_id_global"/>
    <arg name="topic_pcl2"                    default="mynteye/points/data_raw"/>
    <arg name="clustering_method"             default="Euclidean"/>
    <!-- Euclidean SuperVoxel -->
    
    <node pkg="potbot_pcl" name="pcl_cl3d" type="potbot_pcl_cl3d" output="screen">
+      <param name="frame_id_global"          value="$(arg frame_id_global)"/>
       <param name="topic_pcl2"               value="$(arg topic_pcl2)"/>
       <param name="clustering_method"        value="$(arg clustering_method)"/>
    </node>

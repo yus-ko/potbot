@@ -1,8 +1,6 @@
 //include haeders
 #include <potbot_lib/Utility.h>
 #include <potbot_lib/ScanClustering.h>
-#include <potbot_msgs/State.h>
-#include <potbot_msgs/StateArray.h>
 #include <potbot_msgs/ObstacleArray.h>
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -43,21 +41,18 @@ typedef struct {
 				bool is_moving=false;
                } SEGMENT;
 
-//クラスの定義
 class scan2dClass{
 
     private:
         
-        //センサーデータ
 		ros::NodeHandle nhSub_;
 		ros::Subscriber sub_scan_;
-        //送信データ
+        
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_scan_filter_, pub_segment_, pub_obstacles_scan_clustering_;
 
         visualization_msgs::MarkerArray obstacles_;
 
-        //tf::TransformListener tflistener;
         tf2_ros::Buffer tf_buffer_;
         
 		sensor_msgs::LaserScan scan_;

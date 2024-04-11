@@ -6,8 +6,6 @@ Panels:
       Expanded:
         - /TF1/Frames1
         - /Robot1/Shape1
-        - /Segments1/Namespaces1
-        - /Potential Field1/potential1
       Splitter Ratio: 0.4882352948188782
     Tree Height: 745
   - Class: rviz/Selection
@@ -103,6 +101,14 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        camera_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         camera_link:
           Alpha: 1
           Show Axes: false
@@ -228,7 +234,7 @@ Visualization Manager:
       Marker Topic: potbot/LookAhead
       Name: LooKAheadPoint
       Namespaces:
-        {}
+        LookAhead: true
       Queue Size: 1
       Value: true
     - Alpha: 0.6000000238418579
@@ -310,7 +316,7 @@ Visualization Manager:
       Name: Segments
       Namespaces:
         {}
-      Queue Size: 100
+      Queue Size: 1
       Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -335,14 +341,14 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: mynteye/points/data_raw
+      Topic: camera/depth/points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
     - Class: rviz/Group
       Displays:
-        - Alpha: 0.5
+        - Alpha: 0.20000000298023224
           Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
             Max Value: 10
@@ -372,7 +378,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: true
-        - Alpha: 0.5
+        - Alpha: 0.20000000298023224
           Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
             Max Value: 10
@@ -402,7 +408,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
-        - Alpha: 0.5
+        - Alpha: 0.20000000298023224
           Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
             Max Value: 10
@@ -449,7 +455,8 @@ Visualization Manager:
           Marker Topic: potbot/filtered_pcl
           Name: Cluster
           Namespaces:
-            {}
+            Euclidean/centor: true
+            Euclidean/points: true
           Queue Size: 1
           Value: true
         - Alpha: 1
@@ -508,7 +515,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
-      Enabled: false
+      Enabled: true
       Name: 3DCluster
     - Class: rviz/Group
       Displays:
@@ -597,11 +604,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 95.94174194335938
+      Scale: 67.92044830322266
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 1.809348702430725
-      Y: 1.8447977304458618
+      X: 3.640709161758423
+      Y: 4.971010208129883
     Saved:
       - Class: rviz/Orbit
         Distance: 10.191848754882812

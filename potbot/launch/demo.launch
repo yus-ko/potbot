@@ -16,19 +16,15 @@
   <arg name="topic_cmd"                   default="/$(arg multi_robot)/cmd_vel"/>
   <arg name="topic_goal"                  default="/$(arg multi_robot)/goal"/>
   <arg name="topic_initial_pose"          default="/$(arg multi_robot)/initialpose"/>
-  <arg name="topic_pcl2"                  default="/$(arg multi_robot)/realsense/depth/points"/>
+  <arg name="topic_pcl2"                  default="/$(arg multi_robot)/camera/depth/points"/>
   <arg name="clustering_method"           default="Euclidean"/>
-  <arg name="file_urdf"                   default="$(find turtlebot3_description)/urdf/turtlebot3_waffle_pi.urdf.xacro"/>
+  <arg name="file_urdf"                   default="$(find turtlebot3_description)/urdf/turtlebot3_waffle.urdf.xacro"/>
   <arg name="file_map"                    default="$(find potbot_description)/maps/garage.yaml"/>
   <arg name="file_fusion"                 default="$(find potbot_description)/config/waffle_pi_robot_localization.yaml"/>
-  <arg name="file_rviz"                   default="$(find potbot_description)/rviz/waffle_pi.rviz"/>
+  <arg name="file_rviz"                   default="$(find potbot_description)/rviz/waffle.rviz"/>
 
   <group ns="$(arg multi_robot)">
 
-    <include file="$(find potbot)/launch/env/remote.launch">
-      <arg name="urdf_file"               default="$(find xacro)/xacro --inorder '$(arg file_urdf)'"/>
-      <arg name="multi_robot_name"        value="$(arg multi_robot)"/>
-    </include>
 
     <node pkg="tf" type="static_transform_publisher" name="map_tf" args="0 0 0 0 0 0 $(arg frame_id_global) $(arg frame_id_odom) 100" />
     <!-- <include file="$(find potbot)/launch/env/amcl.launch">

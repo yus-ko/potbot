@@ -11,8 +11,6 @@ PathPlanningClass::PathPlanningClass()
 	sub_goal_ 		= nhSub.subscribe(topic_goal_,      1, &PathPlanningClass::__goal_callback, this);
 	sub_local_map_	= nhSub.subscribe("Localmap",       1, &PathPlanningClass::__local_map_callback, this);
 	sub_run_		= nhSub.subscribe("create_path",    1, &PathPlanningClass::__create_path_callback, this);
-	sub_seg_		= nhSub.subscribe("segment",        1, &PathPlanningClass::__segment_callback, this);
-	sub_state_		= nhSub.subscribe("state",          1,&PathPlanningClass::__state_callback,this);
 	
 	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 	pub_path_			    = nhPub.advertise<nav_msgs::Path>("Path", 1);
@@ -57,16 +55,6 @@ void PathPlanningClass::__local_map_callback(const nav_msgs::OccupancyGrid& msg)
     {
         hit_count_ = 0;
     }
-}
-
-void PathPlanningClass::__segment_callback(const visualization_msgs::MarkerArray& msg)
-{
-    obstacles_ = msg;
-}
-
-void PathPlanningClass::__state_callback(const potbot_msgs::StateArray& msg)
-{
-    obstacle_state_ = msg;
 }
 
 void PathPlanningClass::__create_path_callback(const std_msgs::Empty& msg)

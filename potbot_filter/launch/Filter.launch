@@ -8,6 +8,7 @@
     
 
     <node pkg="potbot_filter" name="state_estimation" type="state_estimation" output="screen">
+        <!-- <remap from="obstacle/scan/clustering"      to="obstacle/pcl/clustering"/> -->
         <param name="sigma_p"                       value="$(arg sigma_p)"/>
         <param name="sigma_q"                       value="$(arg sigma_q)"/>    
         <param name="sigma_r"                       value="$(arg sigma_r)"/>    
