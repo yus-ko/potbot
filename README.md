@@ -5,33 +5,32 @@
 はじめに以下のコマンドで必要なパッケージをインストールしてください
  
 ```bash
-sudo apt install ros-melodic-gazebo-ros ros-melodic-gazebo-ros-control ros-melodic-ros-control ros-melodic-ros-controllers
-sudo apt install ros-melodic-gmapping ros-melodic-amcl ros-melodic-map-server ros-melodic-robot-localization
-mkdir ~/.gazebo/model
-cd ~/.gazebo/model
+sudo apt install ros-$ROS_DISTRO-gazebo-ros ros-$ROS_DISTRO-gazebo-ros-control ros-$ROS_DISTRO-ros-control ros-$ROS_DISTRO-ros-controllers
+sudo apt install ros-$ROS_DISTRO-gmapping ros-$ROS_DISTRO-amcl ros-$ROS_DISTRO-map-server ros-$ROS_DISTRO-robot-localization
+mkdir -p ~/.gazebo/models & cd ~/.gazebo/models
 git clone https://github.com/osrf/gazebo_models
+mv ~/.gazebo/models/gazebo_models/* ~/.gazebo/models/ & sudo rm -r ~/.gazebo/models/gazebo_models/
 ```
 ```bash
 cd ~/catkin_ws/src
-git clone https://github.com/vstoneofficial/megarover_samples
+git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs
 git clone https://github.com/ROBOTIS-GIT/turtlebot3
-# git clone -b melodic https://github.com/ros-perception/image_pipeline
-git clone https://github.com/yus-ko/multiple_robots_slam
+git clone https://github.com/yus-ko/potbot_core
+git clone https://github.com/yus-ko/potbot
+```
+```bash
+cd ~/catkin_ws
+catkin build turtlebot3 potbot
 ```
 
 # 起動方法
 
-**Localization.launch**
-- オドメトリ計算とセンサデータ処理(LRFのクラスタリング)
+gazebo環境
+```bash
+roslaunch potbot turtlebot3_with_willowgarage.launch
+```
 
-**Controller.launch**
-- ライン追従のための制御指令計算
-
-**PathPlanning.launch**
-- 人工ポテンシャル法による経路計画
-
-**Filter.launch**
-- アンセンテッドカルマンフィルタによる障害物に対する速度予測
-  
-**robot_0.launch**
-- 上記をまとめて起動
+ナビゲーションプログラムの起動
+```bash
+roslaunch potbot demo.launch
+```

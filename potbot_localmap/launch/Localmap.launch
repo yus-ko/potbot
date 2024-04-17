@@ -1,7 +1,7 @@
 <launch>
-    <!-- <arg name="ROBOT_NAME" default="turtlebot3"/> -->
+    <arg name="frame_id_robot_base" default="base_link"/>
 
-    <node pkg="potbot_localmap" name="potbot_localmap" type="potbot_localmap" output="screen">
-        <!-- <param name="ROBOT_NAME" value="$(arg ROBOT_NAME)"/> -->
+    <node pkg="potbot_localmap" name="localmap" type="potbot_localmap" output="screen">
+        <param name="frame_id_robot_base" value="$(arg frame_id_robot_base)"/>
     </node>
 </launch>

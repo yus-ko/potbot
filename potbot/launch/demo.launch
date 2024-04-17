@@ -1,0 +1,66 @@
+<launch>
+  <arg name="multi_robot"                 default="robot_0"/>
+  <arg name="use_rviz"                    default="true"/>
+  <arg name="publish_control_command"     default="true"/>
+  <arg name="frame_id_global"             default="map"/>
+  <arg name="frame_id_odom"               default="$(arg multi_robot)/odom"/>
+  <arg name="frame_id_base_footprint"     default="$(arg multi_robot)/base_footprint"/>
+  <arg name="frame_id_robot_base"         default="$(arg multi_robot)/base_link"/>
+  <arg name="initial_pose_x"              default="2"/>
+  <arg name="initial_pose_y"              default="6"/>
+  <arg name="initial_pose_yaw"            default="-1.57"/>
+  <arg name="max_linear_velocity"         default="0.2"/>
+  <arg name="max_angular_velocity"        default="1.0"/>
+  <arg name="topic_scan"                  default="/$(arg multi_robot)/scan"/>
+  <arg name="topic_odom"                  default="/$(arg multi_robot)/odom"/>
+  <arg name="topic_cmd"                   default="/$(arg multi_robot)/cmd_vel"/>
+  <arg name="topic_goal"                  default="/$(arg multi_robot)/goal"/>
+  <arg name="topic_initial_pose"          default="/$(arg multi_robot)/initialpose"/>
+  <arg name="topic_pcl2"                  default="/$(arg multi_robot)/camera/depth/points"/>
+  <arg name="clustering_method"           default="Euclidean"/>
+  <arg name="file_urdf"                   default="$(find turtlebot3_description)/urdf/turtlebot3_waffle.urdf.xacro"/>
+  <arg name="file_map"                    default="$(find potbot_description)/maps/garage.yaml"/>
+  <arg name="file_fusion"                 default="$(find potbot_description)/config/waffle_pi_robot_localization.yaml"/>
+  <arg name="file_rviz"                   default="$(find potbot_description)/rviz/waffle.rviz"/>
+
+  <group ns="$(arg multi_robot)">
+
+
+    <node pkg="tf" type="static_transform_publisher" name="map_tf" args="0 0 0 0 0 0 $(arg frame_id_global) $(arg frame_id_odom) 100" />
+    <!-- <include file="$(find potbot)/launch/env/amcl.launch">
+      <arg name="map_file"                value="$(arg file_map)"/>
+      <arg name="initial_pose_topic"      value="$(arg topic_initial_pose)"/>
+      <arg name="initial_pose_x"          value="$(arg initial_pose_x)"/>
+      <arg name="initial_pose_y"          value="$(arg initial_pose_y)"/>
+      <arg name="initial_pose_a"          value="$(arg initial_pose_yaw)"/>
+      <arg name="odom_frame_id"           value="$(arg frame_id_odom)"/>
+      <arg name="base_frame_id"           value="$(arg frame_id_robot_base)"/>
+    </include> -->
+    
+    <!-- <node pkg="robot_localization" type="ukf_localization_node" name="ukf_se" clear_params="true" output="screen">
+      <rosparam command="load"            file="$(arg file_fusion)"/>
+      <param name="map_frame"             value="$(arg frame_id_global)"/>
+      <param name="world_frame"           value="$(arg frame_id_odom)"/>
+      <param name="odom_frame"            value="$(arg frame_id_odom)"/>
+      <param name="base_link_frame"       value="$(arg frame_id_base_footprint)"/>
+      <remap from="odometry/filtered"     to="$(arg topic_odom)"/>
+    </node> -->
+
+    <include file="$(find potbot)/launch/env/potbot.launch">
+      <arg name="use_rviz"                value="$(arg use_rviz)"/>
+      <arg name="publish_control_command" value="$(arg publish_control_command)"/>
+      <arg name="frame_id_global"         value="$(arg frame_id_odom)"/>
+      <arg name="frame_id_robot_base"     value="$(arg frame_id_base_footprint)"/>
+      <arg name="max_linear_velocity"     value="$(arg max_linear_velocity)"/>
+      <arg name="max_angular_velocity"    value="$(arg max_angular_velocity)"/>
+      <arg name="topic_scan"              value="$(arg topic_scan)"/>
+      <arg name="topic_odom"              value="$(arg topic_odom)"/>
+      <arg name="topic_cmd"               value="$(arg topic_cmd)"/>
+      <arg name="topic_goal"              value="$(arg topic_goal)"/>
+      <arg name="topic_pcl2"              value="$(arg topic_pcl2)"/>
+      <arg name="clustering_method"       value="$(arg clustering_method)"/>
+      <arg name="file_rviz"               value="$(arg file_rviz)"/>
+    </include>
+
+  </group>
+</launch>

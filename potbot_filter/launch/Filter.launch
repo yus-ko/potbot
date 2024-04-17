@@ -1,18 +1,22 @@
 <launch>
-    <arg name="FRAME_ID/GLOBAL"                     default="map"/>
-    <arg name="FRAME_ID/ROBOT_BASE"                 default="base_link"/>
-    <arg name="TOPIC/SCAN"                          default="scan"/>
-    <arg name="SIGMA/P"                             default="1.0"/>     <!-- 推定誤差共分散行列対角要素の初期値 -->
-    <arg name="SIGMA/Q"                             default="0.00001"/> <!-- 観測ノイズ（ガウス分布） 共分散行列の対角要素 -->
-    <arg name="SIGMA/R"                             default="0.00001"/> <!-- システムノイズ（ガウス分布） 共分散行列の対角要素 -->
+    <arg name="frame_id_global"                     default="map"/>
+    <arg name="frame_id_robot_base"                 default="base_link"/>
+    <arg name="topic_scan"                          default="scan"/>
+    <arg name="sigma_p"                             default="1.0"/>     <!-- 推定誤差共分散行列対角要素の初期値 -->
+    <arg name="sigma_q"                             default="0.00001"/> <!-- 観測ノイズ（ガウス分布） 共分散行列の対角要素 -->
+    <arg name="sigma_r"                             default="0.00001"/> <!-- システムノイズ（ガウス分布） 共分散行列の対角要素 -->
     
 
-    <node pkg="potbot_filter" name="potbot_filter_fi" type="potbot_filter_fi" output="screen">
-        <param name="SIGMA/P"                       value="$(arg SIGMA/P)"/>
-        <param name="SIGMA/Q"                       value="$(arg SIGMA/Q)"/>    
-        <param name="SIGMA/R"                       value="$(arg SIGMA/R)"/>    
-        <param name="FRAME_ID/GLOBAL"               value="$(arg FRAME_ID/GLOBAL)"/>
-        <param name="FRAME_ID/ROBOT_BASE"           value="$(arg FRAME_ID/ROBOT_BASE)"/>
-        <param name="TOPIC/SCAN"                    value="$(arg TOPIC/SCAN)"/>
+    <node pkg="potbot_filter" name="state_estimation" type="state_estimation" output="screen">
+        <!-- <remap from="obstacle/scan/clustering"      to="obstacle/pcl/clustering"/> -->
+        <param name="sigma_p"                       value="$(arg sigma_p)"/>
+        <param name="sigma_q"                       value="$(arg sigma_q)"/>    
+        <param name="sigma_r"                       value="$(arg sigma_r)"/>    
+    </node>
+
+    <node pkg="potbot_filter" name="scan2d_clustering" type="2dscan_clustering" output="screen">
+        <param name="frame_id_global"               value="robot_0/odom"/>
+        <param name="frame_id_robot_base"           value="$(arg frame_id_robot_base)"/>
+        <param name="topic_scan"                    value="$(arg topic_scan)"/>
     </node>
 </launch>
