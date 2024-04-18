@@ -1,5 +1,4 @@
 #include <random>
-
 #include <ros/ros.h>
 #include <potbot_lib/Utility.h>
 #include <dynamic_reconfigure/server.h>
