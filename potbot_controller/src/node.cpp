@@ -104,9 +104,15 @@ void ControllerClass::controller()
     {
         geometry_msgs::Twist cmd;
         cmd_=cmd;
+		set_goal_ = false;
     }
     else if (distance < distance_change_to_pose_alignment_)
     {
+		if (!set_goal_)
+		{
+			set_goal_ = true;
+			robot_controller_.set_target(goal_.pose);
+		}
         __PoseAlignment();
     }
     else
@@ -121,7 +127,7 @@ void ControllerClass::__LineFollowing()
 
 	nav_msgs::Odometry robot_pose;
 	robot_controller_.to_msg(robot_pose);
-
+	
 	visualization_msgs::Marker lookahead_msg;
 	robot_controller_.get_lookahead(lookahead_msg);
 	lookahead_msg.header = odom_.header;
@@ -129,7 +135,7 @@ void ControllerClass::__LineFollowing()
 	cmd_ = robot_pose.twist.twist;
 	pub_look_ahead_.publish(lookahead_msg);
 
-	if (potbot_lib::utility::get_Distance(odom_.pose.pose.position, robot_path_.poses.back().pose.position) <= distance_to_lookahead_point_ ||
+	if (potbot_lib::utility::get_Distance(odom_.pose.pose.position, robot_path_.poses.back().pose.position) <= distance_to_lookahead_point_-0.01 ||
 		potbot_lib::utility::get_Distance(odom_.pose.pose.position, lookahead_msg.pose.position)			>= distance_to_lookahead_point_+1 ) __publish_path_request();
 }
 

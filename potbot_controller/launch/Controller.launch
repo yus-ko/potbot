@@ -12,7 +12,7 @@
         <arg name="max_linear_velocity"             default="0.3"/>
         <arg name="max_angular_velocity"            default="0.3"/>
 
-    <node pkg="potbot_controller" name="controller_co" type="potbot_controller_co" output="screen">
+    <node pkg="potbot_controller" name="controller_co" type="potbot_controller_co">
         <param name="publish_control_command"       value="$(arg publish_control_command)"/>
         <param name="topic_odom"                    value="$(arg topic_odom)"/>
         <param name="topic_cmd"                     value="$(arg topic_cmd)"/>

@@ -64,6 +64,8 @@
       <arg name="topic_pcl2"              value="$(arg topic_pcl2)"/>
       <arg name="clustering_method"       value="$(arg clustering_method)"/>
       <arg name="file_rviz"               value="$(arg file_rviz)"/>
+
+      <arg name="collision_count_to_replanning" value="2"/>
     </include>
 
   </group>
