@@ -44,18 +44,21 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
     for (const auto& obstacle : obstacles_scan_.data)
     {
         double v                    = obstacle.twist.linear.x;  //障害物の並進速度
-        double omega                = obstacle.twist.angular.z; //障害物の回転角速度
+        double omega                = fmod(obstacle.twist.angular.z, 2*M_PI); //障害物の回転角速度
         double yaw                  = potbot_lib::utility::get_Yaw(obstacle.pose.orientation);  //障害物の姿勢
         double width                = obstacle.scale.y; //障害物の幅
         double depth                = obstacle.scale.x; //障害物の奥行き
         double size                 = width + depth;
 
+        // v=0.2;omega=0;yaw=1.57;
+
         if (size < apply_cluster_to_localmap_)
         {
-            if (abs(v) > 0.1 && abs(v) < 2.0 && abs(omega) < 1)
+            ROS_INFO("est vel %d: %f, %f, %f, %f, %f", obstacle.id, obstacle.pose.position.x, obstacle.pose.position.y, yaw, v, omega);
+            if (abs(v) < max_estimated_linear_velocity_ && abs(omega) < max_estimated_angular_velocity_)
             {
                 //並進速度と角速度を一定として1秒後までの位置x,yを算出
-                double dt = 0.1;
+                double dt = 0.2;
                 for (double t = 0; t <= prediction_time_; t += dt)
                 {
                     double distance = v*t;
@@ -94,6 +97,8 @@ void LocalmapClass::__param_callback(const potbot_msgs::LocalmapConfig& param, u
 {
     apply_cluster_to_localmap_  = param.apply_localmap_threshold_2d_size;
     prediction_time_            = param.prediction_time;
+    max_estimated_linear_velocity_ = param.max_estimated_linear_velocity;
+    max_estimated_angular_velocity_ = param.max_estimated_angular_velocity;
 }
 
 int main(int argc,char **argv)

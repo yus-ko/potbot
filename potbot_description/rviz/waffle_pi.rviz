@@ -7,7 +7,6 @@ Panels:
         - /TF1/Frames1
         - /Robot1/Shape1
         - /Segments1/Namespaces1
-        - /Potential Field1/potential1
       Splitter Ratio: 0.4882352948188782
     Tree Height: 745
   - Class: rviz/Selection

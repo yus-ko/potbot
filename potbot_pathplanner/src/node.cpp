@@ -44,9 +44,9 @@ void PathPlanningClass::__local_map_callback(const nav_msgs::OccupancyGrid& msg)
     __create_PotentialField();
     if(__PathCollision())
     {
-        // ROS_INFO("hit");
+        ROS_INFO("hit: %d / %d", hit_count_, collision_count_to_replanning_);
         hit_count_+=1;
-        if(hit_count_ > collision_count_to_replanning_)
+        if(hit_count_ >= collision_count_to_replanning_)
         {
             hit_count_ = 0;
             __create_Path();
