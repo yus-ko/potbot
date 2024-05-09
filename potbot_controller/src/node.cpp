@@ -88,11 +88,8 @@ void ControllerClass::__param_callback(const potbot_msgs::ControllerConfig& para
 
 void ControllerClass::manage()
 {
-    if (!robot_path_.poses.empty())
-    {
-        controller();
-        if (publish_command_) __publishcmd();
-    }
+    controller();
+    if (publish_command_) __publishcmd();
 }
 
 void ControllerClass::controller()
@@ -100,8 +97,10 @@ void ControllerClass::controller()
 
     double distance = potbot_lib::utility::get_Distance(odom_.pose.pose.position, goal_.pose.position);
     double angle = potbot_lib::utility::get_Yaw(goal_.pose.orientation) - potbot_lib::utility::get_Yaw(odom_.pose.pose.orientation);
+    // ROS_INFO("%f / %f, %f / %f", distance, stop_margin_distance_, angle, stop_margin_angle_);
     if (distance < stop_margin_distance_ && abs(angle) < stop_margin_angle_)
     {
+        ROS_INFO("reach the goal");
         geometry_msgs::Twist cmd;
         cmd_=cmd;
 		set_goal_ = false;
@@ -116,13 +115,14 @@ void ControllerClass::controller()
         __PoseAlignment();
     }
     else
-    {
-        __LineFollowing();
+    {   
+        if (!robot_path_.poses.empty()) __LineFollowing();
     }
 }
 
 void ControllerClass::__LineFollowing()
 {
+    ROS_INFO("controller: line following");
     robot_controller_.pure_pursuit();
 
 	nav_msgs::Odometry robot_pose;
@@ -141,6 +141,7 @@ void ControllerClass::__LineFollowing()
 
 void ControllerClass::__PoseAlignment()
 {
+    ROS_INFO("controller: pose alignment");
 	robot_controller_.pid_control();
 	nav_msgs::Odometry robot_pose;
 	robot_controller_.to_msg(robot_pose);

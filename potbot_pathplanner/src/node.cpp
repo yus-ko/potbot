@@ -16,6 +16,7 @@ PathPlanningClass::PathPlanningClass()
 	
 	//pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
 	pub_path_			    = nhPub.advertise<nav_msgs::Path>("Path", 1);
+    pub_path_raw_		    = nhPub.advertise<nav_msgs::Path>("debug/Path_raw", 1);
 	pub_attraction_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/attraction", 1);
 	pub_repulsion_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/repulsion", 1);
 	pub_potential_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/potential", 1);
@@ -33,7 +34,7 @@ void PathPlanningClass::__goal_callback(const geometry_msgs::PoseStamped& msg)
 {
     goal_ = msg;
     ROS_INFO("subscribe goal: path planner");
-    __create_Path();
+    if (!sync_create_path_) __create_Path();
 }
 
 void PathPlanningClass::__local_map_callback(const nav_msgs::OccupancyGrid& msg)
@@ -41,21 +42,32 @@ void PathPlanningClass::__local_map_callback(const nav_msgs::OccupancyGrid& msg)
     local_map_ = msg;
     // ROS_INFO("subscribe local map");
     // static ros::Time hit_time = local_map_.header.stamp;
-    __create_PotentialField();
-    if(__PathCollision())
+
+    
+    if(sync_create_path_)
     {
-        ROS_INFO("hit: %d / %d", hit_count_, collision_count_to_replanning_);
-        hit_count_+=1;
-        if(hit_count_ >= collision_count_to_replanning_)
-        {
-            hit_count_ = 0;
-            __create_Path();
-        }
-        
+        __create_Path();
+    }
+    else if (sync_create_apf_)
+    {
+        __create_PotentialField();
     }
     else
     {
-        hit_count_ = 0;
+        if(__PathCollision())
+        {
+            hit_count_+=1;
+            ROS_INFO("path collide: %d / %d", hit_count_, collision_count_to_replanning_);
+            if(hit_count_ >= collision_count_to_replanning_)
+            {
+                hit_count_ = 0;
+                __create_Path();
+            }
+        }
+        else
+        {
+            hit_count_ = 0;
+        }
     }
 }
 
@@ -94,6 +106,9 @@ void PathPlanningClass::__param_callback(const potbot_msgs::PathPlanningConfig& 
 
     collision_count_to_replanning_  = param.collision_count_to_replanning;
     hit_distance_to_replanning_     = param.hit_distance_to_replanning;
+
+    sync_create_path_               = param.sync_create_path;
+    sync_create_apf_                = param.sync_create_apf;
 }
 
 std::vector<nav_msgs::Odometry> PathPlanningClass::__get_ObstacleList()
@@ -210,6 +225,7 @@ int PathPlanningClass::__create_PotentialField()
 
 void PathPlanningClass::__create_Path()
 {
+    ROS_INFO("status: create apf");
     __create_PotentialField();
 
     std::vector<std::vector<double>> path_raw, path_interpolated;
@@ -217,12 +233,11 @@ void PathPlanningClass::__create_Path()
     // if (isnan(init_yaw)) init_yaw = 0;
     double init_yaw = 0;
 
+    ROS_INFO("status: create path");
     apf_->create_path(path_raw, init_yaw, max_path_length_, path_search_range_);
-    apf_->bezier(path_raw, path_interpolated);
 
-    nav_msgs::Path path_msg_raw, path_msg_interpolated;
+    nav_msgs::Path path_msg_raw;
     path_msg_raw.header				= local_map_.header;
-    path_msg_interpolated.header	= local_map_.header;
     for (auto point : path_raw)
     {
         geometry_msgs::PoseStamped pose_msg;
@@ -231,6 +246,14 @@ void PathPlanningClass::__create_Path()
         pose_msg.pose.orientation = potbot_lib::utility::get_Quat(0,0,0);
         path_msg_raw.poses.push_back(pose_msg);
     }
+    pub_path_raw_.publish(path_msg_raw);
+
+    ROS_INFO("status: interpolate");
+    apf_->bezier(path_raw, path_interpolated);
+
+    nav_msgs::Path path_msg_interpolated;
+    path_msg_interpolated.header	= local_map_.header;
+    
     for (auto point : path_interpolated)
     {
         geometry_msgs::PoseStamped pose_msg;
@@ -242,7 +265,6 @@ void PathPlanningClass::__create_Path()
 
     robot_path_                     = path_msg_raw;
 
-    // pub_path_raw.publish(path_msg_raw);
     pub_path_.publish(path_msg_interpolated);
 }
 
