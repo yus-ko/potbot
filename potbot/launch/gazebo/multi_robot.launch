@@ -1,5 +1,4 @@
 <launch>
-	<env name="GAZEBO_MODEL_PATH" value="$(find potbot_description)/models:$(optenv GAZEBO_MODEL_PATH)"/>
   <arg name="world_name"        default="$(find potbot_description)/worlds/willowgarage.world"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">

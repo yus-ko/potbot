@@ -84,7 +84,7 @@
   </group>
 
   <group if="$(arg use_rviz)">
-    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(arg file_rviz)"/>
+    <node pkg="rviz" type="rviz" name="rviz_potbot" required="true" args="-d $(arg file_rviz)"/>
   </group>
 
 </launch>
