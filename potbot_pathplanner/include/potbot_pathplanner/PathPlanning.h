@@ -22,7 +22,7 @@ class PathPlanningClass{
 		ros::Subscriber sub_goal_, sub_local_map_, sub_run_;
 
 		ros::NodeHandle nhPub;
-        ros::Publisher pub_cmd_, pub_path_, pub_potential_, pub_attraction_field_, pub_repulsion_field_, pub_potential_field_;
+        ros::Publisher pub_cmd_, pub_path_, pub_potential_, pub_attraction_field_, pub_repulsion_field_, pub_potential_field_, pub_path_raw_;
 
         potbot_lib::PathPlanner::APFPathPlanner* apf_;
 
@@ -37,6 +37,8 @@ class PathPlanningClass{
         size_t path_search_range_ = 1;
         size_t collision_count_to_replanning_ = 10;
         double hit_distance_to_replanning_ = 0.1;
+        bool sync_create_path_ = false;
+        bool sync_create_apf_ = false;
 
         size_t hit_count_ = 0;
 

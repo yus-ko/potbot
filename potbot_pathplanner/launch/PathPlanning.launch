@@ -13,11 +13,11 @@
    <arg name="path_search_range"                            default="1"/>
    <arg name="weight_potential_field"                       default="1.0"/>
    <arg name="weight_angle"                                 default="0.2"/>
-   <arg name="collision_count_to_replanning"                default="10"/>
+   <arg name="collision_count_to_replanning"                default="3"/>
    <arg name="hit_distance_to_replanning"                   default="0.1"/>
 
    
-   <node pkg="potbot_pathplanner" name="pathplanner_pp" type="potbot_pathplanner_pp" output="screen">
+   <node pkg="potbot_pathplanner" name="pathplanner_pp" type="potbot_pathplanner_pp">
       <param name="frame_id_global"                         value="$(arg frame_id_global)"/>
       <param name="frame_id_robot_base"                     value="$(arg frame_id_robot_base)"/>
       <param name="topic_odom"                              value="$(arg topic_odom)"/>

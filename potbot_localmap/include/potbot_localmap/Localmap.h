@@ -29,6 +29,8 @@ class LocalmapClass{
 
         double apply_cluster_to_localmap_ = 1.5;
         double prediction_time_ = 2.0;
+        double max_estimated_linear_velocity_ = 1.0;
+        double max_estimated_angular_velocity_ = 2.0;
 
         std::string frame_id_robot_base_ = "base_link";
 

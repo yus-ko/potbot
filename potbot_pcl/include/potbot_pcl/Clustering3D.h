@@ -1,3 +1,4 @@
+#include <random>
 #include <ros/ros.h>
 #include <potbot_lib/Utility.h>
 #include <potbot_lib/PCLClustering.h>

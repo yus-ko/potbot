@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /TF1/Frames1
         - /Robot1/Shape1
+        - /Segments1/Namespaces1
       Splitter Ratio: 0.4882352948188782
     Tree Height: 745
   - Class: rviz/Selection
@@ -166,12 +167,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: costmap
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: LocalMap
       Topic: potbot/Localmap
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -214,7 +215,7 @@ Visualization Manager:
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
-      Line Style: Lines
+      Line Style: Billboards
       Line Width: 0.029999999329447746
       Name: Planned Path
       Offset:
@@ -230,13 +231,13 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: potbot/LookAhead
       Name: LooKAheadPoint
       Namespaces:
         LookAhead: true
       Queue Size: 1
-      Value: true
+      Value: false
     - Alpha: 0.6000000238418579
       Axes Length: 1
       Axes Radius: 0.10000000149011612
@@ -567,6 +568,29 @@ Visualization Manager:
           Value: true
       Enabled: false
       Name: amcl
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: false
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /robot_0/potbot/debug/Path_raw
+      Unreliable: false
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 186; 189; 182
