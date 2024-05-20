@@ -30,7 +30,7 @@
       <arg name="multi_robot_name"        value="$(arg multi_robot)"/>
     </include>
 
-    <node pkg="tf" type="static_transform_publisher" name="map_tf" args="0 0 0 0 0 0 $(arg frame_id_global) $(arg frame_id_odom) 100" />
+    <node pkg="tf" type="static_transform_publisher" name="map_tf" args="0 0 0 0 0 0 $(arg frame_id_global) $(arg frame_id_odom) 30" />
     <!-- <include file="$(find potbot)/launch/env/amcl.launch">
       <arg name="map_file"                value="$(arg file_map)"/>
       <arg name="initial_pose_topic"      value="$(arg topic_initial_pose)"/>

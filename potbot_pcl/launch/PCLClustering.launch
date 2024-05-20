@@ -3,7 +3,7 @@
    <arg name="clustering_method"             default="Euclidean"/>
    <!-- Euclidean SuperVoxel -->
    
-   <node pkg="potbot_pcl" name="pcl_cl3d" type="potbot_pcl_cl3d" output="screen">
+   <node pkg="potbot_pcl" name="pcl_cl3d" type="potbot_pcl_cl3d_node" output="screen">
       <param name="topic_pcl2"               value="$(arg topic_pcl2)"/>
       <param name="clustering_method"        value="$(arg clustering_method)"/>
    </node>

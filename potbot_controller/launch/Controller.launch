@@ -1,18 +1,18 @@
 <launch>
-        <arg name="publish_control_command"         default="true"/>
-        <arg name="topic_odom"                      default="odom"/>
-        <arg name="topic_cmd"                       default="cmd_vel"/>
-        <arg name="topic_goal"                      default="/move_base_simple/goal"/>
-        <arg name="distance_to_lookahead_point"     default="0.1"/>
-        <arg name="gain_p"                          default="1.0"/>
-        <arg name="gain_i"                          default="0.1"/>
-        <arg name="gain_d"                          default="0.001"/>
-        <arg name="stop_margin_angle"               default="0.2"/>
-        <arg name="stop_margin_distance"            default="0.05"/>
-        <arg name="max_linear_velocity"             default="0.3"/>
-        <arg name="max_angular_velocity"            default="0.3"/>
+    <arg name="publish_control_command"         default="true"/>
+    <arg name="topic_odom"                      default="odom"/>
+    <arg name="topic_cmd"                       default="cmd_vel"/>
+    <arg name="topic_goal"                      default="/move_base_simple/goal"/>
+    <arg name="distance_to_lookahead_point"     default="0.1"/>
+    <arg name="gain_p"                          default="1.0"/>
+    <arg name="gain_i"                          default="0.1"/>
+    <arg name="gain_d"                          default="0.001"/>
+    <arg name="stop_margin_angle"               default="0.2"/>
+    <arg name="stop_margin_distance"            default="0.05"/>
+    <arg name="max_linear_velocity"             default="0.3"/>
+    <arg name="max_angular_velocity"            default="0.3"/>
 
-    <node pkg="potbot_controller" name="controller_co" type="potbot_controller_co">
+    <node pkg="potbot_controller" name="potbot_controller_node" type="potbot_controller_node">
         <param name="publish_control_command"       value="$(arg publish_control_command)"/>
         <param name="topic_odom"                    value="$(arg topic_odom)"/>
         <param name="topic_cmd"                     value="$(arg topic_cmd)"/>

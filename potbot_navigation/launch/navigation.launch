@@ -1,0 +1,76 @@
+<launch>
+    <arg name="publish_control_command"         default="true"/>
+    <arg name="topic_odom"                      default="odom"/>
+    <arg name="topic_cmd"                       default="cmd_vel"/>
+    <arg name="topic_goal"                      default="/move_base_simple/goal"/>
+    <arg name="distance_to_lookahead_point"     default="0.1"/>
+    <arg name="gain_p"                          default="1.0"/>
+    <arg name="gain_i"                          default="0.1"/>
+    <arg name="gain_d"                          default="0.001"/>
+    <arg name="stop_margin_angle"               default="0.2"/>
+    <arg name="stop_margin_distance"            default="0.05"/>
+    <arg name="max_linear_velocity"             default="0.3"/>
+    <arg name="max_angular_velocity"            default="0.3"/>
+
+    <arg name="frame_id_global"                     default="map"/>
+    <arg name="frame_id_robot_base"                 default="base_link"/>
+    <arg name="topic_scan"                          default="scan"/>
+    <arg name="sigma_p"                             default="1.0"/>     <!-- 推定誤差共分散行列対角要素の初期値 -->
+    <arg name="sigma_q"                             default="0.00001"/> <!-- 観測ノイズ（ガウス分布） 共分散行列の対角要素 -->
+    <arg name="sigma_r"                             default="0.00001"/> <!-- システムノイズ（ガウス分布） 共分散行列の対角要素 -->
+
+    <arg name="potential_field_rows"                         default="120"/>
+    <arg name="potential_field_cols"                         default="120"/>
+    <arg name="potential_field_resolution"                   default="0.05"/>
+    <arg name="weight_attraction_field"                      default="0.1"/>
+    <arg name="weight_repulsion_field"                       default="0.1"/>
+    <arg name="distance_threshold_repulsion_field"           default="0.5"/>
+    <arg name="max_path_length"                              default="6.0"/>
+    <arg name="path_search_range"                            default="1"/>
+    <arg name="weight_potential_field"                       default="1.0"/>
+    <arg name="weight_angle"                                 default="0.2"/>
+    <arg name="collision_count_to_replanning"                default="3"/>
+    <arg name="hit_distance_to_replanning"                   default="0.1"/>
+
+    <arg name="topic_pcl2"                    default="mynteye/points/data_raw"/>
+    <arg name="clustering_method"             default="Euclidean"/>
+
+    <node pkg="potbot_navigation" name="navigation" type="navigation">
+        <param name="publish_control_command"       value="$(arg publish_control_command)"/>
+        <param name="topic_odom"                    value="$(arg topic_odom)"/>
+        <param name="topic_cmd"                     value="$(arg topic_cmd)"/>
+        <param name="topic_goal"                    value="$(arg topic_goal)"/>
+        <param name="controller/distance_to_lookahead_point"   value="$(arg distance_to_lookahead_point)"/>
+        <param name="controller/gain_p"                        value="$(arg gain_p)"/>
+        <param name="controller/gain_i"                        value="$(arg gain_i)"/>
+        <param name="controller/gain_d"                        value="$(arg gain_d)"/>
+        <param name="controller/top_margin_angle"             value="$(arg stop_margin_angle)"/>
+        <param name="controller/stop_margin_distance"          value="$(arg stop_margin_distance)"/>
+        <param name="controller/max_linear_velocity"           value="$(arg max_linear_velocity)"/>
+        <param name="controller/max_angular_velocity"          value="$(arg max_angular_velocity)"/>
+
+        <param name="sigma_p"                       value="$(arg sigma_p)"/>
+        <param name="sigma_q"                       value="$(arg sigma_q)"/>    
+        <param name="sigma_r"                       value="$(arg sigma_r)"/>
+
+        <param name="frame_id_global"               value="$(arg frame_id_global)"/>
+        <param name="frame_id_robot_base"           value="$(arg frame_id_robot_base)"/>
+        <param name="topic_scan"                    value="$(arg topic_scan)"/>
+
+        <param name="path_planner/potential_field_rows"                    value="$(arg potential_field_rows)"/>
+        <param name="path_planner/potential_field_cols"                    value="$(arg potential_field_cols)"/>
+        <param name="path_planner/potential_field_resolution"              value="$(arg potential_field_resolution)"/>
+        <param name="path_planner/weight_attraction_field"                 value="$(arg weight_attraction_field)"/>
+        <param name="path_planner/weight_repulsion_field"                  value="$(arg weight_repulsion_field)"/>
+        <param name="path_planner/distance_threshold_repulsion_field"      value="$(arg distance_threshold_repulsion_field)"/>
+        <param name="path_planner/max_path_length"                         value="$(arg max_path_length)"/>
+        <param name="path_planner/path_search_range"                       value="$(arg path_search_range)"/>
+        <param name="path_planner/weight_potential_field"                  value="$(arg weight_potential_field)"/>
+        <param name="path_planner/weight_angle"                            value="$(arg weight_angle)"/>
+        <param name="path_planner/collision_count_to_replanning"           value="$(arg collision_count_to_replanning)"/>
+        <param name="path_planner/hit_distance_to_replanning"              value="$(arg hit_distance_to_replanning)"/>
+
+        <param name="topic_pcl2"               value="$(arg topic_pcl2)"/>
+        <param name="clustering3d/clustering_method"        value="$(arg clustering_method)"/>
+    </node>
+</launch>

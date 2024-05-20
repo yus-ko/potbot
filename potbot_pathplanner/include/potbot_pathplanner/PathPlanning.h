@@ -1,3 +1,6 @@
+#ifndef _H_PATHPLANNING_
+#define _H_PATHPLANNING_
+
 #include <ros/ros.h>
 #include <potbot_lib/Utility.h>
 #include <potbot_lib/PathPlanner.h>
@@ -19,7 +22,7 @@
 class PathPlanningClass{
 
     private:
-        tf2_ros::Buffer tf_buffer_;
+        tf2_ros::Buffer& tf_buffer_;
         
 		ros::NodeHandle nhSub;
 		ros::Subscriber sub_goal_, sub_local_map_, sub_seg_, sub_state_, sub_run_;
@@ -58,8 +61,7 @@ class PathPlanningClass{
 
         potbot_msgs::StateArray obstacle_state_;
 
-        dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig> server_;
-  	    dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig> *dsrv_;
 
         std::string frame_id_global_ = "map", frame_id_robot_base_ = "base_link", topic_goal_ = "/move_base_simple/goal";
         
@@ -76,6 +78,8 @@ class PathPlanningClass{
         bool __PathCollision();
 
     public:
-        PathPlanningClass();
+        PathPlanningClass(tf2_ros::Buffer& tf, const std::string& name = "");
         ~PathPlanningClass();
 };
+
+#endif // _H_PATHPLANNING_

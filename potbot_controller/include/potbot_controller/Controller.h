@@ -26,7 +26,7 @@ private:
 	ros::NodeHandle nhPub_;
 	ros::Publisher pub_cmd_, pub_path_request_, pub_look_ahead_;
 
-	tf2_ros::Buffer tf_buffer_;
+	tf2_ros::Buffer& tf_buffer_;
 
 	potbot_lib::Controller::DiffDriveController robot_controller_;
 
@@ -36,8 +36,7 @@ private:
 
 	geometry_msgs::PoseStamped goal_;
 
-	dynamic_reconfigure::Server<potbot_msgs::ControllerConfig> server_;
-	dynamic_reconfigure::Server<potbot_msgs::ControllerConfig>::CallbackType f_;
+	dynamic_reconfigure::Server<potbot_msgs::ControllerConfig> *dsrv_;
 
 	nav_msgs::Odometry odom_;
 
@@ -59,7 +58,7 @@ private:
 	void __PoseAlignment();
 
 public:
-	ControllerClass();
+	ControllerClass(tf2_ros::Buffer& tf, const std::string& name = "");
 	~ControllerClass();
 
 	void manage();

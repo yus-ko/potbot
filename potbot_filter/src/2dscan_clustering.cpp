@@ -1,6 +1,6 @@
 #include<potbot_filter/2dscan_clustering.h>
 
-scan2dClass::scan2dClass()
+scan2dClass::scan2dClass(tf2_ros::Buffer& tf, const std::string& name) : tf_buffer_(tf)
 {
 	ros::NodeHandle n("~");
 	n.getParam("frame_id_global",       frame_id_global_);
@@ -13,10 +13,10 @@ scan2dClass::scan2dClass()
 	pub_segment_					= nhPub_.advertise<visualization_msgs::MarkerArray>(	"segment", 1);
 	pub_obstacles_scan_clustering_	= nhPub_.advertise<potbot_msgs::ObstacleArray>(			"obstacle/scan/clustering", 1);
 
-	f_ = boost::bind(&scan2dClass::__param_callback, this, _1, _2);
-	server_.setCallback(f_);
+    dsrv_ = new dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig>(ros::NodeHandle("~/" + name));
+    dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig>::CallbackType cb = boost::bind(&scan2dClass::__param_callback, this, _1, _2);
+    dsrv_->setCallback(cb);
 
-	static tf2_ros::TransformListener tfListener(tf_buffer_);
 }
 
 void scan2dClass::__param_callback(const potbot_msgs::ClusteringConfig& param, uint32_t level)
@@ -412,13 +412,4 @@ void scan2dClass::__AssociateSegments(std::vector<SEGMENT> &segments)
         }
     }
     segments_pre = segments_global;
-}
-
-int main(int argc,char **argv){
-	ros::init(argc,argv,"potbot_fi");
-
-    scan2dClass s2d;
-	ros::spin();
-	
-	return 0;
 }

@@ -14,4 +14,5 @@
   <build_depend>potbot_pcl</build_depend>
   <build_depend>potbot_localmap</build_depend>
   <build_depend>potbot_description</build_depend>
+  <build_depend>potbot_navigation</build_depend>
 </package>

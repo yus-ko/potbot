@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>potbot_navigation</name>
+  <version>0.0.0</version>
+  <description>The potbot_navigation package</description>
+  <maintainer email="ubuntu@todo.todo">ubuntu</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>potbot_controller</depend>
+  <depend>potbot_filter</depend>
+  <depend>potbot_localmap</depend>
+  <depend>potbot_pathplanner</depend>
+  <depend>potbot_pcl</depend>
+</package>

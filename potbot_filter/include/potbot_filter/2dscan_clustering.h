@@ -1,4 +1,6 @@
-//include haeders
+#ifndef _H_2DSCAN_CLUSTERING_
+#define _H_2DSCAN_CLUSTERING_
+
 #include <potbot_lib/Utility.h>
 #include <potbot_lib/ScanClustering.h>
 #include <potbot_msgs/State.h>
@@ -48,25 +50,22 @@ class scan2dClass{
 
     private:
         
-        //センサーデータ
 		ros::NodeHandle nhSub_;
 		ros::Subscriber sub_scan_;
-        //送信データ
+        
         ros::NodeHandle nhPub_;
 		ros::Publisher pub_scan_filter_, pub_segment_, pub_obstacles_scan_clustering_;
 
         visualization_msgs::MarkerArray obstacles_;
 
-        //tf::TransformListener tflistener;
-        tf2_ros::Buffer tf_buffer_;
+        tf2_ros::Buffer& tf_buffer_;
         
 		sensor_msgs::LaserScan scan_;
         std::vector<sensor_msgs::LaserScan> scans_;
         int Tn_=30;
         double square_width_=0.1;
 		
-		dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig> server_;
-  	    dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig> *dsrv_;
 
 		std::string frame_id_global_ = "map";
 		std::string frame_id_robot_base_ = "base_link";
@@ -83,7 +82,8 @@ class scan2dClass{
         void __AssociateSegments(std::vector<SEGMENT> &segments);
 
     public:
-        scan2dClass();
+        scan2dClass(tf2_ros::Buffer& tf, const std::string& name = "");
         ~scan2dClass(){};
         
 };
+#endif // _H_2DSCAN_CLUSTERING_
