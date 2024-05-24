@@ -81,7 +81,11 @@ namespace potbot_filter
         potbot_msgs::ObstacleArray obstacle_array = msg;
         static std::vector<int> ukf_id;
         
-        if (obstacle_array.data.empty()) return;
+        if (obstacle_array.data.empty())
+        {
+            pub_obstacles_scan_.publish(obstacle_array);
+            return;
+        }
 
         double t_now = obstacle_array.header.stamp.toSec();
         // double t_now = ros::Time::now().toSec();
