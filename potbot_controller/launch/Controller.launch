@@ -13,10 +13,10 @@
     <arg name="max_angular_velocity"            default="0.3"/>
 
     <node pkg="potbot_controller" name="potbot_controller_node" type="potbot_controller_node">
+        <remap from="odom"                          to="$(arg topic_odom)"/>
+        <remap from="cmd_vel"                       to="$(arg topic_cmd)"/>
+        <remap from="goal"                          to="$(arg topic_goal)"/>
         <param name="publish_control_command"       value="$(arg publish_control_command)"/>
-        <param name="topic_odom"                    value="$(arg topic_odom)"/>
-        <param name="topic_cmd"                     value="$(arg topic_cmd)"/>
-        <param name="topic_goal"                    value="$(arg topic_goal)"/>
         <param name="distance_to_lookahead_point"   value="$(arg distance_to_lookahead_point)"/>
         <param name="gain_p"                        value="$(arg gain_p)"/>
         <param name="gain_i"                        value="$(arg gain_i)"/>

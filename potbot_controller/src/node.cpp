@@ -6,7 +6,7 @@ int main(int argc,char **argv)
     tf2_ros::Buffer buffer(ros::Duration(10));
     tf2_ros::TransformListener tf(buffer);
 
-    ControllerClass cc(buffer);
+    potbot_controller::Controller cc(buffer);
 	ros::spin();
 
 	return 0;

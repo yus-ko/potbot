@@ -57,7 +57,6 @@
     <include file="$(find potbot_pathplanner)/launch/PathPlanning.launch">
       <arg name="frame_id_global"                           value="$(arg frame_id_global)"/>
       <arg name="frame_id_robot_base"                       value="$(arg frame_id_robot_base)"/>
-      <arg name="topic_odom"                                value="$(arg topic_odom)"/>
       <arg name="topic_goal"                                value="$(arg topic_goal)"/>
       <arg name="potential_field_rows"                      value="$(arg potential_field_rows)"/>
       <arg name="potential_field_cols"                      value="$(arg potential_field_cols)"/>

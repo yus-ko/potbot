@@ -40,6 +40,10 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
 
     local_map.data.resize(mapsize);
 
+    static ros::Time local_map_stamp_pre = local_map.header.stamp - ros::Duration(100);
+    double_t dt = local_map.header.stamp.toSec() - local_map_stamp_pre.toSec();
+    // dt = 0.2;
+
     for (const auto& obstacle : obstacles_scan_.data)
     {
         double v                    = obstacle.twist.linear.x;  //障害物の並進速度
@@ -57,8 +61,7 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
             if (abs(v) < max_estimated_linear_velocity_ && abs(omega) < max_estimated_angular_velocity_)
             {
                 //並進速度と角速度を一定として1秒後までの位置x,yを算出
-                double dt = 0.2;
-                for (double t = 0; t <= prediction_time_; t += dt)
+                for (double t = 0; t < prediction_time_; t += dt)
                 {
                     double distance = v*t;
                     double angle = omega*t + yaw;
@@ -83,7 +86,8 @@ void LocalmapClass::__obstacles_scan_callback(const potbot_msgs::ObstacleArray& 
         }
         
     }
-    
+    local_map_stamp_pre = local_map.header.stamp;
+
     pub_localmap_.publish(local_map);
 }
 
