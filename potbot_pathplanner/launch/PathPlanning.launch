@@ -1,7 +1,6 @@
 <launch>
    <arg name="frame_id_global"                              default="map"/>
    <arg name="frame_id_robot_base"                          default="base_footprint"/>
-   <arg name="topic_odom"                                   default="odom"/>
    <arg name="topic_goal"                                   default="/move_base_simple/goal"/>
    <arg name="potential_field_rows"                         default="120"/>
    <arg name="potential_field_cols"                         default="120"/>
@@ -17,11 +16,10 @@
    <arg name="hit_distance_to_replanning"                   default="0.1"/>
 
    
-   <node pkg="potbot_pathplanner" name="pathplanner_pp" type="potbot_pathplanner_pp">
+   <node pkg="potbot_pathplanner" name="pathplanner_pp" type="potbot_pathplanner_node">
       <param name="frame_id_global"                         value="$(arg frame_id_global)"/>
       <param name="frame_id_robot_base"                     value="$(arg frame_id_robot_base)"/>
-      <param name="topic_odom"                              value="$(arg topic_odom)"/>
-      <param name="topic_goal"                              value="$(arg topic_goal)"/>
+      <remap from="goal"                                    to="$(arg topic_goal)"/>
       <param name="potential_field_rows"                    value="$(arg potential_field_rows)"/>
       <param name="potential_field_cols"                    value="$(arg potential_field_cols)"/>
       <param name="potential_field_resolution"              value="$(arg potential_field_resolution)"/>

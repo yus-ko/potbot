@@ -1,6 +1,9 @@
 <launch>
-  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-  <arg name="world_name" default="$(find potbot_description)/worlds/willowgarage.world"/>
+  <arg name="model"           default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="world_name"      default="$(find potbot_description)/worlds/willowgarage.world"/>
+  <arg name="x_pos"           default="2"/>
+  <arg name="y_pos"           default="6"/>
+  <arg name="yaw"             default="-1.57"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name"    value="$(arg world_name)"/>
@@ -13,10 +16,10 @@
 
   <include file="$(find potbot)/launch/gazebo/spawn_model/spawn_turtlebot3.launch">
     <arg name="tf_prefix"     value="robot_0"/>
-    <arg name="x_pos"         value="2"/>
-    <arg name="y_pos"         value="6"/>
+    <arg name="x_pos"         value="$(arg x_pos)"/>
+    <arg name="y_pos"         value="$(arg y_pos)"/>
     <arg name="z_pos"         value="0.01"/>
-    <arg name="yaw"           value="-1.57"/>
+    <arg name="yaw"           value="$(arg yaw)"/>
     <arg name="model"         value="$(arg model)"/>
     <arg name="laser_visual"  value="false"/>
     <arg name="camera_visual" value="true"/>

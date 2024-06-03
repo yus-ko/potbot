@@ -1,3 +1,6 @@
+#ifndef _H_CLUSTERING3D_
+#define _H_CLUSTERING3D_
+
 #include <random>
 #include <ros/ros.h>
 #include <potbot_lib/Utility.h>
@@ -21,8 +24,7 @@ class Clustering3DClass{
 
         tf2_ros::Buffer tf_buffer_;
 
-        dynamic_reconfigure::Server<potbot_msgs::ClusteringParamConfig> server_;
-  	    dynamic_reconfigure::Server<potbot_msgs::ClusteringParamConfig>::CallbackType f_;
+        dynamic_reconfigure::Server<potbot_msgs::ClusteringParamConfig> *dsrv_;
 
         float   DownSampling_voxel_size_                = 0.01;
 
@@ -43,7 +45,9 @@ class Clustering3DClass{
         void __param_callback(const potbot_msgs::ClusteringParamConfig& param, uint32_t level);
         
     public:
-        Clustering3DClass();
+        Clustering3DClass(const std::string& name = "");
         ~Clustering3DClass();
 
 };
+
+#endif // _H_CLUSTERING3D_

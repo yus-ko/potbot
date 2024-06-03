@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME} potbot_lib
+  LIBRARIES state_estimation 2dscan_clustering
   # CATKIN_DEPENDS 
   # DEPENDS eigen opencv
 )
@@ -19,11 +19,17 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(state_estimation src/state_estimation.cpp)
+add_library(state_estimation src/state_estimation.cpp)
 target_link_libraries(state_estimation ${catkin_LIBRARIES})
 
-add_executable(2dscan_clustering src/2dscan_clustering.cpp)
+add_executable(state_estimation_node src/state_estimation_node.cpp)
+target_link_libraries(state_estimation_node state_estimation)
+
+add_library(2dscan_clustering src/2dscan_clustering.cpp)
 target_link_libraries(2dscan_clustering ${catkin_LIBRARIES})
+
+add_executable(2dscan_clustering_node src/2dscan_clustering_node.cpp)
+target_link_libraries(2dscan_clustering_node 2dscan_clustering)
 
 add_definitions(-std=c++14)
 
