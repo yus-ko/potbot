@@ -14,7 +14,7 @@ namespace potbot_pathplanner
         sub_local_map_	= nhSub.subscribe("Localmap",       1, &LocalPathPlanner::__local_map_callback, this);
         sub_run_		= nhSub.subscribe("create_path",    1, &LocalPathPlanner::__create_path_callback, this);
         sub_seg_		= nhSub.subscribe("segment",        1, &LocalPathPlanner::__segment_callback, this);
-        sub_state_		= nhSub.subscribe("state",          1,&LocalPathPlanner::__state_callback,this);
+        sub_state_		= nhSub.subscribe("state",          1, &LocalPathPlanner::__state_callback,this);
         
         //pub_odom= nhPub.advertise<nav_msgs::Odometry>("/potbot/odom", 1);
         pub_path_			    = nhPub.advertise<nav_msgs::Path>("Path", 1);
@@ -56,19 +56,29 @@ namespace potbot_pathplanner
         }
         else
         {
-            if(__PathCollision())
+            ros::Time time_now = ros::Time::now();
+            static ros::Time last_plan_time = time_now;
+            if (time_now.toSec() - last_plan_time.toSec() >= path_plan_cycle_time_)
             {
-                hit_count_+=1;
-                ROS_INFO("path collide: %d / %d", hit_count_, collision_count_to_replanning_);
-                if(hit_count_ >= collision_count_to_replanning_)
-                {
-                    hit_count_ = 0;
-                    __create_Path();
-                }
+                __create_Path();
+                last_plan_time = ros::Time::now();
             }
             else
             {
-                hit_count_ = 0;
+                if(__PathCollision())
+                {
+                    hit_count_+=1;
+                    ROS_INFO("path collide: %d / %d", hit_count_, collision_count_to_replanning_);
+                    if(hit_count_ >= collision_count_to_replanning_)
+                    {
+                        hit_count_ = 0;
+                        __create_Path();
+                    }
+                }
+                else
+                {
+                    hit_count_ = 0;
+                }
             }
         }
     }
@@ -111,6 +121,8 @@ namespace potbot_pathplanner
 
         sync_create_path_               = param.sync_create_path;
         sync_create_apf_                = param.sync_create_apf;
+
+        path_plan_cycle_time_           = param.path_plan_cycle_time;
     }
 
     std::vector<nav_msgs::Odometry> LocalPathPlanner::__get_ObstacleList()

@@ -27,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: potential
   - Class: rviz/Help
     Name: Help
 Preferences:
@@ -91,7 +91,7 @@ Visualization Manager:
         base_footprint:
           Alpha: 1
           Show Axes: false
-          Show Trail: true
+          Show Trail: false
         base_link:
           Alpha: 1
           Show Axes: false

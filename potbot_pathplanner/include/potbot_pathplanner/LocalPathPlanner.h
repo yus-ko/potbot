@@ -47,6 +47,7 @@ namespace potbot_pathplanner
             double hit_distance_to_replanning_ = 0.1;
             bool sync_create_path_ = false;
             bool sync_create_apf_ = false;
+            double path_plan_cycle_time_ = 0.5;
 
             size_t hit_count_ = 0;
 

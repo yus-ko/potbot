@@ -5,6 +5,10 @@ LocalmapClass::LocalmapClass(tf2_ros::Buffer& tf, const std::string& name) : tf_
 
     ros::NodeHandle n("~");
     n.getParam("frame_id_robot_base",           frame_id_robot_base_);
+    n.getParam("apply_cluster_to_localmap",     apply_cluster_to_localmap_);
+    n.getParam("prediction_time",               prediction_time_);
+    n.getParam("max_estimated_linear_velocity", max_estimated_linear_velocity_);
+    n.getParam("max_estimated_angular_velocity",max_estimated_angular_velocity_);
 
 	sub_obstacles_scan_	= nhSub_.subscribe("obstacle/scan/estimate",1,&LocalmapClass::__obstacles_scan_callback,this);
 	sub_obstacles_pcl_	= nhSub_.subscribe("obstacle/pcl",1,&LocalmapClass::__obstacles_pcl_callback,this);

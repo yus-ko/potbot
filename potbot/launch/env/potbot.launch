@@ -79,6 +79,7 @@
 
     <include file="$(find potbot_localmap)/launch/Localmap.launch">
       <arg name="frame_id_robot_base"                       value="$(arg frame_id_robot_base)"/>
+      <arg name="prediction_time"                           value="0.0"/>
     </include>
   </group>
 
