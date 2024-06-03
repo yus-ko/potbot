@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME} potbot_lib
+  LIBRARIES ${PROJECT_NAME}
   # CATKIN_DEPENDS 
   # DEPENDS eigen opencv
 )
@@ -19,11 +19,11 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_co
-  src/node.cpp
-)
+add_library(${PROJECT_NAME} src/Controller.cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_co ${catkin_LIBRARIES})
+add_executable(${PROJECT_NAME}_node src/node.cpp)
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 
 add_definitions(-std=c++14)
 

@@ -1,7 +1,15 @@
 <launch>
-    <arg name="frame_id_robot_base" default="base_link"/>
+    <arg name="frame_id_robot_base"                     default="base_link"/>
+    <arg name="apply_cluster_to_localmap"               default="1.5"/>
+    <arg name="prediction_time"                         default="2.0"/>
+    <arg name="max_estimated_linear_velocity"           default="1.0"/>
+    <arg name="max_estimated_angular_velocity"          default="2.0"/>
 
-    <node pkg="potbot_localmap" name="localmap" type="potbot_localmap">
-        <param name="frame_id_robot_base" value="$(arg frame_id_robot_base)"/>
+    <node pkg="potbot_localmap" name="localmap" type="potbot_localmap_node">
+        <param name="frame_id_robot_base"               value="$(arg frame_id_robot_base)"/>
+        <param name="apply_cluster_to_localmap"         value="$(arg apply_cluster_to_localmap)"/>
+        <param name="prediction_time"                   value="$(arg prediction_time)"/>
+        <param name="max_estimated_linear_velocity"     value="$(arg max_estimated_linear_velocity)"/>
+        <param name="max_estimated_angular_velocity"    value="$(arg max_estimated_angular_velocity)"/>
     </node>
 </launch>
