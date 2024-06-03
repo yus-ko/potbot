@@ -1,5 +1,4 @@
 <launch>
-   <arg name="frame_id_global"               default="frame_id_global"/>
    <arg name="topic_pcl2"                    default="mynteye/points/data_raw"/>
    <arg name="clustering_method"             default="Euclidean"/>
    <!-- Euclidean SuperVoxel -->
