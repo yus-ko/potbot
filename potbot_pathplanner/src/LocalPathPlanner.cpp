@@ -23,8 +23,8 @@ namespace potbot_pathplanner
         pub_repulsion_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/repulsion", 1);
         pub_potential_field_	= nhPub.advertise<sensor_msgs::PointCloud2>("field/potential", 1);
 
-        dsrv_ = new dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig>(ros::NodeHandle("~/" + name));
-        dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig>::CallbackType cb = boost::bind(&LocalPathPlanner::__param_callback, this, _1, _2);
+        dsrv_ = new dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig>(ros::NodeHandle("~/" + name));
+        dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig>::CallbackType cb = boost::bind(&LocalPathPlanner::__param_callback, this, _1, _2);
         dsrv_->setCallback(cb);
 
     }
@@ -98,7 +98,7 @@ namespace potbot_pathplanner
         __create_Path();
     }
 
-    void LocalPathPlanner::__param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level)
+    void LocalPathPlanner::__param_callback(const potbot_pathplanner::PathPlanningConfig& param, uint32_t level)
     {
         // ROS_INFO("%d",level);
 

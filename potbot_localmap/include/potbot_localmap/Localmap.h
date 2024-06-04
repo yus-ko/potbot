@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <potbot_lib/Utility.h>
 #include <potbot_msgs/ObstacleArray.h>
-#include <potbot_msgs/LocalmapConfig.h>
+#include <potbot_localmap/LocalmapConfig.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -29,7 +29,7 @@ class LocalmapClass{
 
         potbot_msgs::ObstacleArray obstacles_scan_, obstacles_pcl_;
 
-        dynamic_reconfigure::Server<potbot_msgs::LocalmapConfig> *dsrv_;
+        dynamic_reconfigure::Server<potbot_localmap::LocalmapConfig> *dsrv_;
 
         double apply_cluster_to_localmap_ = 1.5;
         double prediction_time_ = 2.0;
@@ -41,7 +41,7 @@ class LocalmapClass{
         void __obstacles_scan_callback(const potbot_msgs::ObstacleArray& msg);
         void __obstacles_pcl_callback(const potbot_msgs::ObstacleArray& msg);
 
-        void __param_callback(const potbot_msgs::LocalmapConfig& param, uint32_t level);
+        void __param_callback(const potbot_localmap::LocalmapConfig& param, uint32_t level);
 
     public:
         LocalmapClass(tf2_ros::Buffer& tf, const std::string& name = "");

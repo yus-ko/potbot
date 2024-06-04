@@ -7,7 +7,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <potbot_msgs/ClusteringParamConfig.h>
+#include <potbot_pcl/ClusteringParamConfig.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -33,7 +33,7 @@ class Clustering3DClass{
 
         std_msgs::Header header_;
 
-        dynamic_reconfigure::Server<potbot_msgs::ClusteringParamConfig> *dsrv_;
+        dynamic_reconfigure::Server<potbot_pcl::ClusteringParamConfig> *dsrv_;
 
         float   DownSampling_voxel_size_                = 0.01;
 
@@ -51,7 +51,7 @@ class Clustering3DClass{
         std::string topic_pcl2_, clustering_method_ = "Euclidean";
         
         void __pcl2_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
-        void __param_callback(const potbot_msgs::ClusteringParamConfig& param, uint32_t level);
+        void __param_callback(const potbot_pcl::ClusteringParamConfig& param, uint32_t level);
 
         void __DownSampling();
         void __Plane_removal();
