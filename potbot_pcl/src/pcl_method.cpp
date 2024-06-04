@@ -12,8 +12,8 @@ Clustering3DClass::Clustering3DClass(const std::string& name)
 	pub_pcl_0_ = nhPub_.advertise<sensor_msgs::PointCloud2>("debug/pcl/DownSampling", 1);
 	pub_pcl_1_ = nhPub_.advertise<sensor_msgs::PointCloud2>("debug/pcl/Plane_removal", 1);
 
-    dsrv_ = new dynamic_reconfigure::Server<potbot_msgs::ClusteringParamConfig>(ros::NodeHandle("~/" + name));
-    dynamic_reconfigure::Server<potbot_msgs::ClusteringParamConfig>::CallbackType cb = boost::bind(&Clustering3DClass::__param_callback, this, _1, _2);
+    dsrv_ = new dynamic_reconfigure::Server<potbot_pcl::ClusteringParamConfig>(ros::NodeHandle("~/" + name));
+    dynamic_reconfigure::Server<potbot_pcl::ClusteringParamConfig>::CallbackType cb = boost::bind(&Clustering3DClass::__param_callback, this, _1, _2);
     dsrv_->setCallback(cb);
 }
 Clustering3DClass::~Clustering3DClass(){
@@ -39,7 +39,7 @@ void Clustering3DClass::__pcl2_callback(const sensor_msgs::PointCloud2ConstPtr &
     
 }
 
-void Clustering3DClass::__param_callback(const potbot_msgs::ClusteringParamConfig& param, uint32_t level)
+void Clustering3DClass::__param_callback(const potbot_pcl::ClusteringParamConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
     DownSampling_voxel_size_            = param.DownSampling_voxel_size;

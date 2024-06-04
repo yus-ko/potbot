@@ -14,7 +14,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <dynamic_reconfigure/server.h>
-#include <potbot_msgs/PathPlanningConfig.h>
+#include <potbot_pathplanner/PathPlanningConfig.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -64,11 +64,11 @@ namespace potbot_pathplanner
 
             potbot_msgs::StateArray obstacle_state_;
 
-            dynamic_reconfigure::Server<potbot_msgs::PathPlanningConfig> *dsrv_;
+            dynamic_reconfigure::Server<potbot_pathplanner::PathPlanningConfig> *dsrv_;
 
             std::string frame_id_global_ = "map", frame_id_robot_base_ = "base_link";
             
-            void __param_callback(const potbot_msgs::PathPlanningConfig& param, uint32_t level);
+            void __param_callback(const potbot_pathplanner::PathPlanningConfig& param, uint32_t level);
             void __segment_callback(const visualization_msgs::MarkerArray& msg);
             void __state_callback(const potbot_msgs::StateArray& msg);
             void __create_path_callback(const std_msgs::Empty& msg);

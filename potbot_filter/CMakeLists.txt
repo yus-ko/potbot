@@ -2,9 +2,14 @@ cmake_minimum_required(VERSION 3.0.2)
 project(potbot_filter)
 
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
   pcl_ros
   potbot_lib
   potbot_msgs
+)
+
+generate_dynamic_reconfigure_options(
+  cfg/Clustering.cfg
 )
 
 catkin_package(
@@ -26,6 +31,7 @@ add_executable(state_estimation_node src/state_estimation_node.cpp)
 target_link_libraries(state_estimation_node state_estimation)
 
 add_library(2dscan_clustering src/2dscan_clustering.cpp)
+add_dependencies(2dscan_clustering ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(2dscan_clustering ${catkin_LIBRARIES})
 
 add_executable(2dscan_clustering_node src/2dscan_clustering_node.cpp)

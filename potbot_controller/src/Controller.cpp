@@ -15,8 +15,8 @@ namespace potbot_controller
         pub_cmd_			= nhPub_.advertise<geometry_msgs::Twist>(			"cmd_vel", 1);
         pub_look_ahead_		= nhPub_.advertise<visualization_msgs::Marker>(		"LookAhead", 1);
         
-        dsrv_ = new dynamic_reconfigure::Server<potbot_msgs::ControllerConfig>(ros::NodeHandle("~/" + name));
-        dynamic_reconfigure::Server<potbot_msgs::ControllerConfig>::CallbackType cb = boost::bind(&Controller::__param_callback, this, _1, _2);
+        dsrv_ = new dynamic_reconfigure::Server<potbot_controller::ControllerConfig>(ros::NodeHandle("~/" + name));
+        dynamic_reconfigure::Server<potbot_controller::ControllerConfig>::CallbackType cb = boost::bind(&Controller::__param_callback, this, _1, _2);
         dsrv_->setCallback(cb);
 
         // nav_server_ = new NavServer(ros::NodeHandle(), "potbot_cont", boost::bind(&Controller::__execute_callback, this, _1), false);
@@ -109,7 +109,7 @@ namespace potbot_controller
         }
     }
 
-    void Controller::__param_callback(const potbot_msgs::ControllerConfig& param, uint32_t level)
+    void Controller::__param_callback(const potbot_controller::ControllerConfig& param, uint32_t level)
     {
         publish_command_             		= param.publish_control_command;
         stop_margin_angle_					= param.stop_margin_angle;

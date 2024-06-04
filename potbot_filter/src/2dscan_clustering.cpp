@@ -13,13 +13,13 @@ scan2dClass::scan2dClass(tf2_ros::Buffer& tf, const std::string& name) : tf_buff
 	pub_segment_					= nhPub_.advertise<visualization_msgs::MarkerArray>(	"segment", 1);
 	pub_obstacles_scan_clustering_	= nhPub_.advertise<potbot_msgs::ObstacleArray>(			"obstacle/scan/clustering", 1);
 
-    dsrv_ = new dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig>(ros::NodeHandle("~/" + name));
-    dynamic_reconfigure::Server<potbot_msgs::ClusteringConfig>::CallbackType cb = boost::bind(&scan2dClass::__param_callback, this, _1, _2);
+    dsrv_ = new dynamic_reconfigure::Server<potbot_filter::ClusteringConfig>(ros::NodeHandle("~/" + name));
+    dynamic_reconfigure::Server<potbot_filter::ClusteringConfig>::CallbackType cb = boost::bind(&scan2dClass::__param_callback, this, _1, _2);
     dsrv_->setCallback(cb);
 
 }
 
-void scan2dClass::__param_callback(const potbot_msgs::ClusteringConfig& param, uint32_t level)
+void scan2dClass::__param_callback(const potbot_filter::ClusteringConfig& param, uint32_t level)
 {
     // ROS_INFO("%d",level);
     Tn_                     = param.threshold_point_num;
