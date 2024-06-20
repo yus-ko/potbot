@@ -25,19 +25,6 @@ namespace potbot_filter
     FilterClass::~FilterClass(){
     }
 
-    void matrixToDoubleArray(const Eigen::MatrixXd& matrix, std_msgs::Float64MultiArray& array) {
-        int rows = matrix.rows();
-        int cols = matrix.cols();
-
-        int index = 0;
-        for (int j = 0; j < cols; j++) {
-            for (int i = 0; i < rows; i++) {
-                array.data[index] = matrix(i, j);
-                index++;
-            }
-        }
-    }
-
     Eigen::VectorXd f(Eigen::VectorXd x_old, double dt) {
         Eigen::VectorXd x_new(__NX__);
 
@@ -61,21 +48,7 @@ namespace potbot_filter
         y(1) = x(1);
         return y;
     }
-
-    int id2index(int id, std::vector<int> idvec)
-    {
-        int idx = -1;
-        for(int i = 0; i < idvec.size(); i++)
-        {
-            if (idvec[i] == id)
-            {
-                idx = i;
-                break;
-            }
-        }
-        return idx;
-    }
-
+    
     void FilterClass::__obstacle_callback(const potbot_msgs::ObstacleArray& msg)
     {
         potbot_msgs::ObstacleArray obstacle_array = msg;
@@ -109,7 +82,7 @@ namespace potbot_filter
                 Eigen::VectorXd observed_data(ny);
                 observed_data<< x, y;
                 std::tuple<Eigen::VectorXd, Eigen::MatrixXd, Eigen::MatrixXd> ans = states_ukf_[index_ukf].update(observed_data,dt);
-                Eigen::MatrixXd xhat = std::get<0>(ans);
+                Eigen::VectorXd xhat = std::get<0>(ans);
                 Eigen::MatrixXd P = std::get<1>(ans);
                 Eigen::MatrixXd K = std::get<2>(ans);
 
@@ -117,24 +90,28 @@ namespace potbot_filter
                 state_msg.header = obstacle.header;
                 state_msg.id = id;
 
-                state_msg.z.data.resize(ny);
-                state_msg.xhat.data.resize(xhat.rows());
-                state_msg.P.data.resize(P.rows()*P.cols());
-                state_msg.K.data.resize(K.rows()*K.cols());
+                state_msg.state.resize(4);
 
-                matrixToDoubleArray(observed_data, state_msg.z);
-                matrixToDoubleArray(xhat, state_msg.xhat);
-                matrixToDoubleArray(P, state_msg.P);
-                matrixToDoubleArray(K, state_msg.K);
+                state_msg.state[0].label = "z";
+                state_msg.state[0].matrix = potbot_lib::utility::matrix_to_multiarray(observed_data);
+
+                state_msg.state[1].label = "xhat";
+                state_msg.state[1].matrix = potbot_lib::utility::matrix_to_multiarray(xhat);
+
+                state_msg.state[2].label = "P";
+                state_msg.state[2].matrix = potbot_lib::utility::matrix_to_multiarray(P);
+
+                state_msg.state[3].label = "K";
+                state_msg.state[3].matrix = potbot_lib::utility::matrix_to_multiarray(K);
                 
                 //std::cout<<xhat.transpose()<<std::endl;
                 state_array_msg.data.push_back(state_msg);
 
-                obstacle.pose.position.x = state_msg.xhat.data[0];
-                obstacle.pose.position.y = state_msg.xhat.data[1];
-                obstacle.pose.orientation  = potbot_lib::utility::get_Quat(0,0,state_msg.xhat.data[2]);
-                obstacle.twist.linear.x = state_msg.xhat.data[3];
-                obstacle.twist.angular.z = state_msg.xhat.data[4];
+                obstacle.pose.position.x = xhat(0);
+                obstacle.pose.position.y = xhat(1);
+                obstacle.pose.orientation  = potbot_lib::utility::get_Quat(0,0,xhat(2));
+                obstacle.twist.linear.x = xhat(3);
+                obstacle.twist.angular.z = xhat(4);
             }
             else
             {
@@ -182,7 +159,8 @@ namespace potbot_filter
 
             for (const auto& state_msg : state_array_msg.data)
             {
-                if (abs(state_msg.xhat.data[3]) > 2.0 || abs(state_msg.xhat.data[3]) < 0.1) continue;
+                Eigen::VectorXd xhat = potbot_lib::utility::multiarray_to_matrix(state_msg.state[1].matrix);
+                if (abs(xhat(3)) > 2.0 || abs(xhat(3)) < 0.1) continue;
 
                 visualization_msgs::Marker state_marker;
 
@@ -195,11 +173,11 @@ namespace potbot_filter
                 state_marker.type               = visualization_msgs::Marker::ARROW;
                 state_marker.action             = visualization_msgs::Marker::MODIFY;
 
-                state_marker.pose.position.x    = state_msg.xhat.data[0];
-                state_marker.pose.position.y    = state_msg.xhat.data[1];
+                state_marker.pose.position.x    = xhat(0);
+                state_marker.pose.position.y    = xhat(1);
                 state_marker.pose.position.z    = 0;
 
-                state_marker.pose.orientation   = potbot_lib::utility::get_Quat(0,0,state_msg.xhat.data[2]);
+                state_marker.pose.orientation   = potbot_lib::utility::get_Quat(0,0,xhat(2));
 
                 state_marker.scale.x            = 0.05;
                 state_marker.scale.y            = 0.1;
@@ -212,7 +190,7 @@ namespace potbot_filter
                 p0.x                            = 0;
                 p0.y                            = 0;
                 p0.z                            = 0;
-                p1.x                            = state_msg.xhat.data[3];
+                p1.x                            = xhat(3);
                 p1.y                            = 0;
                 p1.z                            = 0;
                 state_marker.points.push_back(p0);

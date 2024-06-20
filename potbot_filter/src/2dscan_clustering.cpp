@@ -41,9 +41,9 @@ void scan2dClass::__scan_callback(const sensor_msgs::LaserScan::ConstPtr msg)
     scanclus.euclidean_clustering();    //ユークリッド距離に基づいたクラスタリングを実行
 
     potbot_msgs::ObstacleArray clusters_obstaclearray_scan;
-    scanclus.to_obstaclearray(clusters_obstaclearray_scan);    //クラスタリング結果をpotbot_msgs::ObstacleArray型に変換して取得
     clusters_obstaclearray_scan.header = scan_.header;
-    for (auto& obs : clusters_obstaclearray_scan.data) obs.header = clusters_obstaclearray_scan.header;
+    scanclus.to_obstaclearray(clusters_obstaclearray_scan);    //クラスタリング結果をpotbot_msgs::ObstacleArray型に変換して取得
+    // for (auto& obs : clusters_obstaclearray_scan.data) obs.header = clusters_obstaclearray_scan.header;
 
     //1時刻前のクラスタからの追跡
     static potbot_msgs::ObstacleArray clusters_obstaclearray_pre;
